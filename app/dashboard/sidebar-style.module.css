@@ -1,0 +1,88 @@
+/* Layout structure */
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Desktop sidebar styling */
+.desktop-sidebar {
+  width: 250px;
+  background: #f8f8f8;
+  padding: 1rem;
+}
+
+/* Main content styling */
+.main-content {
+  flex: 1;
+  padding: 1rem;
+}
+
+/* Mobile menu button hidden on desktop */
+.mobile-menu-button {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background: transparent;
+  border: none;
+  z-index: 1000;
+  display: none;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .desktop-sidebar {
+    display: none;
+  }
+  .mobile-menu-button {
+    display: block;
+  }
+}
+
+/* Dialog overlay styling for mobile sidebar */
+.dialog-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+  animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dialog content (the sidebar) styling */
+.dialog-content {
+  background: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 250px;
+  height: 100%;
+  padding: 1rem;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Animation keyframes for smooth opening */
+@keyframes overlayShow {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes contentShow {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Close button styling inside the dialog */
+.close-button {
+  background: transparent;
+  border: none;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}

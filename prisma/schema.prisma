@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  name         String
+  phoneNumber  String
+  transactions Transaction[]
+  llmRequests  LLMRequest[]
+  balance      Int           @default(0)
+  createdAt    DateTime      @default(now())
+}
+
+model Transaction {
+  id           Int      @id @default(autoincrement())
+  amount       Int
+  exchangeRate Int
+  fee          Int?
+  refId        Int?
+  code         Int?
+  user         User     @relation(fields: [userId], references: [id])
+  userId       Int
+  createdAt    DateTime @default(now())
+}
+
+model LLMRequest {
+  id               Int      @id @default(autoincrement())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           Int
+  inputTokensUsed  Int
+  outputTokensUsed Int
+  cost             Int
+  llmModel         LLMModel @relation(fields: [llmModelId], references: [id])
+  llmModelId       Int
+  createdAt        DateTime @default(now())
+}
+
+model LLMModel {
+  id                 Int          @id @default(autoincrement())
+  name               String
+  description        String?
+  costPerMilInToken  Int
+  costPerMilOutToken Int
+  llmRequests        LLMRequest[]
+  createdAt          DateTime     @default(now())
+}
+
+model OpenRouterConfig {
+  id        Int      @id @default(autoincrement())
+  name      String
+  baseUrl   String
+  apiKey    String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

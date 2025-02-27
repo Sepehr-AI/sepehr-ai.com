@@ -1,15 +1,72 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "@radix-ui/themes/styles.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import { Theme } from "@radix-ui/themes";
+
+const vazir = localFont({
+  src: [
+    {
+      path: "./fonts/Vazir-Thin.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Vazir-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Vazir.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Vazir-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Vazir-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+
+  variable: "--font-vazir",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const vazirFarsiDigits = localFont({
+  src: [
+    {
+      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Thin-FD-WOL.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Light-FD-WOL.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-FD-WOL.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Medium-FD-WOL.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Bold-FD-WOL.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+
+  variable: "--font-vazir-fd",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +80,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" className={`${vazir.variable} font-sans`}>
+      <body>
+        <Theme>{children}</Theme>
       </body>
     </html>
   );
