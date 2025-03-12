@@ -8,15 +8,30 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  email        String        @unique
-  password     String
-  name         String
-  phoneNumber  String
-  transactions Transaction[]
-  llmRequests  LLMRequest[]
-  balance      Int           @default(0)
-  createdAt    DateTime      @default(now())
+  id              Int             @id @default(autoincrement())
+  email           String          @unique
+  password        String
+  name            String
+  phoneNumber     String
+  referralCode    String?
+  referredBy      Referral[]      @relation("ReferredUser")
+  referrals       Referral[]      @relation("UserReferrals")
+  transactions    Transaction[]
+  webLlmRequests  WebLlmRequest[]
+  apiLlmRequests  ApiLlmRequest[]
+  webBalance      Float           @default(0)
+  apiBalance      Float           @default(0)
+  referralBalance Float           @default(0)
+  createdAt       DateTime        @default(now())
+}
+
+model Referral {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id], name: "UserReferrals")
+  userId    Int
+  newUser   User     @relation(fields: [newUserId], references: [id], name: "ReferredUser")
+  newUserId Int      @unique()
+  createdAt DateTime @default(now())
 }
 
 model Transaction {
@@ -31,33 +46,57 @@ model Transaction {
   createdAt    DateTime @default(now())
 }
 
-model LLMRequest {
+model ApiLlmRequest {
   id               Int      @id @default(autoincrement())
   user             User     @relation(fields: [userId], references: [id])
   userId           Int
   inputTokensUsed  Int
   outputTokensUsed Int
-  cost             Int
-  llmModel         LLMModel @relation(fields: [llmModelId], references: [id])
+  cost             Float
+  llmModel         LlmModel @relation(fields: [llmModelId], references: [id])
   llmModelId       Int
   createdAt        DateTime @default(now())
 }
 
-model LLMModel {
-  id                 Int          @id @default(autoincrement())
-  name               String
-  description        String?
-  costPerMilInToken  Int
-  costPerMilOutToken Int
-  llmRequests        LLMRequest[]
-  createdAt          DateTime     @default(now())
+model WebLlmRequest {
+  id               Int      @id @default(autoincrement())
+  user             User     @relation(fields: [userId], references: [id])
+  userId           Int
+  inputTokensUsed  Int
+  outputTokensUsed Int
+  cost             Float
+  llmModel         LlmModel @relation(fields: [llmModelId], references: [id])
+  llmModelId       Int
+  createdAt        DateTime @default(now())
 }
 
-model OpenRouterConfig {
-  id        Int      @id @default(autoincrement())
-  name      String
-  baseUrl   String
-  apiKey    String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
+enum EstimatedEncodingBase {
+  O200K
+  CL100K
+  P50K
+  R50K
+}
+
+model LlmModel {
+  id                    Int                   @id @default(autoincrement())
+  code                  String                @unique()
+  name                  String                @unique()
+  description           String
+  costPerMilInToken     Float
+  costPerMilOutToken    Float
+  llmRequests           ApiLlmRequest[]
+  WebLLMRequest         WebLlmRequest[]
+  estimatedEncodingBase EstimatedEncodingBase
+  createdAt             DateTime              @default(now())
+}
+
+model WebPlans {
+  id           Int      @id @default(autoincrement())
+  name         String
+  credits      Int
+  balance      Int
+  price        Int
+  displayPrice String
+  updatedAt    DateTime @default(now())
+  createdAt    DateTime @default(now())
 }

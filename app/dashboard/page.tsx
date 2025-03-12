@@ -1,7 +1,14 @@
-"use client";
+"use server";
 
-import Chat from "./components/Chat";
+import { getModelsForWeb } from "@/lib/models";
+import { LazyChat } from "../components/LazyChat";
+import Loadable from "./Loadable";
 
-export default function DashboardPage() {
-  return <Chat />;
+export default async function DashboardPage() {
+  const models = await getModelsForWeb();
+  return (
+    <Loadable>
+      <LazyChat models={models} />
+    </Loadable>
+  );
 }

@@ -34,7 +34,7 @@ export default async function getExchangeRate(): Promise<number> {
 
   if (!data) {
     const response = await fetch(
-      "https://brsapi.ir/FreeTsetmcBourseApi/Api_Free_Gold_Currency.json"
+      "https://brsapi.ir/FreeTsetmcBourseApi/Api_Free_Gold_Currency.json",
     );
     const json: {
       currency: ApiCurrency[];

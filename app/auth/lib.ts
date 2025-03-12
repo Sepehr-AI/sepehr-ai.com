@@ -4,12 +4,23 @@ import { permanentRedirect, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { revalidatePath } from "next/cache";
+import { jwtVerify, SignJWT } from "jose";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
+const cookiesConfig = {
+  path: "/",
+  httpOnly: true,
+  secure:
+    (process.env.SECURE_COOKIES &&
+      process.env.SECURE_COOKIES.toLowerCase() === "true") ||
+    false,
+  sameSite: (process.env.STRICT_COOKIES &&
+  process.env.STRICT_COOKIES.toLowerCase() === "true"
+    ? "strict"
+    : "none") as "strict" | "none",
+};
 
-interface JwtPayload {
+export interface AyarJwtPayload {
   id: number;
   name: string;
   email: string;
@@ -56,16 +67,25 @@ export async function loginAction(formData: FormData) {
       )}&exists=true&error=Invalid password`
     );
   }
-  const token = jwt.sign(
-    { id: user.id, email: user.email, name: user.name } as JwtPayload,
-    JWT_SECRET,
-    { expiresIn: "9999 years" }
-  );
-  (await cookies()).set("token", token, {
-    httpOnly: true,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-  });
+  // const token = jwt.sign(
+  //   { id: user.id, email: user.email, name: user.name } as JwtPayload,
+  //   JWT_SECRET,
+  //   { expiresIn: "9999 years" }
+  // );
+  const iat = Math.floor(Date.now() / 1000);
+  const exp = iat + 60 * 60 * 60 * 60;
+  const token = await new SignJWT({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  })
+    .setIssuedAt(iat)
+    .setNotBefore(iat)
+    .setExpirationTime(exp)
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .sign(new TextEncoder().encode(JWT_SECRET));
+
+  (await cookies()).set("token", token, cookiesConfig);
   redirect("/dashboard");
 }
 
@@ -108,20 +128,31 @@ export async function registerAction(formData: FormData) {
       )}&exists=true&error=User already exists`
     );
   }
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(
+    password,
+    Number(process.env.BYCRYPT_ROUNDS || 0)
+  );
   const user = await prisma.user.create({
     data: { email, phoneNumber, name, password: hashedPassword },
   });
-  const token = jwt.sign(
-    { id: user.id, email: user.email, name: user.name } as JwtPayload,
-    JWT_SECRET,
-    { expiresIn: "9999 years" }
-  );
-  (await cookies()).set("token", token, {
-    httpOnly: true,
-    path: "/",
-    secure: process.env.NODE_ENV === "production",
-  });
+  // const token = jwt.sign(
+  //   { id: user.id, email: user.email, name: user.name } as JwtPayload,
+  //   JWT_SECRET,
+  //   { expiresIn: "9999 years" }
+  // );
+  const iat = Math.floor(Date.now() / 1000);
+  const exp = iat + 60 * 60 * 60 * 60;
+  const token = await new SignJWT({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+  })
+    .setIssuedAt(iat)
+    .setNotBefore(iat)
+    .setExpirationTime(exp)
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .sign(new TextEncoder().encode(JWT_SECRET));
+  (await cookies()).set("token", token, cookiesConfig);
   redirect("/dashboard");
 }
 
@@ -137,9 +168,10 @@ export async function userIsAuthOrRedirect() {
   if (!(await isUserAuth())) return permanentRedirect("/");
 }
 
-export async function getUserPayload(): Promise<JwtPayload> {
+export async function getUserPayload(): Promise<AyarJwtPayload> {
   const token = (await cookies()).get("token")?.value;
   if (!token) return permanentRedirect("/");
 
-  return jwt.verify(token, JWT_SECRET) as unknown as JwtPayload;
+  return (await jwtVerify(token, new TextEncoder().encode(JWT_SECRET)))
+    .payload as unknown as AyarJwtPayload;
 }

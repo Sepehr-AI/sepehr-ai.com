@@ -1,9 +1,9 @@
 import "./globals.css";
-import "@radix-ui/themes/styles.css";
+// import "@radix-ui/themes/styles.css";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Theme } from "@radix-ui/themes";
+// import { Theme } from "@radix-ui/themes";
 
 const vazir = localFont({
   src: [
@@ -37,37 +37,37 @@ const vazir = localFont({
   variable: "--font-vazir",
 });
 
-const vazirFarsiDigits = localFont({
-  src: [
-    {
-      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Thin-FD-WOL.woff2",
-      weight: "100",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Light-FD-WOL.woff2",
-      weight: "300",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-FD-WOL.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Medium-FD-WOL.woff2",
-      weight: "500",
-      style: "normal",
-    },
-    {
-      path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Bold-FD-WOL.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+// const vazirFarsiDigits = localFont({
+//   src: [
+//     {
+//       path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Thin-FD-WOL.woff2",
+//       weight: "100",
+//       style: "normal",
+//     },
+//     {
+//       path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Light-FD-WOL.woff2",
+//       weight: "300",
+//       style: "normal",
+//     },
+//     {
+//       path: "./fonts/Farsi-Digits-Without-Latin/Vazir-FD-WOL.woff2",
+//       weight: "400",
+//       style: "normal",
+//     },
+//     {
+//       path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Medium-FD-WOL.woff2",
+//       weight: "500",
+//       style: "normal",
+//     },
+//     {
+//       path: "./fonts/Farsi-Digits-Without-Latin/Vazir-Bold-FD-WOL.woff2",
+//       weight: "700",
+//       style: "normal",
+//     },
+//   ],
 
-  variable: "--font-vazir-fd",
-});
+//   variable: "--font-vazir-fd",
+// });
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -80,10 +80,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${vazir.variable} font-sans`}>
-      <body>
-        <Theme>{children}</Theme>
-      </body>
+    <html className={vazir.variable} lang="fa-IR">
+      <body>{children}</body>
     </html>
   );
 }
