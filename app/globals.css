@@ -126,15 +126,20 @@ button {
 body:has(.hide-the-main) main {
   display: none;
 }
-body:has(.hide-the-main) nav {
-  height: 100dvh !important;
-  display: flex;
-  overflow-y: auto;
-  flex-direction: column;
+
+.markdown ul,
+.markdown ol {
+  margin-inline-start: 1rem;
 }
 
-.overflow-wrap-break,
-a:has(.overflow-wrap-break),
-div:has(.overflow-wrap-break) {
-  word-break: break-all;
+.markdown p:has(.katex),
+.markdown p:has(.katex-display) {
+  text-align: end;
+  unicode-bidi: plaintext;
+}
+
+.markdown p:not(:has(.katex)),
+.markdown p:not(:has(.katex-display)) {
+  text-align: start;
+  unicode-bidi: plaintext;
 }

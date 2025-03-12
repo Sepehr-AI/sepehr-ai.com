@@ -96,7 +96,7 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
               >
                 <LinkWrapper
                   onClick={onLinkClick}
-                  className="overflow-wrap-break p-2 rounded-xl hover:bg-gray-600 hover:text-white text-sm"
+                  className="text-ellipsis p-2 rounded-xl hover:bg-gray-600 hover:text-white text-sm"
                   href={`/dashboard/chat/${chat.uuid}`}
                 >
                   {chat.namePrefix}

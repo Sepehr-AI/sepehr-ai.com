@@ -38,14 +38,13 @@ const MemoizedMarkdownBlock = memo(
   }) => {
     return (
       <div
-        dir="auto"
         className={
           "w-full markdown markdown-body" + (className ? ` ${className}` : "")
         }
       >
         <ReactMarkdown
           remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-          rehypePlugins={[[rehypeKatex, { strict: false }], rehypeRaw]}
+          rehypePlugins={[[rehypeKatex], rehypeRaw]}
           components={{
             code: (props) => {
               const { children, className, node, ...rest } = props;
@@ -67,7 +66,7 @@ const MemoizedMarkdownBlock = memo(
               };
 
               return match ? (
-                <div className="ltr rounded p-1 border-1 border-gray-875">
+                <div className="my-4 ltr rounded p-1 border-1 border-gray-875">
                   <div className="flex pt-[1em] px-[1em]">
                     <p className="flex-none text-sm">{match[1]}</p>
                     <div className="flex-auto"></div>
@@ -91,20 +90,6 @@ const MemoizedMarkdownBlock = memo(
                 <code {...rest} dir="auto">
                   {children}
                 </code>
-              );
-            },
-            ol: ({ node, children, ...props }) => {
-              return (
-                <div dir="auto" className="ms-3">
-                  <ol {...props}>{children}</ol>
-                </div>
-              );
-            },
-            ul: ({ node, children, ...props }) => {
-              return (
-                <div dir="auto" className="ms-3">
-                  <ul {...props}>{children}</ul>
-                </div>
               );
             },
           }}
