@@ -18,12 +18,20 @@ import { toast } from "react-toastify";
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
-  return tokens.reduce((acc: string[], token: any) => {
-    if (token.raw && token.raw.trim().length > 0) {
-      acc.push(token.raw);
-    }
-    return acc;
-  }, []);
+  return tokens.map((t) => t.raw);
+  // return tokens.reduce((acc: string[], token: any) => {
+  //   if (token.raw && token.raw.trim().length > 0) {
+  //     acc.push(token.raw);
+  //   }
+  //   return acc;
+  // }, []);
+}
+
+function getTextDirection(text: string): "rtl" | "ltr" {
+  // Count the number of characters in the Farsi/Arabic Unicode range
+  const farsiChars = text.match(/[\u0600-\u06FF]/g) || [];
+  // Decide the direction based on the count. You can adjust the threshold as needed.
+  return farsiChars.length > text.length * 0.1 ? "rtl" : "ltr";
 }
 
 const MemoizedMarkdownBlock = memo(
@@ -41,11 +49,102 @@ const MemoizedMarkdownBlock = memo(
         className={
           "w-full markdown markdown-body" + (className ? ` ${className}` : "")
         }
+        dir={getTextDirection(content)}
+        style={{ direction: getTextDirection(content) }}
       >
         <ReactMarkdown
           remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-          rehypePlugins={[[rehypeKatex], rehypeRaw]}
+          rehypePlugins={[[rehypeKatex, { strict: false }], rehypeRaw]}
           components={{
+            h1: ({ node, children, ...props }) => (
+              <h1
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </h1>
+            ),
+            h2: ({ node, children, ...props }) => (
+              <h2
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </h2>
+            ),
+            h3: ({ node, children, ...props }) => (
+              <h3
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </h3>
+            ),
+            h4: ({ node, children, ...props }) => (
+              <h4
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </h4>
+            ),
+            h5: ({ node, children, ...props }) => (
+              <h5
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </h5>
+            ),
+            h6: ({ node, children, ...props }) => (
+              <h6
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </h6>
+            ),
+            li: ({ node, children, ...props }) => (
+              <li
+                className="text-start"
+                style={{
+                  direction: getTextDirection(content),
+                  unicodeBidi: "normal",
+                }}
+                {...props}
+              >
+                {children}
+              </li>
+            ),
+            strong: ({ node, children, ...props }) => (
+              <span className="font-bold" {...props}>
+                {children}
+              </span>
+            ),
             code: (props) => {
               const { children, className, node, ...rest } = props;
               const match = /language-(\w+)/.exec(className || "");

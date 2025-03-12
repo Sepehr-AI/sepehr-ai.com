@@ -80,7 +80,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className={vazir.variable} lang="fa-IR" dir="rtl">
+    <html
+      className={vazir.variable}
+      lang="fa-IR"
+      // dir="rtl"
+    >
       <body>{children}</body>
     </html>
   );

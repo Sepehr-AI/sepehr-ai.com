@@ -31,7 +31,6 @@ const Message = ({
     }: {
       content: string;
       className?: string;
-      noDirection?: boolean;
     }) =>
       !isUser ? (
         <MemoizedMarkdown
@@ -48,7 +47,6 @@ const Message = ({
         if (part.type === "reasoning" && part.reasoning.trim().length) {
           renderedReasoning.push(
             <Markdown
-              noDirection={true}
               content={part.reasoning}
               key={`reasoning-${index}`}
               className="relative flex h-full flex-col"
@@ -149,7 +147,7 @@ const Message = ({
           )}
         </div>
       </div>
-      <div className="min-h-[10vh] flex-none flex flex-col justify-center gap-2 xl:w-2xl lg:w-xl w-[85%]">
+      <div className="min-h-[10vh] flex-none flex flex-col justify-center xl:w-2xl lg:w-xl w-[85%] gap-0.5">
         {/* Action Block: Copy and Toggle */}
         {!isUser && (
           <div className="w-full my-2">
