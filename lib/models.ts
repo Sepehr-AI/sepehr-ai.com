@@ -24,6 +24,7 @@ const getModels = async (): Promise<LlmModel[]> => {
         code: true,
         name: true,
         description: true,
+        useToComparePlans: true,
         costPerMilInToken: true,
         costPerMilOutToken: true,
         estimatedEncodingBase: true,
@@ -65,12 +66,49 @@ export const getModelsForWeb: () => Promise<Model[]> = unstable_cache(
           creditCostPerMilInToken,
           creditCostPerMilOutToken,
         } as Model;
-      },
+      }
     );
     cache.set("modelsForWeb", modelsForWeb);
 
     return modelsForWeb;
   },
   ["modelsForWeb"],
-  { revalidate: 60 * 60 },
+  { revalidate: 60 * 60 }
 );
+
+export const getModelsForPlanComparison: () => Promise<Model[]> =
+  unstable_cache(
+    async () => {
+      const cached = cache.get("modelsForWeb");
+      if (cached) return cached as Model[];
+
+      const modelsForWeb = (await getModels()).reduce((acc, model) => {
+        // Only push models if useToComparePlans is true
+        if (model.useToComparePlans) {
+          const {
+            code,
+            name,
+            description,
+            costPerMilInToken,
+            costPerMilOutToken,
+          } = model;
+          const creditCostPerMilInToken = costPerMilInToken * 2 * 1000;
+          const creditCostPerMilOutToken = costPerMilOutToken * 2 * 1000;
+          acc.push({
+            code,
+            name,
+            description,
+            creditCostPerMilInToken,
+            creditCostPerMilOutToken,
+          } as Model);
+        }
+        return acc;
+      }, [] as Model[]);
+
+      cache.set("getModelsForPlanComparison", modelsForWeb);
+
+      return modelsForWeb;
+    },
+    ["getModelsForPlanComparison"],
+    { revalidate: 60 * 60 }
+  );

@@ -107,7 +107,7 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
         ) : chats.length ? (
           <p className="text-center text-sm">چت مورد نظر پیدا نشد!</p>
         ) : (
-          <p className="text-center text-sm">فاقد چت.</p>
+          <p className="text-center text-sm h-full content-center">فاقد چت.</p>
         )}
       </div>
 

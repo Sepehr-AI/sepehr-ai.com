@@ -84,6 +84,7 @@ model LlmModel {
   description           String
   costPerMilInToken     Float
   costPerMilOutToken    Float
+  useToComparePlans     Boolean               @default(false)
   llmRequests           ApiLlmRequest[]
   WebLLMRequest         WebLlmRequest[]
   estimatedEncodingBase EstimatedEncodingBase

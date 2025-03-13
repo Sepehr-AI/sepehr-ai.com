@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { MiddlewareUserData } from "@/middleware";
 
-export async function chargeAccount(formData: FormData) {
+export async function chargeAccountAction(formData: FormData) {
   const headersList = await headers();
   const planId = Number(formData.get("planId"));
   const user: MiddlewareUserData = {
@@ -18,6 +18,10 @@ export async function chargeAccount(formData: FormData) {
     return redirect("/dashboard/payment");
   }
 
+  return chargeAccount(user, planId);
+}
+
+export async function chargeAccount(user: MiddlewareUserData, planId: number) {
   let price: number;
   try {
     const webPlan = await prisma.webPlans.findUnique({
@@ -52,7 +56,7 @@ export async function chargeAccount(formData: FormData) {
         Accept: "application/json",
       },
       body: JSON.stringify(paymentPayload),
-    },
+    }
   );
 
   const paymentData = await paymentResponse.json();
@@ -62,6 +66,6 @@ export async function chargeAccount(formData: FormData) {
   }
 
   return redirect(
-    `https://payment.zarinpal.com/pg/StartPay/${paymentData.data.authority}`,
+    `https://payment.zarinpal.com/pg/StartPay/${paymentData.data.authority}`
   );
 }

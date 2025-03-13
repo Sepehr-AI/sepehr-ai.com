@@ -5,6 +5,8 @@ import { cookies } from "next/headers";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcrypt";
 import { jwtVerify, SignJWT } from "jose";
+import { User } from "@prisma/client";
+import { chargeAccount } from "../dashboard/payment/actions";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const cookiesConfig = {
@@ -26,45 +28,80 @@ export interface AyarJwtPayload {
   email: string;
 }
 
+async function redirectToDashboard(user: User, selectedPlan?: number) {
+  if (!selectedPlan) return redirect("/dashboard");
+
+  return chargeAccount(user, selectedPlan);
+}
+
 /**
  * Server Action: Check whether a user with the provided email exists.
  * Redirects to `/auth` with the email and an "exists" flag.
  */
-export async function checkEmailAction(formData: FormData) {
+export async function checkEmailAction(
+  formData: FormData,
+  selectedPlan?: number
+) {
   const email = formData.get("email")?.toString();
   if (!email) {
     // You could handle errors more gracefully
-    return redirect("/auth?error=Missing email");
+    return redirect(
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }error=ایمیل وارد نشده است!`
+      )
+    );
   }
   const user = await prisma.user.findUnique({ where: { email } });
   // Redirect with query parameters indicating the email and whether it exists
-  redirect(`/auth?email=${encodeURIComponent(email)}&exists=${!!user}`);
+  redirect(
+    encodeURI(
+      `/auth?${
+        selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+      }email=${encodeURIComponent(email)}&exists=${!!user}`
+    )
+  );
 }
 
 /**
  * Server Action: Log in the user.
  * On success, sets a JWT cookie and redirects to the dashboard.
  */
-export async function loginAction(formData: FormData) {
+export async function loginAction(formData: FormData, selectedPlan?: number) {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
   if (!email || !password) {
     return redirect(
-      `/auth?email=${encodeURIComponent(
-        email || ""
-      )}&exists=true&error=Missing credentials`
+      encodeURI(
+        `/auth${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }?email=${encodeURIComponent(
+          email || ""
+        )}&exists=true&error=اطلاعات ورود ارسال نشده اند!`
+      )
     );
   }
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    return redirect(`/auth?error=User not found`);
+    return redirect(
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }error=کاربر پیدا نشد!`
+      )
+    );
   }
   const passwordValid = await bcrypt.compare(password, user.password);
   if (!passwordValid) {
     return redirect(
-      `/auth?email=${encodeURIComponent(
-        email
-      )}&exists=true&error=Invalid password`
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }email=${encodeURIComponent(
+          email
+        )}&exists=true&error=رمز عبور اشتباه است!`
+      )
     );
   }
   // const token = jwt.sign(
@@ -86,14 +123,18 @@ export async function loginAction(formData: FormData) {
     .sign(new TextEncoder().encode(JWT_SECRET));
 
   (await cookies()).set("token", token, cookiesConfig);
-  redirect("/dashboard");
+
+  return redirectToDashboard(user, selectedPlan);
 }
 
 /**
  * Server Action: Register a new user.
  * On success, creates the user, sets a JWT cookie, and redirects to the dashboard.
  */
-export async function registerAction(formData: FormData) {
+export async function registerAction(
+  formData: FormData,
+  selectedPlan?: number
+) {
   const email = formData.get("email")?.toString();
   const name = formData.get("userName")?.toString();
   const password = formData.get("password")?.toString();
@@ -101,31 +142,45 @@ export async function registerAction(formData: FormData) {
   const confirmPassword = formData.get("confirmPassword")?.toString();
   if (!name || !email || !password || !confirmPassword || !phoneNumber) {
     return redirect(
-      `/auth?email=${encodeURIComponent(
-        email || ""
-      )}&exists=false&error=Missing fields`
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }email=${encodeURIComponent(
+          email || ""
+        )}&exists=false&error=فیلد های لازم ارسال نشده اند!`
+      )
     );
   }
   if (!RegExp(/((0?9)|(\+?989))\d{9}/g).test(phoneNumber)) {
     return redirect(
-      `/auth?email=${encodeURIComponent(
-        email || ""
-      )}&exists=false&error=Invalid Phone number`
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }email=${encodeURIComponent(
+          email || ""
+        )}&exists=false&error=شماره موبایل وارد شده اشتباه است!`
+      )
     );
   }
   if (password !== confirmPassword) {
     return redirect(
-      `/auth?email=${encodeURIComponent(
-        email
-      )}&exists=false&error=Passwords do not match`
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }email=${encodeURIComponent(
+          email
+        )}&exists=false&error=رمز عبور با تکرارش برابر نیست!`
+      )
     );
   }
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
     return redirect(
-      `/auth?email=${encodeURIComponent(
-        email
-      )}&exists=true&error=User already exists`
+      encodeURI(
+        `/auth?${
+          selectedPlan ? `selectedPlan=${selectedPlan}&` : ""
+        }email=${encodeURIComponent(email)}&exists=true&error=کاربر وجود دارد!`
+      )
     );
   }
   const hashedPassword = await bcrypt.hash(
@@ -153,7 +208,8 @@ export async function registerAction(formData: FormData) {
     .setProtectedHeader({ alg: "HS256", typ: "JWT" })
     .sign(new TextEncoder().encode(JWT_SECRET));
   (await cookies()).set("token", token, cookiesConfig);
-  redirect("/dashboard");
+
+  return redirectToDashboard(user, selectedPlan);
 }
 
 export async function isUserAuth(): Promise<boolean> {

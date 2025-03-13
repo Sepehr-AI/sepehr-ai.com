@@ -1,24 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { toast } from "react-toastify";
+import { useEffect, useState } from "react";
 import { CiDollar } from "react-icons/ci";
 import { roundWebCost } from "@/lib/cost";
-import { WebPlans } from "@prisma/client";
-import { chargeAccount } from "./actions";
+import { webPlansForUsers } from "@/lib/plans";
+import { chargeAccountAction } from "./actions";
 
 export default function PaymentLayout({
   plans,
   webBalance,
+  balanceInsufficient,
 }: {
   webBalance: number;
-  plans: WebPlans[];
+  plans: webPlansForUsers;
+  balanceInsufficient: boolean;
 }) {
   const [selectedPlanId, setSelectedPlanId] = useState<number>(0);
+
+  useEffect(() => {
+    if (balanceInsufficient)
+      toast.warn(
+        "کاربر گرامی، برای استفاده از سرویس ها لطفا حساب خود را شارژ کنید.",
+        { position: "top-center", toastId: "balanceInsufficient" }
+      );
+  }, [balanceInsufficient]);
 
   return (
     <div className="flex-auto flex items-center justify-center p-4">
       <form
-        action={chargeAccount}
+        action={chargeAccountAction}
         className="items-center justify-center lg:rounded-3xl lg:shadow-gray-400 lg:shadow-2xl lg:p-8"
       >
         {/* Credit Balance Section */}

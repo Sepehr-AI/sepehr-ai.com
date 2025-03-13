@@ -3,6 +3,8 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 // import { Theme } from "@radix-ui/themes";
 
 const vazir = localFont({
@@ -85,7 +87,10 @@ export default function RootLayout({
       lang="fa-IR"
       // dir="rtl"
     >
-      <body>{children}</body>
+      <body>
+        <ToastContainer toastClassName="font-vazir-force text-center" />
+        {children}
+      </body>
     </html>
   );
 }
