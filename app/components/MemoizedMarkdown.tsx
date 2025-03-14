@@ -5,9 +5,9 @@ import { marked } from "marked";
 import { memo, ReactElement, ReactNode, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 import rehypeRaw from "rehype-raw";
+import rehypeMathml from "@daiji256/rehype-mathml";
 import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -34,6 +34,19 @@ function getTextDirection(text: string): "rtl" | "ltr" {
   return farsiChars.length > text.length * 0.1 ? "rtl" : "ltr";
 }
 
+export function processKatexInMarkdown(markdown: string) {
+  const markdownWithKatexSyntax = markdown
+    .replace(/\\\\\[/g, "$$$$") // Replace '\\[' with '$$'
+    .replace(/\\\\\]/g, "$$$$") // Replace '\\]' with '$$'
+    .replace(/\\\\\(/g, "$$$$") // Replace '\\(' with '$$'
+    .replace(/\\\\\)/g, "$$$$") // Replace '\\)' with '$$'
+    .replace(/\\\[/g, "$$$$") // Replace '\[' with '$$'
+    .replace(/\\\]/g, "$$$$") // Replace '\]' with '$$'
+    .replace(/\\\(/g, "$$$$") // Replace '\(' with '$$'
+    .replace(/\\\)/g, "$$$$"); // Replace '\)' with '$$';
+  return markdownWithKatexSyntax;
+}
+
 const MemoizedMarkdownBlock = memo(
   ({
     id,
@@ -44,6 +57,8 @@ const MemoizedMarkdownBlock = memo(
     content: string;
     className?: string;
   }) => {
+    // const containsMath = RegExp(`(?:\d+(\.\d+)?|\([^\)]*\)|[+\-*/^])`);
+
     return (
       <div
         className={
@@ -53,8 +68,12 @@ const MemoizedMarkdownBlock = memo(
         style={{ direction: getTextDirection(content) }}
       >
         <ReactMarkdown
-          remarkPlugins={[remarkMath, remarkGfm, remarkBreaks]}
-          rehypePlugins={[[rehypeKatex, { strict: false }], rehypeRaw]}
+          remarkPlugins={[
+            [remarkMath, { singleDollarTextMath: false }],
+            remarkGfm,
+            remarkBreaks,
+          ]}
+          rehypePlugins={[rehypeMathml, rehypeRaw]}
           components={{
             h1: ({ node, children, ...props }) => (
               <h1
@@ -128,6 +147,16 @@ const MemoizedMarkdownBlock = memo(
                 {children}
               </h6>
             ),
+            ul: ({ node, children, ...props }) => (
+              <ul className="space-y-2" {...props}>
+                {children}
+              </ul>
+            ),
+            ol: ({ node, children, ...props }) => (
+              <ol className="space-y-2" {...props}>
+                {children}
+              </ol>
+            ),
             li: ({ node, children, ...props }) => (
               <li
                 className="text-start"
@@ -193,7 +222,7 @@ const MemoizedMarkdownBlock = memo(
             },
           }}
         >
-          {content}
+          {processKatexInMarkdown(content)}
         </ReactMarkdown>
       </div>
     );

@@ -209,7 +209,7 @@ export default async function Home() {
         {/* Pricing Section */}
         <section id="pricing" className="py-15 xl:py20 bg-gray-50">
           <div className="container mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-12">قیمت گذاری شفاف</h2>
+            <h2 className="text-4xl font-bold mb-12">پلن ها</h2>
             <div className="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-4 lg:gap-6">
               {plans.map((plan, index) => (
                 <div

@@ -11,15 +11,15 @@ import { chargeAccount } from "../dashboard/payment/actions";
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const cookiesConfig = {
   path: "/",
-  httpOnly: true,
-  secure:
-    (process.env.SECURE_COOKIES &&
-      process.env.SECURE_COOKIES.toLowerCase() === "true") ||
-    false,
-  sameSite: (process.env.STRICT_COOKIES &&
-  process.env.STRICT_COOKIES.toLowerCase() === "true"
-    ? "strict"
-    : "none") as "strict" | "none",
+  // httpOnly: true,
+  // secure:
+  //   (process.env.SECURE_COOKIES &&
+  //     process.env.SECURE_COOKIES.toLowerCase() === "true") ||
+  //   false,
+  // sameSite: (process.env.STRICT_COOKIES &&
+  // process.env.STRICT_COOKIES.toLowerCase() === "true"
+  //   ? "strict"
+  //   : "none") as "strict" | "none",
 };
 
 export interface AyarJwtPayload {

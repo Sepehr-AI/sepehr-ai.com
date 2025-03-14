@@ -6,13 +6,13 @@ import { FiRefreshCw, FiSend } from "react-icons/fi";
 import { FaRegCircleStop } from "react-icons/fa6";
 import { BsChevronDown } from "react-icons/bs";
 import Message from "./Message";
-import { createChat, updateChat } from "@/lib/vercel-ai";
+import { createChat, TextUIPart, updateChat } from "@/lib/vercel-ai";
 import { v7 as uuidv7 } from "uuid";
 import { useRouter } from "next/navigation";
 import { MdInput } from "react-icons/md";
 import { Model } from "@/lib/models";
 import EngineToSvg from "./EngineToSvg";
-import { generateId } from "ai";
+import { generateId, UIMessage } from "ai";
 import { toast } from "react-toastify";
 import {
   balanceNotEnoughMsg,
@@ -20,6 +20,8 @@ import {
   unexpectedErrorMsg,
 } from "@/lib/chatErrors";
 import { handleLogout } from "@/lib/logout";
+import { MathJaxContext } from "better-react-mathjax";
+import LoadingMessage from "./LoadingMessage";
 
 const clientErrors = {
   internetIssue: {
@@ -47,6 +49,9 @@ export default function Chat({
   const [messagesCount, setMessagesCount] = useState(
     initialMessages?.length || 0
   );
+  const [waitingForFirstResp, setWaitingForFirstResp] = useState(false);
+  // const [files, setFiles] = useState<FileList | undefined>(undefined);
+  // const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     messages,
@@ -61,8 +66,12 @@ export default function Chat({
     experimental_throttle: 75,
     api: `/api/chat/${engine.code}`,
     initialMessages: initialMessages || undefined,
-    onError: () => stop(),
+    onError: () => {
+      setWaitingForFirstResp(false);
+      stop();
+    },
     onFinish: (newMessage, { finishReason }) => {
+      setWaitingForFirstResp(false);
       if (!newMessage) return;
       if (
         finishReason !== "stop" ||
@@ -98,7 +107,11 @@ export default function Chat({
   // Auto-scroll to the bottom whenever new messages arrive
   useEffect(() => {
     // User sent a new messages
-    if (status === "submitted") setMessagesCount((c) => c + 1);
+    if (status === "submitted") {
+      setWaitingForFirstResp(true);
+      setMessagesCount((c) => c + 1);
+    }
+    if (status === "streaming") setWaitingForFirstResp(false);
 
     scrollToMsgInput();
   }, [messages, status]);
@@ -124,7 +137,15 @@ export default function Chat({
   const handleSubmit = (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
     e.preventDefault();
     setCustomError(false);
-    if (messages.length || initialMessages?.length) return aiHandleSubmit();
+    if (messages.length || initialMessages?.length) {
+      aiHandleSubmit(e, {
+        // experimental_attachments: files,
+      });
+
+      // setFiles(undefined);
+      // if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
 
     const val = textAreaRef.current?.value;
     if (!val || !val.trim().length) return;
@@ -196,131 +217,149 @@ export default function Chat({
   }, [error, customError, status]);
 
   return (
-    <div className="flex flex-col flex-auto w-[95%] mx-auto min-h-[100%] md:min-h-dvh">
-      {messages && messages.length > 0 ? (
-        <div className="flex-auto flex flex-col items-center text-sm">
-          <div className="flex w-full items-center justify-center gap-1 border-b border-black/10 p-3 text-gray-500">
-            مدل: {engine.code}
+    <MathJaxContext>
+      <div className="flex flex-col flex-auto w-[95%] mx-auto min-h-[100%] md:min-h-dvh">
+        {messages && messages.length > 0 ? (
+          <div className="flex-auto flex flex-col items-center text-sm">
+            <div className="flex w-full items-center justify-center gap-1 border-b border-black/10 p-3 text-gray-500">
+              مدل: {engine.code}
+            </div>
+            {messages.map((message, index) => (
+              <Message
+                message={message}
+                key={message.id || index}
+                isTheLastMessage={
+                  !waitingForFirstResp && index === messages.length - 1
+                }
+              />
+            ))}
+            {waitingForFirstResp && <LoadingMessage />}
           </div>
-          {messages.map((message, index) => (
-            <Message
-              message={message}
-              key={message.id || index}
-              isTheLastMessage={index === messages.length - 1}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="flex-auto flex justify-center flex-col mx-auto my-4 md:max-w-xl lg:max-w-3xl">
-          <div className="flex-1"></div>
-          <div className="flex-none space-y-4">
-            <div className="w-full flex justify-center items-center">
-              <div className="relative inline-block">
-                <select
-                  id="engineSelect"
-                  value={engine.code}
-                  onChange={(e) =>
-                    setEngine(
-                      models.find((m) => m.code === e.target.value) || models[0]
-                    )
-                  }
-                  className="block w-full text-center appearance-none rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-xl leading-6 text-gray-700 placeholder-gray-4000 focus:outline-none"
-                  style={{ direction: "ltr", textAlignLast: "center" }}
-                >
-                  {models.map((option, idx) => (
-                    <option
-                      key={idx}
-                      value={option.code}
-                      style={{ direction: "ltr", textAlignLast: "center" }}
-                      className="text-center"
-                    >
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                  <BsChevronDown className="h-5 w-5" />
+        ) : (
+          <div className="flex-auto flex justify-center flex-col mx-auto my-4 md:max-w-xl lg:max-w-3xl">
+            <div className="flex-1"></div>
+            <div className="flex-none space-y-4">
+              <div className="w-full flex justify-center items-center">
+                <div className="relative inline-block">
+                  <select
+                    id="engineSelect"
+                    value={engine.code}
+                    onChange={(e) =>
+                      setEngine(
+                        models.find((m) => m.code === e.target.value) ||
+                          models[0]
+                      )
+                    }
+                    className="block w-full text-center appearance-none rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-xl leading-6 text-gray-700 placeholder-gray-4000 focus:outline-none"
+                    style={{ direction: "ltr", textAlignLast: "center" }}
+                  >
+                    {models.map((option, idx) => (
+                      <option
+                        key={idx}
+                        value={option.code}
+                        style={{ direction: "ltr", textAlignLast: "center" }}
+                        className="text-center"
+                      >
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <BsChevronDown className="h-5 w-5" />
+                  </div>
+                </div>
+              </div>
+              <div className="hidden lg:flex justify-center items-center my-4 text-8xl">
+                <EngineToSvg engine={engine.code} />
+              </div>
+              <p className="text-justify text-gray-600">{engine.description}</p>
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <MdInput className="text-gray-700" />
+                  <span>مصرف اعتبار هر میلیون توکن ورودی: </span>
+                  <span className="text-gray-700">
+                    {engine.creditCostPerMilInToken.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <MdInput className="text-gray-700" />
+                  <span>مصرف اعتبار هر میلیون توکن خروجی: </span>
+                  <span className="text-gray-700">
+                    {engine.creditCostPerMilOutToken.toLocaleString()}
+                  </span>
                 </div>
               </div>
             </div>
-            <div className="hidden lg:flex justify-center items-center my-4 text-8xl">
-              <EngineToSvg engine={engine.code} />
-            </div>
-            <p className="text-justify text-gray-600">{engine.description}</p>
-            <div className="flex flex-col items-center gap-2">
-              <div className="flex items-center gap-1">
-                <MdInput className="text-gray-700" />
-                <span>مصرف اعتبار هر میلیون توکن ورودی: </span>
-                <span className="text-gray-700">
-                  {engine.creditCostPerMilInToken.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                <MdInput className="text-gray-700" />
-                <span>مصرف اعتبار هر میلیون توکن خروجی: </span>
-                <span className="text-gray-700">
-                  {engine.creditCostPerMilOutToken.toLocaleString()}
-                </span>
-              </div>
-            </div>
+            <div className="flex-1"></div>
+            <div className="flex-1"></div>
           </div>
-          <div className="flex-1"></div>
-          <div className="flex-1"></div>
-        </div>
-      )}
+        )}
 
-      <div className="flex-none py-3 lg:py-0 w-[95%] md:max-w-xl lg:max-w-3xl xl:max-w-5xl mx-auto border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white md:!bg-transparent">
-        <form className="my-auto" onSubmit={handleSubmit}>
-          <div className="flex flex-row p-1 border border-black/10 bg-whit rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)]">
-            <div className="flex-none content-end">
-              {isError ? (
-                <button
-                  onClick={handleReload}
-                  className="p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
-                >
-                  <FiRefreshCw className="h-5 w-5 text-white" />
-                </button>
-              ) : status !== "ready" ? (
-                <button
-                  onClick={() => {
-                    setCustomError(false);
-                    stop();
-                  }}
-                  className="p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
-                >
-                  <FaRegCircleStop className="h-5 w-5 text-white" />
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={status !== "ready" || input?.length === 0}
-                  className="p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
-                >
-                  <FiSend className="h-5 w-5 text-white" />
-                </button>
-              )}
+        <div className="flex-none py-3 lg:py-0 w-[95%] md:max-w-xl lg:max-w-3xl xl:max-w-5xl mx-auto border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white md:!bg-transparent">
+          <form className="my-auto" onSubmit={handleSubmit}>
+            <div className="flex flex-row p-1 border border-black/10 bg-whit rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)]">
+              <div className="flex-none content-end">
+                {isError ? (
+                  <button
+                    onClick={handleReload}
+                    className="p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
+                  >
+                    <FiRefreshCw className="h-5 w-5 text-white" />
+                  </button>
+                ) : status !== "ready" ? (
+                  <button
+                    onClick={() => {
+                      setCustomError(false);
+                      stop();
+                    }}
+                    className="p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
+                  >
+                    <FaRegCircleStop className="h-5 w-5 text-white" />
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={status !== "ready" || input?.length === 0}
+                    className="p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
+                  >
+                    <FiSend className="h-5 w-5 text-white" />
+                  </button>
+                )}
+              </div>
+              {/* <input
+                type="file"
+                onChange={(event) => {
+                  if (event.target.files) {
+                    setFiles(event.target.files);
+                  }
+                }}
+                multiple
+                ref={fileInputRef}
+              /> */}
+              <textarea
+                tabIndex={0}
+                value={input}
+                ref={textAreaRef}
+                style={{
+                  height: "24px",
+                  maxHeight: "200px",
+                  overflowY: "hidden",
+                }}
+                onChange={handleInputChange}
+                placeholder="پیامت رو تایپ کن ..."
+                {...(input.valueOf().length && { dir: "auto" })}
+                className="flex-auto resize-none border-0 bg-transparent focus:ring-0 focus-visible:ring-0 p-1 px-3"
+              />
             </div>
-            <textarea
-              tabIndex={0}
-              value={input}
-              ref={textAreaRef}
-              style={{
-                height: "24px",
-                maxHeight: "200px",
-                overflowY: "hidden",
-              }}
-              onChange={handleInputChange}
-              placeholder="پیامت رو تایپ کن ..."
-              {...(input.valueOf().length && { dir: "auto" })}
-              className="flex-auto resize-none border-0 bg-transparent focus:ring-0 focus-visible:ring-0 p-1 px-3"
-            />
+          </form>
+          <div className="px-3 py-1.5 text-center text-xs text-black/50 md:px-4 md:pt-3 md:pb-6">
+            <span>
+              جهت جلوگیری از بروز خطا، صحت اطلاعاتی خروجی را بررسی کنید.
+            </span>
           </div>
-        </form>
-        <div className="px-3 py-1.5 text-center text-xs text-black/50 md:px-4 md:pt-3 md:pb-6">
-          <span>هوش مصنوعی ممکن است اطلاعات غلط نمایش دهند.</span>
+          <div ref={endOfThePageRef}></div>
         </div>
-        <div ref={endOfThePageRef}></div>
       </div>
-    </div>
+    </MathJaxContext>
   );
 }

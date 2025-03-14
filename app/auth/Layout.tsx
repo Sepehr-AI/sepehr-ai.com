@@ -56,7 +56,7 @@ export default function AuthLayout({
   if (exists === "true") {
     return (
       <div
-        className="w-full h-full flex flex-col justify-center content-center max-w-md mx-auto p-6 bg-white rounded-md text-center"
+        className="w-full h-dvh flex flex-col justify-center content-center max-w-md mx-auto p-6 bg-white rounded-md text-center"
         dir="rtl"
       >
         <div className="shadow-2xl shadow-gray-800 p-8 rounded-md">

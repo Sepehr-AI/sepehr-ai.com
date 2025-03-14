@@ -147,7 +147,7 @@ const Message = ({
           )}
         </div>
       </div>
-      <div className="min-h-[10vh] flex-none flex flex-col justify-center xl:w-2xl lg:w-xl w-[85%] gap-0.5">
+      <div className="min-h-[10vh] flex-none flex flex-col justify-center xl:w-2xl lg:w-xl w-[85%] gap-1">
         {/* Action Block: Copy and Toggle */}
         {!isUser && (
           <div className="w-full my-2">
