@@ -2,12 +2,13 @@
 
 import React, { useEffect, useState, useRef, use } from "react";
 import { useRouter } from "next/navigation";
-import { aiMessageToSdkMessage, ChatSession, getChat } from "@/lib/vercel-ai";
+import { aiMessageToSdkMessage } from "@/lib/vercel-ai";
 // import { LazyChatNoSSR } from "../components/LazyChat";
 import Loading from "@/app/components/Loading";
 import { Model } from "@/lib/models";
 import Loadable from "../../Loadable";
 import Chat from "@/app/components/Chat";
+import { ChatSession, getChat } from "@/lib/chatDB";
 
 // export const revalidate = 60;
 export const dynamic = "force-static";

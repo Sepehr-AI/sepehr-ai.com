@@ -29,3 +29,18 @@ export const error = (context: string, _msg: any) => {
 
   console.log("Log error:", { context, msg });
 };
+
+export const errorOnThrow = async <Type>(
+  context: string,
+  handler: () => Promise<Type> | Type
+) => {
+  let ret: Type | undefined = undefined;
+  try {
+    ret = await handler();
+  } catch (e) {
+    error(context, { error: e });
+    throw new Error("Internal Server Error!");
+  }
+
+  return ret;
+};

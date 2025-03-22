@@ -2,7 +2,7 @@
 
 import AuthLayout from "./Layout";
 import {
-  checkEmailAction,
+  checkMobileAction,
   loginAction,
   registerAction,
   redirectToDashboardIfUserAuth,
@@ -14,50 +14,65 @@ import {
  */
 export default async function AuthPage(props: {
   searchParams: Promise<{
+    otp?: string;
     email?: string;
     error?: string;
+    userId?: string;
+    mobile?: string;
     exists?: string;
+    fullName?: string;
     selectedPlan?: string;
   }>;
 }) {
   await redirectToDashboardIfUserAuth();
   const searchParams = await props.searchParams;
   const {
-    email: _email,
     exists,
+    otp: _otp,
+    email: _email,
     error: _error,
+    mobile: _mobile,
+    userId: _userId,
+    fullName: _fullName,
     selectedPlan: _selectedPlan,
   } = searchParams;
-  const selectedPlan: number | undefined = !isNaN(Number(_selectedPlan))
-    ? Number(_selectedPlan)
-    : undefined;
+  const otp = _otp ? decodeURIComponent(_otp) : undefined;
   const email = _email ? decodeURIComponent(_email) : undefined;
   const error = _error ? decodeURIComponent(_error) : undefined;
+  const userId = _userId ? decodeURIComponent(_userId) : undefined;
+  const mobile = _mobile ? decodeURIComponent(_mobile) : undefined;
+  const fullName = _fullName ? decodeURIComponent(_fullName) : undefined;
+  const selectedPlan: number | undefined = !isNaN(
+    Number(decodeURIComponent(_selectedPlan || "abc"))
+  )
+    ? Number(decodeURIComponent(_selectedPlan || "abc"))
+    : undefined;
 
-  async function checkEmail(formData: FormData) {
+  async function checkMobile(_prev: any, formData: FormData) {
     "use server";
-
-    return checkEmailAction(formData, selectedPlan);
+    return checkMobileAction(formData, selectedPlan);
   }
-  async function login(formData: FormData) {
+  async function login(_prev: any, formData: FormData) {
     "use server";
-
     return loginAction(formData, selectedPlan);
   }
-  async function register(formData: FormData) {
+  async function register(_prev: any, formData: FormData) {
     "use server";
-
     return registerAction(formData, selectedPlan);
   }
 
   return (
     <AuthLayout
-      exists={exists}
-      email={email}
+      otp={otp}
       error={error}
+      email={email}
       login={login}
+      exists={exists}
+      mobile={mobile}
+      userId={userId}
+      fullName={fullName}
       register={register}
-      checkEmail={checkEmail}
+      checkMobile={checkMobile}
     />
   );
 }

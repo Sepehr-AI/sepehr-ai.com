@@ -12,9 +12,9 @@ export async function chargeAccountAction(formData: FormData) {
     webBalance: 0,
     id: Number(headersList.get("userId")),
     email: headersList.get("userEmail") as string,
-    phoneNumber: headersList.get("userPhoneNumber") as string,
+    mobile: headersList.get("usermobile") as string,
   };
-  if (isNaN(planId) || isNaN(user.id) || !user.email || !user.phoneNumber) {
+  if (isNaN(planId) || isNaN(user.id) || !user.email || !user.mobile) {
     return redirect("/dashboard/payment");
   }
 
@@ -43,7 +43,7 @@ export async function chargeAccount(user: MiddlewareUserData, planId: number) {
       "http://localhost:3000/api/verify-payment",
     description: `پلن ${planId}`,
     metadata: {
-      mobile: user.phoneNumber,
+      mobile: user.mobile,
       email: user.email,
     },
   };

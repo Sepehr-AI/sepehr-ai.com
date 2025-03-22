@@ -1,48 +1,100 @@
 "use client";
 
-import { useEffect } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
+import InputWithValue from "../components/InputWithValue";
+import LtrOnTypeInput from "../components/LtrOnTypeIntput";
+import Link from "next/link";
+import { checkMobileAction, loginAction, registerAction } from "./lib";
+import {
+  checkMobileFormSchema,
+  loginFormSchema,
+  registerFormSchema,
+} from "./validationSchema";
+import ValidatedInput from "../components/ValidatedInput";
+import { numberToEnglish } from "@/lib/digits";
 
 export default function AuthLayout({
-  email,
+  otp,
   error,
-  exists,
   login,
+  email,
+  userId,
+  mobile,
+  exists,
+  fullName,
   register,
-  checkEmail,
+  checkMobile,
 }: {
-  email?: string;
+  otp?: string;
   error?: string;
+  email?: string;
+  userId?: string;
+  mobile?: string;
   exists?: string;
+  fullName?: string;
   selectedPlan?: number;
-  login: (formData: FormData) => Promise<never>;
-  register: (formData: FormData) => Promise<never>;
-  checkEmail: (formData: FormData) => Promise<never>;
+  login: (_prev: any, formData: FormData) => Promise<never>;
+  register: (_prev: any, formData: FormData) => Promise<never>;
+  checkMobile: (_prev: any, formData: FormData) => Promise<never>;
 }) {
+  const [_1, action, _2] = useActionState<any, FormData>(
+    !mobile ? checkMobile : exists === "true" ? login : register,
+    {}
+  );
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    const formData = new FormData(event.currentTarget);
+    if (!(formData.get("email")?.toString() || "").length) {
+      formData.delete("email");
+    }
+
+    const validationResult = (
+      !mobile
+        ? checkMobileFormSchema
+        : exists === "true"
+        ? loginFormSchema
+        : registerFormSchema
+    ).safeParse(Object.fromEntries(formData));
+    if (!validationResult.success) {
+      event.preventDefault();
+      const firstMessage = validationResult.error.issues[0].message;
+      toast.error(firstMessage, {
+        position: "top-center",
+        toastId: firstMessage,
+      });
+    }
+  };
+
   useEffect(() => {
     if (error) toast.error(error, { position: "top-center", toastId: error });
   }, [error]);
 
-  // Step 1: Email entry form (if no email query parameter exists)
-  if (!email) {
+  // Step 1: Mobile entry form (if no mobile query parameter exists)
+  if (!mobile) {
     return (
       <div
         className="w-full h-dvh flex justify-center flex-col content-center max-w-md mx-auto p-6 bg-white text-center"
         dir="rtl"
       >
         <div className="shadow-2xl shadow-gray-800 p-8 rounded-md">
-          <h2 className="text-2xl font-bold mb-6">ایمیل خود را وارد کنید</h2>
-          <form action={checkEmail}>
-            <input
-              type="email"
-              name="email"
-              placeholder="example@abc.com"
+          <h2 className="text-2xl font-bold mb-6">
+            شماره تلفن خود را وارد کنید
+          </h2>
+          <form action={action} onSubmit={handleSubmit} noValidate>
+            <ValidatedInput
               required
+              dir="ltr"
+              type="text"
+              name="mobile"
+              align="left"
+              placeholder="0912xxxxxxx"
+              convertFarsiNumbersToEnglish={true}
               className="ltr w-full px-4 py-2 border border-gray-300 rounded mb-4"
             />
             <button
               type="submit"
-              className="w-full bg-gray-600 text-white py-2 rounded hover:bg-gray-700 transition-colors"
+              className="w-full bg-black text-white py-2 rounded transition-colors"
             >
               ادامه
             </button>
@@ -52,7 +104,7 @@ export default function AuthLayout({
     );
   }
 
-  // Step 2A: Login form (if the email exists)
+  // Step 2A: Login form (if the mobile exists)
   if (exists === "true") {
     return (
       <div
@@ -60,21 +112,25 @@ export default function AuthLayout({
         dir="rtl"
       >
         <div className="shadow-2xl shadow-gray-800 p-8 rounded-md">
-          <h2 className="text-2xl font-bold mb-4">خوش اومدی!</h2>
-          <p className="mb-4">لطفا رمز عبور خود را وارد کنید.</p>
-          <form action={login}>
-            <input type="hidden" name="email" value={email} />
-            <p className="mb-4">ایمیل: {email}</p>
-            <input
-              type="password"
-              name="password"
-              placeholder="********"
+          <h2 className="text-2xl font-bold mb-4">خوش آمدید!</h2>
+          <form action={action} onSubmit={handleSubmit} noValidate>
+            <input type="hidden" name="mobile" value={mobile} />
+            <input type="hidden" name="userId" value={userId} />
+            <p className="mb-4">شماره تلفن: {mobile}</p>
+            <ValidatedInput
               required
+              name="otp"
+              dir="ltr"
+              value={otp}
+              type="text"
+              align="center"
+              placeholder="کد تایید"
+              convertFarsiNumbersToEnglish={true}
               className="ltr w-full px-4 py-2 border border-gray-300 rounded mb-4"
             />
             <button
               type="submit"
-              className="w-full bg-gray-600 text-white py-2 rounded hover:bg-gray-700 transition-colors"
+              className="w-full bg-black text-white py-2 rounded transition-colors"
             >
               ورود
             </button>
@@ -89,57 +145,60 @@ export default function AuthLayout({
     );
   }
 
-  // Step 2B: Registration form (if the email does not exist)
+  // Step 2B: Registration form (if the mobile does not exist)
   return (
-    <div
-      className="flex flex-col justify-center content-center h-full w-full max-w-md mx-auto p-6 bg-white shadow-md rounded-md text-center"
-      dir="rtl"
-    >
-      <h2 className="text-2xl font-bold mb-4">ایجاد حساب کاربری</h2>
-      <p className="mb-4">لطفا رمز عبور خود را دو بار وارد کنید.</p>
-      <form action={register}>
-        <input type="hidden" name="email" value={email} />
-        <p className="mb-4">ایمیل: {email}</p>
-        <input
-          type="text"
-          name="userName"
-          placeholder="نام کامل"
-          required
-          className="w-full px-4 py-2 border border-gray-300 rounded mb-4"
-        />
-        <input
-          type="text"
-          name="phoneNumber"
-          placeholder="شماره تلفن"
-          required
-          className="ltr w-full px-4 py-2 border border-gray-300 rounded mb-4"
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="رمز عبور"
-          required
-          className="ltr placeholder:text-right w-full px-4 py-2 border border-gray-300 rounded mb-4"
-        />
-        <input
-          type="password"
-          name="confirmPassword"
-          placeholder="تکرار رمز عبور"
-          required
-          className="ltr placeholder:text-right w-full px-4 py-2 border border-gray-300 rounded mb-4"
-        />
-        <button
-          type="submit"
-          className="w-full bg-gray-600 text-white py-2 rounded hover:bg-gray-700 transition-colors"
-        >
-          ثبت نام
-        </button>
-      </form>
-      <p className="mt-4">
-        <a href="/auth" className="text-gray-600 hover:underline">
-          بازگشت
-        </a>
-      </p>
+    <div className="h-dvh w-full flex flex-col justify-center content-center">
+      <div
+        className="flex flex-col justify-center content-center max-w-md mx-auto p-6 bg-white shadow-md rounded-md text-center"
+        dir="rtl"
+      >
+        <h2 className="text-2xl font-bold mb-4">ایجاد حساب کاربری</h2>
+        <form action={action} onSubmit={handleSubmit} noValidate>
+          <input type="hidden" name="mobile" value={mobile} />
+          <input type="hidden" name="userId" value={userId} />
+          <p className="mb-4">شماره تلفن: {mobile}</p>
+          <ValidatedInput
+            required
+            dir="rtl"
+            type="text"
+            align="right"
+            name="fullName"
+            value={fullName}
+            placeholder="نام و نام خانوادگی (به فارسی)"
+            className="ltr w-full px-4 py-2 border border-gray-300 rounded mb-4"
+          />
+          <ValidatedInput
+            dir="auto"
+            type="email"
+            name="email"
+            align="auto"
+            value={email}
+            placeholder="ایمیل (اختیاری)"
+            className="ltr w-full px-4 py-2 border border-gray-300 rounded mb-4"
+          />
+          <ValidatedInput
+            dir="auto"
+            name="otp"
+            value={otp}
+            align="auto"
+            type="text"
+            placeholder="کد تایید"
+            convertFarsiNumbersToEnglish={true}
+            className="w-[50%] ltr px-4 py-2 border border-gray-300 rounded mb-4"
+          />
+          <button
+            type="submit"
+            className="w-full bg-black text-white py-2 rounded transition-colors"
+          >
+            ثبت نام
+          </button>
+        </form>
+        <p className="mt-4">
+          <Link href="/auth" className="text-gray-600 hover:underline">
+            بازگشت
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

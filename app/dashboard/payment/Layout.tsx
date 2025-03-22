@@ -52,7 +52,7 @@ export default function PaymentLayout({
                 key={plan.id}
                 className={`border-2 rounded-xl py-4 px-5 cursor-pointer transition-transform duration-200 transform hover:scale-105 ${
                   selectedPlanId === index
-                    ? "border-gray-500 bg-gay-100"
+                    ? "border-gray-500"
                     : "border-gray-300"
                 }`}
                 onClick={() => setSelectedPlanId(index)}

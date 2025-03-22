@@ -8,9 +8,9 @@ import { FaRegMoneyBill1 } from "react-icons/fa6";
 import { CiSettings } from "react-icons/ci";
 import { MdLogout } from "react-icons/md";
 import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
-import { getChatsForNavbar, newChatListener, Chat } from "@/lib/vercel-ai";
 import { handleLogout } from "@/lib/logout";
 import { useRouter } from "next/navigation";
+import { Chat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
 
 // A simple wrapper that places an onClick on a parent div for links.
 interface LinkWrapperProps extends HTMLAttributes<HTMLDivElement> {
@@ -65,11 +65,13 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
     <div className="flex flex-col md:h-dvh text-black-700 min-h-0 ">
       {/* Header */}
       <header className="hidden md:block p-2 md:border-b-2 md:border-gray-300">
-        <h1 className="text-2xl font-bold text-center hidden md:block">آیار</h1>
+        <h1 className="text-2xl font-bold text-center hidden md:block">
+          سپهر AI
+        </h1>
         <LinkWrapper
           href="/dashboard"
           onClick={onLinkClick}
-          className="text-center hidden md:flex mt-4 p-2 hover:bg-gray-700 hover:text-white hover:border-b-gray-700 rounded-md border-2 border-gray-600"
+          className="text-center hidden md:flex mt-4 p-2 hover:bg-black hover:text-white hover:border-b-gray-700 rounded-md border-2 border-gray-600"
         >
           <div className="flex items-center gap-2 h-full">
             <AiOutlinePlus />
@@ -96,7 +98,7 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
               >
                 <LinkWrapper
                   onClick={onLinkClick}
-                  className="text-ellipsis p-2 rounded-xl hover:bg-gray-600 hover:text-white text-sm"
+                  className="text-ellipsis p-2 rounded-xl hover:bg-black hover:text-white text-sm"
                   href={`/dashboard/chat/${chat.uuid}`}
                 >
                   {chat.namePrefix}
@@ -114,20 +116,20 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
       {/* Footer Actions */}
       <footer className="mt-2 px-3 py-0.5">
         <LinkWrapper href="/dashboard/payment" onClick={onLinkClick}>
-          <div className="flex gap-2 items-center p-2 hover:bg-gray-700 hover:text-white hover:rounded">
+          <div className="flex gap-2 items-center p-2 hover:bg-black hover:text-white hover:rounded">
             <FaRegMoneyBill1 />
             شارژ اکانت
           </div>
         </LinkWrapper>
         <LinkWrapper href="/dashboard/settings" onClick={onLinkClick}>
-          <div className="flex gap-2 items-center p-2 hover:bg-gray-700 hover:text-white hover:rounded">
+          <div className="flex gap-2 items-center p-2 hover:bg-black hover:text-white hover:rounded">
             <CiSettings />
             تنظیمات
           </div>
         </LinkWrapper>
         <button
           onClick={() => handleLogout(router)}
-          className="w-full flex gap-2 items-center p-2 hover:bg-gray-700 hover:text-white hover:rounded"
+          className="w-full flex gap-2 items-center p-2 hover:bg-black hover:text-white hover:rounded"
         >
           <MdLogout />
           خروج از حساب کاربری
@@ -179,7 +181,7 @@ export default function ResponsiveNavbar() {
         >
           {!isMobileNavOpen ? <RxHamburgerMenu /> : <RxCross1 />}
         </button>
-        <h1 className="text-xl font-bold">آیار</h1>
+        <h1 className="text-xl font-bold">سپهر AI</h1>
         <button className="text-2xl">
           <LinkWrapper href="/dashboard" onClick={handleLinkClick}>
             <AiOutlinePlus />

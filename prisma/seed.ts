@@ -10,9 +10,8 @@ async function main() {
       webBalance: 100,
       apiBalance: 100,
       name: "مهدی شریفی",
-      phoneNumber: "09150872550",
+      mobile: "09150872550",
       email: "mail@mahdi-sharifi.ir",
-      password: "$2b$10$ZBtyt81wR0oGhQn7TIXOoOU/XtbAG.9xGyoI6TpODYPvqg6bPTnV2",
     },
   });
 

@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { AyarJwtPayload } from "./app/auth/lib";
+import { SepehrAiJwtPayload } from "./app/auth/lib";
 import { genUnauthorizedRes, UnauthorizedReason } from "./lib/chatErrors";
 import { BurstyRateLimiter, RateLimiterMemory } from "rate-limiter-flexible";
 
@@ -68,7 +68,7 @@ export interface MiddlewareUserData {
   id: number;
   email: string;
   webBalance: number;
-  phoneNumber: string;
+  mobile: string;
 }
 
 async function authenticate(req: NextRequest): Promise<MiddlewareUserData> {
@@ -77,13 +77,13 @@ async function authenticate(req: NextRequest): Promise<MiddlewareUserData> {
 
   const userId = (
     (await jwtVerify(token, new TextEncoder().encode(JWT_SECRET)))
-      .payload as unknown as AyarJwtPayload
+      .payload as unknown as SepehrAiJwtPayload
   ).id;
   if (!userId) throw new Error("InvalidJwt");
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { webBalance: true, email: true, phoneNumber: true },
+    select: { webBalance: true, email: true, mobile: true },
   });
   // const queryText = 'SELECT "webBalance" FROM "User" WHERE "id" = $1 LIMIT 1';
   // const { rows } = await pgClient.query(queryText, [userId]);
@@ -95,13 +95,12 @@ async function authenticate(req: NextRequest): Promise<MiddlewareUserData> {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-
   const ip =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (req as any).ip ||
     req.headers.get("x-forwarded-for") ||
     req.headers.get("x-real-ip") ||
     req.headers.get("x-client-ip") ||
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (req as any).ip ||
     "unknown";
   try {
     await ipLimiter.consume(ip);
@@ -142,20 +141,20 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  const headers = new Headers(req.headers);
   if (user) {
-    const headers = new Headers(req.headers);
     headers.set("userEmail", user.email);
-    headers.set("userPhoneNumber", user.phoneNumber);
+    headers.set("usermobile", user.mobile);
     headers.set("userId", user.id.toString() as string);
     headers.set("userWebBalance", user.webBalance.toString() as string);
-    return NextResponse.next({
-      request: {
-        headers,
-      },
-    });
   }
+  if (pathname.startsWith("/auth")) headers.set("x-client-ip", ip);
 
-  return NextResponse.next();
+  return NextResponse.next({
+    request: {
+      headers,
+    },
+  });
 }
 
 export const config = {
