@@ -477,7 +477,7 @@ export default async function Home() {
 
         {/* Footer */}
         <footer className="bg-black text-white py-8 flex">
-          <div className="flex-1">
+          <div className="flex-1 flex justify-center">
             <Enamad />
           </div>
           <div className="flex-1 flex flex-col container mx-auto px-6 text-center">
