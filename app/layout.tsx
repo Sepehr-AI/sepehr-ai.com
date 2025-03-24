@@ -3,6 +3,7 @@ import "./globals.css";
 
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Head from "next/head";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 // import { Theme } from "@radix-ui/themes";
@@ -87,6 +88,9 @@ export default function RootLayout({
       lang="fa-IR"
       // dir="rtl"
     >
+      <Head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </Head>
       <body>
         <ToastContainer toastClassName="font-vazir-force text-center" />
         {children}
