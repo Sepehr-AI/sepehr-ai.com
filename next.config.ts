@@ -2,6 +2,7 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
+  allowedDevOrigins: ["https://sepehr-ai.com"],
   experimental: {
     nodeMiddleware: true,
   },
@@ -13,10 +14,13 @@ const config: NextConfig = {
     return process.env.NODE_ENV === "production"
       ? [
           {
-            // matching all API routes
-            source: "/api/:path*",
+            // matching API routes
+            source: "/:path*",
             headers: [
-              { key: "Access-Control-Allow-Origin", value: "*" },
+              {
+                key: "Access-Control-Allow-Origin",
+                value: "https://sepehr-ai.com",
+              },
               { key: "Access-Control-Allow-Credentials", value: "true" },
               {
                 key: "Access-Control-Allow-Methods",
@@ -48,8 +52,3 @@ const config: NextConfig = {
 };
 
 export default config;
-
-// export default MillionLint.next({
-//   enabled: true,
-//   rsc: true,
-// })(config);

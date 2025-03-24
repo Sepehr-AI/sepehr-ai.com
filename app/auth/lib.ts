@@ -3,7 +3,7 @@
 import { permanentRedirect, redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
 import prisma from "@/lib/prisma";
-import { jwtVerify, SignJWT } from "jose";
+import { SignJWT } from "jose";
 import { findOrCreateOtp } from "@prisma/client/sql";
 import { error, errorOnThrow } from "@/lib/log";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
@@ -15,21 +15,26 @@ import {
 import { randomInt } from "node:crypto";
 import { hash, verify } from "@node-rs/argon2";
 import { User } from "@prisma/client";
-import { BurstyRateLimiter, RateLimiterMemory } from "rate-limiter-flexible";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
+import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // In our sandbox we simulate OTP verification by expecting the OTP "12345"
-const EXPECTED_OTP = 123456;
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
 const ARGON2_SECRET_BUF = Buffer.from(
   process.env.ARGON2_SECRET as string,
   "utf-8"
 );
-const cookiesConfig = {
+const cookiesConfig: Partial<ResponseCookie> = {
   path: "/",
-  // secure: process.env.SECURE_COOKIES === "true",
-  // sameSite: "strict",
+  ...(process.env.NODE_ENV === "production"
+    ? {
+        secure: true,
+        sameSite: "strict",
+        domain: "sepehr-ai.com",
+        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // One month from now.
+      }
+    : {}),
 };
 
 export interface SepehrAiJwtPayload {

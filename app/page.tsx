@@ -25,6 +25,7 @@ import FAQAccordion from "./FAQAccordion";
 import { GiAtom } from "react-icons/gi";
 import { IoExtensionPuzzleOutline } from "react-icons/io5";
 import { MdOutlineSecurity } from "react-icons/md";
+import Enamad from "./Enamad";
 
 const faqItems = [
   {
@@ -477,24 +478,14 @@ export default async function Home() {
         {/* Footer */}
         <footer className="bg-black text-white py-8 flex">
           <div className="flex-1">
-            <a
-              referrerPolicy="origin"
-              target="_blank"
-              href="https://trustseal.enamad.ir/?id=593304&Code=iBVvanLu9LP3vHi1re7rpmxqplW0S7mq"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                alt=""
-                referrerPolicy="origin"
-                style={{ cursor: "pointer" }}
-                {...{ code: "iBVvanLu9LP3vHi1re7rpmxqplW0S7mq" }}
-                src="https://trustseal.enamad.ir/logo.aspx?id=593304&Code=iBVvanLu9LP3vHi1re7rpmxqplW0S7mq"
-              />
-            </a>
+            <Enamad />
           </div>
-          <div className="flex-1 container mx-auto px-6 text-center">
-            <p className="text-sm">&copy; 2025 سپهر AI. کلیه حقوق محفوظ است.</p>
-            <div className="flex justify-center space-x-6 mt-4">
+          <div className="flex-1 flex flex-col container mx-auto px-6 text-center">
+            <div className="flex-auto"></div>
+            <p className="flex-none text-sm">
+              &copy; 2025 سپهر AI. کلیه حقوق محفوظ است.
+            </p>
+            <div className="flex-none flex justify-center space-x-6 mt-4">
               <a
                 href="#"
                 className="text-white hover:text-gray-300 transition-colors"
