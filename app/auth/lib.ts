@@ -19,9 +19,8 @@ import { User } from "@prisma/client";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
-// In our sandbox we simulate OTP verification by expecting the OTP "12345"
 const JWT_SECRET = process.env.JWT_SECRET as string;
-// const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
+const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
 const ARGON2_SECRET_BUF = Buffer.from(
   process.env.ARGON2_SECRET as string,
   "utf-8"
@@ -175,39 +174,37 @@ async function sendOtp(mobile: string): Promise<{ error?: string }> {
     return { error: "برای ارسال مجدد کد تایید باید حداقل دو دقیقه صبر کنید." };
   }
 
-  if (process.env.NODE_ENV === "development") console.log({ otp });
-
-  //   کد تایید شما برای ورود به سامانه آیار:
-  // Code:#CODE#
-  // این کد را در اختیار کسی قرار ندهید.
-
-  // const otpSendRes = await errorOnThrow("OtpHashingInAuth", () =>
-  //   fetch("https://api.sms.ir/v1/send/verify", {
-  //     method: "POST",
-  //     headers: {
-  //       Accept: "text/plain",
-  //       "x-api-key": SMS_IR_API_KEY,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({
-  //       mobile,
-  //       templateId: 123456,
-  //       parameters: [
-  //         {
-  //           name: "Code",
-  //           value: otp,
-  //         },
-  //       ],
-  //     }),
-  //   })
-  // );
-  // if (otpSendRes.status !== 200) {
-  //   error("OtpSmsUnexpectedApiResponse", {
-  //     status: otpSendRes.status,
-  //     body: await otpSendRes.json(),
-  //   });
-  //   return { error: "خطای غیر منتظره. ارسال پیامک موفقیت آمیز نبود!" };
-  // }
+  if (process.env.NODE_ENV === "production") {
+    const otpSendRes = await errorOnThrow("OtpHashingInAuth", () =>
+      fetch("https://api.sms.ir/v1/send/verify", {
+        method: "POST",
+        headers: {
+          Accept: "text/plain",
+          "x-api-key": SMS_IR_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mobile,
+          templateId: 872172,
+          parameters: [
+            {
+              name: "Code",
+              value: otp,
+            },
+          ],
+        }),
+      })
+    );
+    if (otpSendRes.status !== 200) {
+      error("OtpSmsUnexpectedApiResponse", {
+        status: otpSendRes.status,
+        body: await otpSendRes.json(),
+      });
+      return { error: "خطای غیر منتظره. ارسال پیامک موفقیت آمیز نبود!" };
+    }
+  } else {
+    console.log({ otp });
+  }
 
   return {};
 }
