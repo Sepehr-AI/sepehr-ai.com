@@ -23,7 +23,7 @@
     "js-tiktoken": "^1.0.19",
     "katex": "^0.16.21",
     "marked": "^15.0.7",
-    "next": "15.3.0-canary.8",
+    "next": "15.3.0-canary.20",
     "node-cache": "^5.1.2",
     "postcss": "^8.5.3",
     "rate-limiter-flexible": "^6.2.0",

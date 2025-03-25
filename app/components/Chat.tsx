@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { MdInput } from "react-icons/md";
 import { Model } from "@/lib/models";
 import EngineToSvg from "./EngineToSvg";
-import { generateId, UIMessage } from "ai";
+import { generateId } from "ai";
 import { toast } from "react-toastify";
 import {
   balanceNotEnoughMsg,

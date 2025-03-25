@@ -13,7 +13,7 @@ export const genBalanceNotEnoughRes = (otherOptions?: ResponseInit) =>
     {
       ...otherOptions,
       status: balanceNotEnoughStatus,
-    },
+    }
   );
 
 export const unauthorizedStatus: number = 403;
@@ -28,7 +28,7 @@ export interface UnauthorizedBodyType {
 }
 export const genUnauthorizedRes = (
   error: UnauthorizedReason,
-  otherOptions?: ResponseInit,
+  otherOptions?: ResponseInit
 ) =>
   NextResponse.json({ error } as UnauthorizedBodyType, {
     ...otherOptions,
@@ -54,7 +54,7 @@ export interface UnexpectedErrorBodyType {
 }
 export const genUnexpectedErrorRes = (
   error: any,
-  otherOptions?: ResponseInit,
+  otherOptions?: ResponseInit
 ) =>
   NextResponse.json({ error } as UnexpectedErrorBodyType, {
     ...otherOptions,

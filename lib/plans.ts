@@ -1,5 +1,6 @@
 "use server";
 
+import prisma from "./prisma";
 import { WebPlans } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 

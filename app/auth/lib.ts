@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { permanentRedirect, redirect } from "next/navigation";
@@ -20,7 +21,7 @@ import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // In our sandbox we simulate OTP verification by expecting the OTP "12345"
 const JWT_SECRET = process.env.JWT_SECRET as string;
-const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
+// const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
 const ARGON2_SECRET_BUF = Buffer.from(
   process.env.ARGON2_SECRET as string,
   "utf-8"
@@ -271,7 +272,7 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
   const validationResult = await loginFormSchema.spa(
     Object.fromEntries(formData)
   );
-  let otp = formData.get("otp")?.toString();
+  const otp = formData.get("otp")?.toString();
   let userId: number | string | undefined = formData.get("userId")?.toString();
   const mobile = formData.get("mobile")?.toString();
 
@@ -325,10 +326,12 @@ export async function registerAction(
     Object.fromEntries(formData)
   );
   email = validationResult.data?.email;
-  let otp = formData.get("otp")?.toString();
+  const otp = formData.get("otp")?.toString();
   const mobile = formData.get("mobile")?.toString();
   const fullName = formData.get("fullName")?.toString();
-  let userId: string | number | undefined = formData.get("userId")?.toString();
+  const userId: string | number | undefined = formData
+    .get("userId")
+    ?.toString();
 
   const authErr = (error: string) => {
     return redirectWithParams("/auth", {

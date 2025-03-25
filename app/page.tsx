@@ -17,7 +17,7 @@ import {
   FaTwitter,
   FaInstagram,
   FaRegUser,
-  FaBars, // <-- Added hamburger icon
+  FaBars,
 } from "react-icons/fa";
 import { TfiMoney } from "react-icons/tfi";
 import { TbInfoHexagon } from "react-icons/tb";

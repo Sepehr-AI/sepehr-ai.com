@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import humanizeDuration from "humanize-duration";
 import { FiHome } from "react-icons/fi";
+import { Suspense } from "react";
+import Loading from "@/app/components/Loading";
 
-export default function Auth429() {
+function Auth429() {
   const searchParams = useSearchParams();
   let untilNextReq: number | undefined = Number(
     searchParams.get("untilNextReq") || "abc"
@@ -32,5 +34,13 @@ export default function Auth429() {
         </button>
       </Link>
     </div>
+  );
+}
+
+export default function Auth429Page() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Auth429 />
+    </Suspense>
   );
 }

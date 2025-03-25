@@ -1,18 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect } from "react";
 import { toast } from "react-toastify";
-import InputWithValue from "../components/InputWithValue";
-import LtrOnTypeInput from "../components/LtrOnTypeIntput";
 import Link from "next/link";
-import { checkMobileAction, loginAction, registerAction } from "./lib";
 import {
   checkMobileFormSchema,
   loginFormSchema,
   registerFormSchema,
 } from "./validationSchema";
 import ValidatedInput from "../components/ValidatedInput";
-import { numberToEnglish } from "@/lib/digits";
 
 export default function AuthLayout({
   otp,
@@ -38,6 +36,7 @@ export default function AuthLayout({
   register: (_prev: any, formData: FormData) => Promise<never>;
   checkMobile: (_prev: any, formData: FormData) => Promise<never>;
 }) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_1, action, _2] = useActionState<any, FormData>(
     !mobile ? checkMobile : exists === "true" ? login : register,
     {}

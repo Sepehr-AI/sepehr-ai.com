@@ -1,11 +1,8 @@
 import {
   useState,
-  useCallback,
   ChangeEvent,
   DetailedHTMLProps,
   InputHTMLAttributes,
-  useEffect,
-  Ref,
 } from "react";
 
 function convertToEnglishDigits(input: string): string {
@@ -69,6 +66,7 @@ export default function ValidatedInput({
       name={name}
       value={value}
       onChange={handleChange}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       style={{ textAlign, direction } as any}
       {...props}
     />

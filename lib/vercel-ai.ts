@@ -1,7 +1,12 @@
 "use client";
 
 import { Attachment, JSONValue, Message, ToolInvocation, UIMessage } from "ai";
-import { EventHandler, listenOnEvent, dispatchEvent } from "./eventTransfer";
+
+export type FileUIPart = {
+  type: "file";
+  mimeType: string;
+  data: string;
+};
 
 export type LanguageModelV1ProviderMetadata = Record<
   string,
@@ -124,14 +129,23 @@ export interface AiMessage {
    * User messages can have text parts.
    */
   parts: Array<
-    TextUIPart | ReasoningUIPart | ToolInvocationUIPart | SourceUIPart
+    | TextUIPart
+    | ReasoningUIPart
+    | ToolInvocationUIPart
+    | SourceUIPart
+    | FileUIPart
   >;
 }
 
 export function sdkMessageToAiMessage(
   msg: Message | UIMessage,
   partsFilter?: (
-    p: TextUIPart | ReasoningUIPart | ToolInvocationUIPart | SourceUIPart
+    p:
+      | TextUIPart
+      | ReasoningUIPart
+      | ToolInvocationUIPart
+      | SourceUIPart
+      | FileUIPart
   ) => boolean
 ): AiMessage {
   if (!msg.parts) {

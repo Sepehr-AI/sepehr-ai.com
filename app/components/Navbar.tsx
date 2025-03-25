@@ -121,7 +121,8 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
             شارژ اکانت
           </div>
         </LinkWrapper>
-        <LinkWrapper href="/dashboard/settings" onClick={onLinkClick}>
+        {/* href="/dashboard/settings" */}
+        <LinkWrapper href="/dashboard" onClick={onLinkClick}>
           <div className="flex gap-2 items-center p-2 hover:bg-black hover:text-white hover:rounded">
             <CiSettings />
             تنظیمات

@@ -8,7 +8,7 @@ import { headers } from "next/headers";
 export async function changePasswordAction(
   currentPassword: string,
   newPassword: string,
-  confirmPassword: string,
+  confirmPassword: string
 ) {
   const headersList = await headers();
   const userId = Number(headersList.get("userId") || "abc");
@@ -26,7 +26,7 @@ export async function changePasswordAction(
       data: {
         password: await bcrypt.hash(
           newPassword,
-          Number(process.env.BYCRYPT_ROUNDS || 0),
+          Number(process.env.BYCRYPT_ROUNDS || 0)
         ),
       },
     });

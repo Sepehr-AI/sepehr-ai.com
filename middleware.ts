@@ -3,8 +3,8 @@ import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { SepehrAiJwtPayload } from "./app/auth/lib";
+import MultiStepLimiter from "./lib/MultiStepLimiter";
 import { genUnauthorizedRes, UnauthorizedReason } from "./lib/chatErrors";
-import { BurstyRateLimiter, RateLimiterMemory } from "rate-limiter-flexible";
 
 const E403 = `<!DOCTYPE html>
 <html lang="fa">
@@ -50,17 +50,20 @@ const E403 = `<!DOCTYPE html>
 </html>
 `;
 
-const ipLimiter = new BurstyRateLimiter(
-  new RateLimiterMemory({
-    points: 20,
+const ipLimiter = new MultiStepLimiter([
+  {
+    points: 10,
     duration: 1,
-  }),
-  new RateLimiterMemory({
-    keyPrefix: "burst",
-    points: 600,
+  },
+  {
+    points: 100,
     duration: 60,
-  })
-);
+  },
+  {
+    points: 100,
+    duration: 60 * 60 * 24,
+  },
+]);
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -85,9 +88,6 @@ async function authenticate(req: NextRequest): Promise<MiddlewareUserData> {
     where: { id: userId },
     select: { webBalance: true, email: true, mobile: true },
   });
-  // const queryText = 'SELECT "webBalance" FROM "User" WHERE "id" = $1 LIMIT 1';
-  // const { rows } = await pgClient.query(queryText, [userId]);
-  // const user = rows[0] as { id: number; webBalance: number };
   if (!user) throw new Error("UserNotFound");
 
   return { id: userId, ...user };
