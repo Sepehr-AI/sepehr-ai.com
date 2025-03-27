@@ -16,8 +16,19 @@ export default class MultiStepLimiter {
   }
 
   async consume(key: string, points: number = 1) {
-    for (const limiter of this.#limiters) {
-      await limiter.consume(key, points);
+    const consumedLimiters: RateLimiterMemory[] = [];
+    try {
+      for (const limiter of this.#limiters) {
+        await limiter.consume(key, points);
+        consumedLimiters.push(limiter);
+      }
+    } catch (error) {
+      // Rollback consumption on all limiters that succeeded
+      await Promise.all(
+        consumedLimiters.map((limiter) => limiter.reward(key, points))
+      );
+
+      throw error;
     }
   }
 }

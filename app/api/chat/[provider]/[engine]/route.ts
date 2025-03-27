@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { error } from "@/lib/log";
@@ -7,7 +5,6 @@ import { NextResponse } from "next/server";
 import { streamText, CoreMessage } from "ai";
 import { getModelsMap } from "@/lib/models";
 import { getEncoding, TiktokenEncoding } from "js-tiktoken";
-import { LlmModel } from "@prisma/client";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   genBalanceNotEnoughRes,
@@ -22,7 +19,6 @@ import { calcWebCostCost } from "@/lib/cost";
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
-const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const AttachmentSchema = z.object({
   url: z.string(),
@@ -57,8 +53,9 @@ const RequestSchema = z.object({
 
 const defaultAiSystemPrompt: CoreMessage = {
   role: "system",
-  content: "Farsi is default but be flexible based on how the user communicates."
-    // "WHENEVER MATH ITEMS ARE ENCLOSED IN PARENTHESES SUCH AS (LAMBDA), YOU MUST USE BLOCK MATH FORMATTING WITH DOUBLE DOLLAR SIGNS INSTEAD. FARSI IS THE DEFAULT LANGUAGE UNLESS THE USER COMMUNICATES IN ANOTHER LANGUAGE. WHEN YOU'RE SPEAKING FARSI NEVER EVER USE HALF-SPACES WHICH CALLED IN THE LANGUAGE 'نیم فاصله'. DO NOT EVER MIX TWO OR MORE LANGUAGES IN ONE MARKDOWN BLOCK. IF THE TEXT CONTAINS DIFFERENT LANGUAGES OR SECTIONS SUCH AS MATH OR CODE, THEY MUST ALWAYS BE SENT IN SEPARATE MARKDOWN BLOCKS. STRICT FORMATTING RULES FOR MATHEMATICAL NOTATION APPLY. UNDER NO CIRCUMSTANCES SHOULD INLINE MATH BE GENERATED; ONLY BLOCK/STANDALONE MATH IS ALLOWED. BLOCK/STANDALONE MATHEMATICAL EXPRESSIONS MUST BE ENCLOSED IN DOUBLE DOLLAR SIGNS ON SEPARATE LINES. FOR EXAMPLE: '$$∫ F (X) DX$$'. Put math equation texts (not numbers) in this layout 'text{}'. THESE RULES ARE NON-NEGOTIABLE. THE AI MUST ENFORCE THIS SYNTAX WITHOUT EXCEPTION. DO NOT ASK THE USER TO USE THIS FORMAT OR ADVISE THEM ABOUT IT, AS THIS IS STRICTLY FOR YOU AND MUST BE FOLLOWED ONLY BY YOU.",
+  content:
+    "Farsi is default but be flexible based on how the user communicates.",
+  // "WHENEVER MATH ITEMS ARE ENCLOSED IN PARENTHESES SUCH AS (LAMBDA), YOU MUST USE BLOCK MATH FORMATTING WITH DOUBLE DOLLAR SIGNS INSTEAD. FARSI IS THE DEFAULT LANGUAGE UNLESS THE USER COMMUNICATES IN ANOTHER LANGUAGE. WHEN YOU'RE SPEAKING FARSI NEVER EVER USE HALF-SPACES WHICH CALLED IN THE LANGUAGE 'نیم فاصله'. DO NOT EVER MIX TWO OR MORE LANGUAGES IN ONE MARKDOWN BLOCK. IF THE TEXT CONTAINS DIFFERENT LANGUAGES OR SECTIONS SUCH AS MATH OR CODE, THEY MUST ALWAYS BE SENT IN SEPARATE MARKDOWN BLOCKS. STRICT FORMATTING RULES FOR MATHEMATICAL NOTATION APPLY. UNDER NO CIRCUMSTANCES SHOULD INLINE MATH BE GENERATED; ONLY BLOCK/STANDALONE MATH IS ALLOWED. BLOCK/STANDALONE MATHEMATICAL EXPRESSIONS MUST BE ENCLOSED IN DOUBLE DOLLAR SIGNS ON SEPARATE LINES. FOR EXAMPLE: '$$∫ F (X) DX$$'. Put math equation texts (not numbers) in this layout 'text{}'. THESE RULES ARE NON-NEGOTIABLE. THE AI MUST ENFORCE THIS SYNTAX WITHOUT EXCEPTION. DO NOT ASK THE USER TO USE THIS FORMAT OR ADVISE THEM ABOUT IT, AS THIS IS STRICTLY FOR YOU AND MUST BE FOLLOWED ONLY BY YOU.",
 };
 
 export async function POST(
@@ -146,7 +143,7 @@ export async function POST(
       // Instead we're continuing it and charging the user with.
       // abortSignal: req.signal,
       // experimental_transform: smoothStream({chunking: 'word'}),
-      model: openrouter("deepseek/deepseek-r1:free"),
+      model: openrouter("bytedance-research/ui-tars-72b:free"),
       onError: (e) => error("WebChatStreamingError", { error: e }),
       onFinish: async ({ usage }) => {
         const cost = calcWebCostCost(

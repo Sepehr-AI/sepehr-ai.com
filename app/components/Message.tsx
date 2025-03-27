@@ -125,7 +125,7 @@ const Message = ({
   return (
     <div
       className={
-        `my-1 group text-[0.920rem] mx-auto w-full text-gray-800 ${
+        `mt-1 pb-3 group text-[0.920rem] mx-auto w-full text-gray-800 ${
           !isTheLastMessage && "border-b border-black/10"
         } break-words flex flex-row ${isTheLastMessage && "mb-4"}` +
         (className ? ` ${className}` : "")

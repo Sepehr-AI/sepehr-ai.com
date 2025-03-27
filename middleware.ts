@@ -27,7 +27,6 @@ const E403 = `<!DOCTYPE html>
     .container {
       text-align: center;
       padding: 2rem;
-      background: #fff;
     }
     h1 {
       margin-bottom: 1rem;
@@ -103,7 +102,7 @@ export async function middleware(req: NextRequest) {
     req.headers.get("x-client-ip") ||
     "unknown";
   try {
-    await ipLimiter.consume(ip);
+    if (process.env.NODE_ENV === "production") await ipLimiter.consume(ip);
   } catch {
     if (!pathname.startsWith("/api")) {
       const res = new Response(E403);
