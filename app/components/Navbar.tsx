@@ -11,7 +11,7 @@ import { MdLogout } from "react-icons/md";
 import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
 import { handleLogout } from "@/lib/logout";
 import { useRouter } from "next/navigation";
-import { Chat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
+import { DbChat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
 
 // A simple wrapper that places an onClick on a parent div for links.
 interface LinkWrapperProps extends HTMLAttributes<HTMLDivElement> {
@@ -41,7 +41,7 @@ const LinkWrapper: React.FC<LinkWrapperProps> = ({
 );
 
 interface NavContentProps {
-  chats: Chat[];
+  chats: DbChat[];
   onLinkClick: () => void;
 }
 
@@ -57,7 +57,7 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
   useEffect(() => {
     setFilteredChats(
       chats.filter((chat) =>
-        chat.namePrefix.toLowerCase().includes(search.toLowerCase())
+        chat.value.namePrefix.toLowerCase().includes(search.toLowerCase())
       )
     );
   }, [search, chats]);
@@ -100,9 +100,9 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
                 <LinkWrapper
                   onClick={onLinkClick}
                   className="text-ellipsis p-2 rounded-xl hover:bg-black hover:text-white text-sm"
-                  href={`/dashboard/chat/${chat.uuid}`}
+                  href={`/dashboard/chat/${chat.key}`}
                 >
-                  {chat.namePrefix}
+                  {chat.value.namePrefix}
                 </LinkWrapper>
               </div>
             ))}
@@ -142,7 +142,7 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
 };
 
 export default function ResponsiveNavbar() {
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<DbChat[]>([]);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   // Load initial chats and listen for new chat events.
@@ -156,7 +156,7 @@ export default function ResponsiveNavbar() {
 
     const removeListener = newChatListener((e: any) => {
       if (!e.detail) return;
-      const { newChat } = e.detail as { newChat: Chat };
+      const { newChat } = e.detail as { newChat: DbChat };
       setChats((prev) => [newChat, ...prev]);
     });
     return () => {

@@ -8,13 +8,17 @@ import { AiMessage, sdkMessageToAiMessage, TextUIPart } from "./vercel-ai";
 import { decodeJwt } from "jose";
 
 export interface Chat {
-  uuid: string;
   engine: string;
   namePrefix: string;
 }
 
+export interface DbChat {
+  key: string;
+  value: Chat;
+}
+
 export interface NewChatEventMap {
-  newChat: Chat;
+  newChat: DbChat;
   provider: string;
 }
 
@@ -22,6 +26,8 @@ export interface ChatSession {
   engine: string;
   messages: AiMessage[];
 }
+
+const DATABASE_VERSION: number = 1;
 
 function getCookieValue(name: string): string | undefined {
   const regex = new RegExp(`(^| )${name}=([^;]+)`);
@@ -32,20 +38,23 @@ function getCookieValue(name: string): string | undefined {
 const dbPromise: Promise<IDBDatabase> = new Promise(async (resolve, reject) => {
   const payload = decodeJwt(getCookieValue("token") || "unknown");
   let userId: number | string = Number((payload as any).id || "abc");
-  userId = !isNaN(userId) ? userId : "unkown";
-  console.log({ token: getCookieValue("token"), payload, userId });
+  userId = !isNaN(Number(userId)) ? userId : "unknown";
+
+  if (process.env.NODE_ENV === "development") {
+    console.log({ token: getCookieValue("token"), payload, userId });
+  }
 
   const request: any =
     typeof indexedDB !== "undefined"
-      ? indexedDB.open(`${userId}-chats`, 1)
+      ? indexedDB.open(`${userId}-chats`, DATABASE_VERSION)
       : {};
   request.onupgradeneeded = () => {
     const db = request.result;
     if (!db.objectStoreNames.contains("sessions")) {
-      db.createObjectStore("sessions"); // key provided manually
+      db.createObjectStore("sessions");
     }
     if (!db.objectStoreNames.contains("chats")) {
-      db.createObjectStore("chats"); // single record keyed by "chats"
+      db.createObjectStore("chats");
     }
   };
   request.onsuccess = () => resolve(request.result);
@@ -74,6 +83,27 @@ const getData = async (storeName: string, key: string): Promise<any> => {
     const store = transaction.objectStore(storeName);
     const request = store.get(key);
     request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+};
+const getAllData = async (
+  storeName: string
+): Promise<{ key: IDBValidKey; value: any }[]> => {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(storeName, "readonly");
+    const store = transaction.objectStore(storeName);
+    const request = store.openCursor();
+    const result: { key: IDBValidKey; value: any }[] = [];
+    request.onsuccess = (event) => {
+      const cursor = (event.target as IDBRequest).result;
+      if (cursor) {
+        result.push({ key: cursor.key, value: cursor.value });
+        cursor.continue();
+      } else {
+        resolve(result);
+      }
+    };
     request.onerror = () => reject(request.error);
   });
 };
@@ -122,15 +152,16 @@ export const createChat = async (
     else firstMessageText = uuid;
   }
 
-  const chats: Chat[] = (await getData("chats", "chats")) || [];
   const subText: string = firstMessageText.substring(0, 30);
-  const newChat: Chat = {
-    uuid,
-    engine,
-    namePrefix: firstMessageText.length > 30 ? `${subText} ...` : subText,
+  const newChat: DbChat = {
+    key: uuid,
+    value: {
+      engine,
+      namePrefix: firstMessageText.length > 30 ? `${subText} ...` : subText,
+    },
   };
 
-  await putData("chats", "chats", [newChat, ...chats]);
+  await putData("chats", uuid, newChat.value);
   await putData("sessions", uuid, { messages, engine } as ChatSession);
 
   dispatchEvent<NewChatEventMap>("NewChat", { newChat, provider });
@@ -145,5 +176,4 @@ export const newChatListener = (handler: NewChatHandler) =>
 export const getChat = async (chatId: string): Promise<ChatSession | null> =>
   (await getData("sessions", chatId)) || null;
 
-export const getChatsForNavbar = async (): Promise<Chat[]> =>
-  (await getData("chats", "chats")) || [];
+export const getChatsForNavbar = () => getAllData("chats") as Promise<DbChat[]>;
