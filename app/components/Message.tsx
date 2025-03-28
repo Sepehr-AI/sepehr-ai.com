@@ -66,7 +66,10 @@ const Message = ({
               <a href={part.source.url}>{part.source.url}</a>
             </div>
           );
+        } else if (part.type === "file" && part.data.trim().length) {
+          console.log("File:", { part });
         } else if (part.type === "tool-invocation") {
+          console.warn("Unexpected tool invocation");
           // renderedNonReasoning.push(<div key={`unknown-${index}`}></div>);
         }
       });

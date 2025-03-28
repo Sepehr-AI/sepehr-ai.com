@@ -97,6 +97,20 @@ export type SourceUIPart = {
    */
   source: LanguageModelV1Source;
 };
+/**
+ * A step boundary part of a message.
+ */
+export type StepStartUIPart = {
+  type: "step-start";
+};
+
+export type AiMessageType =
+  | TextUIPart
+  | ReasoningUIPart
+  | ToolInvocationUIPart
+  | SourceUIPart
+  | FileUIPart
+  | StepStartUIPart;
 
 /**
  * AI SDK UI Messages. They are used in the client and to communicate between the frontend and the API routes.
@@ -128,25 +142,12 @@ export interface AiMessage {
    * Assistant messages can have text, reasoning and tool invocation parts.
    * User messages can have text parts.
    */
-  parts: Array<
-    | TextUIPart
-    | ReasoningUIPart
-    | ToolInvocationUIPart
-    | SourceUIPart
-    | FileUIPart
-  >;
+  parts: Array<AiMessageType>;
 }
 
 export function sdkMessageToAiMessage(
   msg: Message | UIMessage,
-  partsFilter?: (
-    p:
-      | TextUIPart
-      | ReasoningUIPart
-      | ToolInvocationUIPart
-      | SourceUIPart
-      | FileUIPart
-  ) => boolean
+  partsFilter?: (p: AiMessageType) => boolean
 ): AiMessage {
   if (!msg.parts) {
     console.error("Invalid message.", msg);

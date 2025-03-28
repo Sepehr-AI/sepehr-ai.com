@@ -122,12 +122,8 @@ export default async function Home() {
   return (
     <>
       <Head>
-        <title>سپهر AI - تجربه‌ی نوین هوش مصنوعی</title>
-        <meta
-          name="description"
-          content="پرداخت و استفاده از هر مدل زبانی موجود برای ریاضیات و برنامه نویسی. سپهر AI تجربه‌ای نوین در دنیای هوش مصنوعی ارائه می‌دهد."
-        />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="robots" content="nofollow" />
+        <meta name="google" content="notranslate" />
       </Head>
 
       {/* Main Container */}

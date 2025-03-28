@@ -5,7 +5,8 @@ import { NextResponse } from "next/server";
 import { streamText, CoreMessage } from "ai";
 import { getModelsMap } from "@/lib/models";
 import { getEncoding, TiktokenEncoding } from "js-tiktoken";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+// import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
   genBalanceNotEnoughRes,
   geninvalidJsonBodyRes,
@@ -16,8 +17,13 @@ import {
 } from "@/lib/chatErrors";
 import { calcWebCostCost } from "@/lib/cost";
 
-const openrouter = createOpenRouter({
+// const openrouter = createOpenRouter({
+//   apiKey: process.env.OPENROUTER_API_KEY,
+// });
+const openrouter = createOpenAICompatible({
+  name: "openrouter",
   apiKey: process.env.OPENROUTER_API_KEY,
+  baseURL: "https://openrouter.ai/api/v1",
 });
 
 const AttachmentSchema = z.object({
@@ -143,9 +149,20 @@ export async function POST(
       // Instead we're continuing it and charging the user with.
       // abortSignal: req.signal,
       // experimental_transform: smoothStream({chunking: 'word'}),
-      model: openrouter("bytedance-research/ui-tars-72b:free"),
+      model: openrouter("google/gemini-2.5-pro-exp-03-25:free"),
+
       onError: (e) => error("WebChatStreamingError", { error: e }),
       onFinish: async ({ usage }) => {
+        if (
+          !usage ||
+          typeof usage.promptTokens === "undefined" ||
+          typeof usage.completionTokens === "undefined" ||
+          usage.promptTokens === null ||
+          usage.completionTokens === null
+        ) {
+          return;
+        }
+
         const cost = calcWebCostCost(
           usage.promptTokens,
           usage.completionTokens,

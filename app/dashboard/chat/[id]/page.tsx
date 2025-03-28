@@ -1,13 +1,11 @@
 "use client";
 
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 
-const ChatComponent = dynamic(() => import("./ChatComponent"), { ssr: false });
+export const dynamic = "force-static";
 
-export default function ChatPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  return <ChatComponent params={params} />;
-}
+const ChatComponent = nextDynamic(() => import("./ChatComponent"), {
+  ssr: false,
+});
+
+export default ChatComponent;

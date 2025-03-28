@@ -89,7 +89,13 @@ export default function RootLayout({
       // dir="rtl"
     >
       <Head>
+        <title>سپهر AI - تجربه‌ی نوین هوش مصنوعی</title>
+        <meta
+          name="description"
+          content="تجربه نوین مدل های هوش مصنوعی با سپهر AI."
+        />
         <link rel="icon" href="/favicon.ico" sizes="any" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <body>
         <ToastContainer toastClassName="font-vazir-force text-center" />
