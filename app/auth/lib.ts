@@ -203,7 +203,7 @@ async function sendOtp(mobile: string): Promise<{ error?: string }> {
       return { error: "خطای غیر منتظره. ارسال پیامک موفقیت آمیز نبود!" };
     }
   } else {
-    console.log({ otp });
+    console.log({ mobile, otp });
   }
 
   return {};

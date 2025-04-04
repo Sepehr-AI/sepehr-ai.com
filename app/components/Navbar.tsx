@@ -65,7 +65,7 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
   return (
     <div className="flex flex-col md:h-dvh text-black-700 min-h-0 ">
       {/* Header */}
-      <header className="hidden md:block p-2 md:border-b-2 md:border-gray-300">
+      <header className="hidden md:block p-2">
         <h1 className="text-2xl font-bold text-center hidden md:block">
           سپهر AI
         </h1>
@@ -82,7 +82,10 @@ const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
       </header>
 
       {/* Chat List (scrollable) */}
-      <div className="mt-2 md:w-full flex-1 overflow-y-auto md:overflow-hidden md:hover:overflow-y-auto pl-1 pr-4">
+      <div
+        className="mt-2 md:w-full flex-1 overflow-y-auto px-2"
+        style={{ scrollbarWidth: "none" }}
+      >
         <input
           type="text"
           placeholder="جستجو در چت ها ..."

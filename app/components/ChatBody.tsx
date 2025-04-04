@@ -92,14 +92,6 @@ export default function ChatBody({
     }
   };
 
-  // Auto-resize textarea whenever the input changes
-  useEffect(() => {
-    if (textAreaRef.current) {
-      textAreaRef.current.style.height = "24px";
-      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
-    }
-  }, [input, textAreaRef]);
-
   // Auto-scroll to the bottom whenever new messages arrive
   useEffect(() => {
     // User sent a new messages

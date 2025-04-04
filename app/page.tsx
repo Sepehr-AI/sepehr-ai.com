@@ -127,7 +127,7 @@ export default async function Home() {
       </Head>
 
       {/* Main Container */}
-      <div className="min-h-screen w-full font-sans" dir="rtl">
+      <div className="min-h-screen w-full" dir="rtl">
         {/* Header (with collapsible menu) */}
         <header className="bg-black py-4">
           <div className="mx-auto px-6 flex items-center text-white relative">

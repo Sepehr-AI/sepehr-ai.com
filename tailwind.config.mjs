@@ -2,7 +2,8 @@ const config = {
   theme: {
     extend: {
       fontFamily: {
-        farsiDigits: ["var(--font-vazir-fd)", "sans-serif"],
+        vazir: ["var(--font-vazir)"],
+        // vazirFd: ["var(--font-vazir-fd)"],
       },
     },
   },

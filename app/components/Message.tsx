@@ -39,7 +39,9 @@ const Message = ({
           className={className}
         />
       ) : (
-        <p dir="auto">{content}</p>
+        <p className="p-3" dir="auto">
+          {content}
+        </p>
       );
 
     if (Array.isArray(message.parts)) {

@@ -36,7 +36,7 @@ const vazir = localFont({
       style: "normal",
     },
   ],
-
+  preload: true,
   variable: "--font-vazir",
 });
 
@@ -68,7 +68,6 @@ const vazir = localFont({
 //       style: "normal",
 //     },
 //   ],
-
 //   variable: "--font-vazir-fd",
 // });
 
@@ -84,7 +83,6 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      className={vazir.variable}
       lang="fa-IR"
       // dir="rtl"
     >
@@ -97,7 +95,7 @@ export default function RootLayout({
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <body>
+      <body className={vazir.variable}>
         <ToastContainer toastClassName="font-vazir-force text-center" />
         {children}
       </body>

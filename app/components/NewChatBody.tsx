@@ -30,6 +30,8 @@ export default function NewChatBody({
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuidv7());
+  const [input, setInput] = useState("");
+  const [isFocused, setIsFocused] = useState(false);
   const [resetOnFocus, setResetOnFocus] = useState(false);
   const [modelSearchTerm, setModelSearchTerm] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -53,17 +55,20 @@ export default function NewChatBody({
 
   return (
     <>
-      <div className="flex-auto flex justify-center flex-col mx-auto my-4 md:max-w-xl lg:max-w-3xl">
+      <div className="flex-auto flex justify-center flex-col mx-auto my-4 max-w-[90%] md:max-w-xl lg:max-w-3xl">
         <div className="flex-1"></div>
-        <div className="flex-none space-y-4">
+        <div className="flex-none space-y-4 flex flex-col">
           <div className="w-full flex justify-center items-center">
-            <div className="relative inline-block w-full">
+            <div className="relative inline-block">
               <input
                 type="text"
-                placeholder="جستجو مدل..."
-                value={modelSearchTerm || engine.name}
+                placeholder="... جستجوی مدل"
+                value={
+                  isFocused ? modelSearchTerm : modelSearchTerm || engine.name
+                }
                 onChange={(e) => setModelSearchTerm(e.target.value)}
                 onFocus={() => {
+                  setIsFocused(true);
                   if (resetOnFocus) {
                     setModelSearchTerm("");
                     setResetOnFocus(false);
@@ -71,14 +76,15 @@ export default function NewChatBody({
                   setDropdownVisible(true);
                 }}
                 onBlur={() => {
+                  setIsFocused(false);
                   setDropdownVisible(false);
                   setResetOnFocus(true);
                 }}
-                className="block w-full text-center rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-xl leading-6 text-gray-700 focus:outline-none"
+                className="mx-auto text-center rounded-md border border-gray-300 bg-white py-2 px-3 text-xl leading-6 text-gray-700 focus:outline-none"
                 style={{ direction: "ltr", textAlignLast: "center" }}
               />
               {dropdownVisible && (
-                <ul className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg">
+                <ul className="absolute z-10 mt-1 w-full max-h-70 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg">
                   {models
                     .filter((m) =>
                       modelSearchTerm
@@ -96,7 +102,7 @@ export default function NewChatBody({
                         }}
                         className="cursor-pointer p-2 text-center hover:bg-blue-100"
                       >
-                        {option.name} ({option.code})
+                        {option.name}
                       </li>
                     ))}
                 </ul>
@@ -107,18 +113,20 @@ export default function NewChatBody({
           <div className="hidden lg:flex justify-center items-center my-4 text-8xl">
             <EngineToSvg engine={engine.code} />
           </div>
-          <p className="text-justify text-gray-600">{engine.description}</p>
+          <p className="text-justify text-gray-600 overflow-y-auto max-h-[40dvh]">
+            {engine.description}
+          </p>
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-1">
               <MdInput className="text-gray-700" />
-              <span>مصرف اعتبار هر میلیون توکن ورودی: </span>
+              <span>هزینه خروجی (میلیون توکن):</span>
               <span className="text-gray-700">
                 {engine.creditCostPerMilInToken.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <MdInput className="text-gray-700" />
-              <span>مصرف اعتبار هر میلیون توکن خروجی: </span>
+              <span>هزینه ورودی (میلیون توکن):</span>
               <span className="text-gray-700">
                 {engine.creditCostPerMilOutToken.toLocaleString()}
               </span>
@@ -129,7 +137,14 @@ export default function NewChatBody({
         <div className="flex-1"></div>
       </div>
 
-      <NewMessageBox {...{ handleSubmit, textAreaRef }} />
+      <NewMessageBox
+        {...{
+          input,
+          handleSubmit,
+          textAreaRef,
+          handleInputChange: (e) => setInput(e.target.value),
+        }}
+      />
     </>
   );
 }

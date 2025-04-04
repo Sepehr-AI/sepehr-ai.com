@@ -152,12 +152,12 @@ export const createChat = async (
     else firstMessageText = uuid;
   }
 
-  const subText: string = firstMessageText.substring(0, 30);
+  const subText: string = firstMessageText.substring(0, 20);
   const newChat: DbChat = {
     key: uuid,
     value: {
       engine,
-      namePrefix: firstMessageText.length > 30 ? `${subText} ...` : subText,
+      namePrefix: firstMessageText.length > 20 ? `${subText} ...` : subText,
     },
   };
 
