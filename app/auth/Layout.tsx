@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { FormEvent, useActionState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import {
@@ -42,7 +42,7 @@ export default function AuthLayout({
     {}
   );
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     const formData = new FormData(event.currentTarget);
     if (!(formData.get("email")?.toString() || "").length) {
       formData.delete("email");

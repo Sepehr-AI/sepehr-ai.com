@@ -2,11 +2,10 @@ import { z } from "zod";
 import prisma from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextResponse } from "next/server";
-import { streamText, CoreMessage } from "ai";
+import { streamText, CoreMessage, coreMessageSchema } from "ai";
 import { getModelsMap } from "@/lib/models";
 import { getEncoding, TiktokenEncoding } from "js-tiktoken";
-// import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
   genBalanceNotEnoughRes,
   geninvalidJsonBodyRes,
@@ -17,51 +16,22 @@ import {
 } from "@/lib/chatErrors";
 import { calcWebCostCost } from "@/lib/cost";
 
-// const openrouter = createOpenRouter({
-//   apiKey: process.env.OPENROUTER_API_KEY,
-// });
-const openrouter = createOpenAICompatible({
-  name: "openrouter",
+const USE_ACTUAL_SELECTED_MODEL = Boolean(
+  process.env.USE_ACTUAL_SELECTED_MODEL || "false"
+);
+
+const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
 });
 
-const AttachmentSchema = z.object({
-  url: z.string(),
-  name: z.string().optional(),
-  contentType: z.string().optional(),
-});
-const MessageSchema = z.object({
-  content: z.string(),
-  role: z.enum(["system", "user", "assistant"]),
-  parts: z.array(
-    z.union([
-      z.object({ type: z.literal("text"), text: z.string() }),
-      z.object({ type: z.literal("code"), code: z.string() }),
-      z.object({
-        type: z.literal("image"),
-        url: z.string(),
-        alt: z.string().optional(),
-      }),
-      z.object({
-        type: z.literal("tool-invocation"),
-        toolInvocation: z.any(),
-      }),
-      z.object({ type: z.literal("source"), source: z.any() }),
-      z.object({ type: z.literal("reasoning"), reasoning: z.string() }),
-    ])
-  ),
-  experimental_attachments: z.array(AttachmentSchema).optional(),
-});
 const RequestSchema = z.object({
-  messages: z.array(MessageSchema),
+  messages: z.array(coreMessageSchema),
 });
 
 const defaultAiSystemPrompt: CoreMessage = {
   role: "system",
   content:
     "Farsi is default but be flexible based on how the user communicates.",
-  // "WHENEVER MATH ITEMS ARE ENCLOSED IN PARENTHESES SUCH AS (LAMBDA), YOU MUST USE BLOCK MATH FORMATTING WITH DOUBLE DOLLAR SIGNS INSTEAD. FARSI IS THE DEFAULT LANGUAGE UNLESS THE USER COMMUNICATES IN ANOTHER LANGUAGE. WHEN YOU'RE SPEAKING FARSI NEVER EVER USE HALF-SPACES WHICH CALLED IN THE LANGUAGE 'نیم فاصله'. DO NOT EVER MIX TWO OR MORE LANGUAGES IN ONE MARKDOWN BLOCK. IF THE TEXT CONTAINS DIFFERENT LANGUAGES OR SECTIONS SUCH AS MATH OR CODE, THEY MUST ALWAYS BE SENT IN SEPARATE MARKDOWN BLOCKS. STRICT FORMATTING RULES FOR MATHEMATICAL NOTATION APPLY. UNDER NO CIRCUMSTANCES SHOULD INLINE MATH BE GENERATED; ONLY BLOCK/STANDALONE MATH IS ALLOWED. BLOCK/STANDALONE MATHEMATICAL EXPRESSIONS MUST BE ENCLOSED IN DOUBLE DOLLAR SIGNS ON SEPARATE LINES. FOR EXAMPLE: '$$∫ F (X) DX$$'. Put math equation texts (not numbers) in this layout 'text{}'. THESE RULES ARE NON-NEGOTIABLE. THE AI MUST ENFORCE THIS SYNTAX WITHOUT EXCEPTION. DO NOT ASK THE USER TO USE THIS FORMAT OR ADVISE THEM ABOUT IT, AS THIS IS STRICTLY FOR YOU AND MUST BE FOLLOWED ONLY BY YOU.",
 };
 
 export async function POST(
@@ -115,8 +85,8 @@ export async function POST(
   const messages: CoreMessage[] = [defaultAiSystemPrompt, ..._messages];
 
   let model;
+  const code: string = `${provider}/${engine}`;
   try {
-    const code: string = `${provider}/${engine}`;
     model = (await getModelsMap()).get(code);
     if (!model) throw new Error("ModelNotFound");
   } catch {
@@ -149,8 +119,9 @@ export async function POST(
       // Instead we're continuing it and charging the user with.
       // abortSignal: req.signal,
       // experimental_transform: smoothStream({chunking: 'word'}),
-      model: openrouter("google/gemini-2.5-pro-exp-03-25:free"),
-
+      model: openrouter(
+        USE_ACTUAL_SELECTED_MODEL ? code : "deepseek/deepseek-r1:free"
+      ),
       onError: (e) => error("WebChatStreamingError", { error: e }),
       onFinish: async ({ usage }) => {
         if (

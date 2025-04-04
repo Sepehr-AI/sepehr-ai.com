@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import { updateChat } from "@/lib/chatDB";
 import { handleLogout } from "@/lib/logout";
 import NewMessageBox from "./NewMessageBox";
-import LoadingMessage from "./LoadingMessage";
 import { Message as SdkMessage, useChat } from "@ai-sdk/react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
@@ -197,12 +196,12 @@ export default function ChatBody({
           <Message
             message={message}
             key={message.id || index}
+            waitingForFirstResp={waitingForFirstResp}
             isTheLastMessage={
               !waitingForFirstResp && index === messages.length - 1
             }
           />
         ))}
-        {waitingForFirstResp && <LoadingMessage />}
       </div>
 
       <NewMessageBox

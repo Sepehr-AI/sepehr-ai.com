@@ -10,6 +10,9 @@ import {
   SetStateAction,
   ChangeEvent,
   useEffect,
+  DetailedHTMLProps,
+  ButtonHTMLAttributes,
+  ElementType,
 } from "react";
 
 interface NewMessageBoxProps {
@@ -24,6 +27,23 @@ interface NewMessageBoxProps {
   handleInputChange?: (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>
   ) => void;
+}
+
+function ActionButton({
+  svg: Svg,
+  ...props
+}: DetailedHTMLProps<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  HTMLButtonElement
+> & { svg: ElementType }) {
+  return (
+    <button
+      className="flex-none p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
+      {...props}
+    >
+      <Svg className="h-5 w-5 text-white" />
+    </button>
+  );
 }
 
 export default function NewMessageBox({
@@ -52,30 +72,21 @@ export default function NewMessageBox({
           <div className="flex-none flex flex-col">
             <div className="flex-auto"></div>
             {isError ? (
-              <button
-                onClick={handleReload}
-                className="flex-none p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
-              >
-                <FiRefreshCw className="h-5 w-5 text-white" />
-              </button>
+              <ActionButton onClick={handleReload} svg={FiRefreshCw} />
             ) : status !== "ready" ? (
-              <button
+              <ActionButton
                 onClick={() => {
                   if (setCustomError) setCustomError(false);
                   stop();
                 }}
-                className="flex-none p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
-              >
-                <FaRegCircleStop className="h-5 w-5 text-white" />
-              </button>
+                svg={FaRegCircleStop}
+              />
             ) : (
-              <button
+              <ActionButton
                 type="submit"
                 disabled={status !== "ready" || input?.length === 0}
-                className="flex-none p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-600 right-1 md:right-2 disabled:opacity-40 outline-none"
-              >
-                <FiSend className="h-5 w-5 text-white" />
-              </button>
+                svg={FiSend}
+              />
             )}
           </div>
           <textarea

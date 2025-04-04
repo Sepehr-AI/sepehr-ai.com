@@ -2,7 +2,13 @@
 
 "use client";
 
-import React, { useState, useEffect, HTMLAttributes } from "react";
+import React, {
+  useState,
+  useEffect,
+  HTMLAttributes,
+  FC,
+  ReactNode,
+} from "react";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
 import { FaRegMoneyBill1 } from "react-icons/fa6";
@@ -18,9 +24,9 @@ interface LinkWrapperProps extends HTMLAttributes<HTMLDivElement> {
   href: string;
   prefetch?: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  children: ReactNode;
 }
-const LinkWrapper: React.FC<LinkWrapperProps> = ({
+const LinkWrapper: FC<LinkWrapperProps> = ({
   href,
   onClick,
   children,
@@ -47,7 +53,7 @@ interface NavContentProps {
 
 // NavContent uses a flex layout to separate the header, search bar,
 // independently scrollable chat list, and footer actions.
-const NavContent: React.FC<NavContentProps> = ({ chats, onLinkClick }) => {
+const NavContent: FC<NavContentProps> = ({ chats, onLinkClick }) => {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [filteredChats, setFilteredChats] = useState(chats);

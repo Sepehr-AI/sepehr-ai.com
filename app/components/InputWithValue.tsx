@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { DetailedHTMLProps, InputHTMLAttributes, useState } from "react";
 
 function InputWithValue({
   value: _value,
   ...props
-}: { value?: string } & React.DetailedHTMLProps<
-  React.InputHTMLAttributes<HTMLInputElement>,
+}: { value?: string } & DetailedHTMLProps<
+  InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 >) {
   const [value, setValue] = useState(_value || "");

@@ -1,28 +1,30 @@
 "use client";
 
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useMemo, useState, MouseEvent } from "react";
 import { SiOpenai } from "react-icons/si";
 import { HiUser } from "react-icons/hi";
-import { TbCursorText } from "react-icons/tb";
 import { UIMessage } from "ai";
 import { MemoizedMarkdown } from "./MemoizedMarkdown";
 import { FaChevronDown, FaChevronUp, FaRegCopy } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import copy from "copy-to-clipboard";
+import LoadingMessage from "./LoadingMessage";
 
 const Message = ({
   message,
   className,
   isTheLastMessage,
+  waitingForFirstResp,
 }: {
   message: UIMessage;
   className?: string;
   isTheLastMessage: boolean;
+  waitingForFirstResp?: boolean;
 }) => {
   const { role, content: text } = message;
   const isUser = role === "user";
 
-  const { renderedReasoning, renderedNonReasoning } = React.useMemo(() => {
+  const { renderedReasoning, renderedNonReasoning } = useMemo(() => {
     const renderedReasoning: JSX.Element[] = [];
     const renderedNonReasoning: JSX.Element[] = [];
     const Markdown = ({
@@ -85,14 +87,14 @@ const Message = ({
     !renderedNonReasoning.length
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (renderedNonReasoning.length && showReasoning) {
       setShowReasoning(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [renderedNonReasoning]);
 
-  const handleCopy = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     let textToCopy = "";
     if (renderedReasoning.length && showReasoning) {
@@ -126,6 +128,14 @@ const Message = ({
       console.error("Failed to copy text: ", err);
     }
   };
+
+  if (
+    isTheLastMessage &&
+    (waitingForFirstResp ||
+      (!renderedReasoning.length && !renderedNonReasoning.length))
+  ) {
+    return <LoadingMessage />;
+  }
 
   return (
     <div
@@ -164,7 +174,7 @@ const Message = ({
                 <FaRegCopy />
               </button>
 
-              {renderedReasoning.length ? (
+              {renderedReasoning.length > 0 && (
                 <div>
                   <button
                     className="flex flex-row items-center px-1.5 outline-none text-white bg-gray-700 rounded"
@@ -180,12 +190,12 @@ const Message = ({
                   </button>
                   <div className="flex-auto"></div>
                 </div>
-              ) : undefined}
+              )}
             </div>
           </div>
         )}
 
-        {showReasoning && renderedReasoning.length && (
+        {showReasoning && renderedReasoning.length > 0 && (
           <div className="relative z-0 whitespace-pre-wrap pl-4 pr-2 md:pl-7 md:pr-5 h-auto overflow-y-hidden will-change-auto opacity-100 rounded-2xl py-4 shadow-xl ltr text-pretty text-justify">
             <div className="flex flex-col gap-2">
               {renderedReasoning}
@@ -194,15 +204,13 @@ const Message = ({
           </div>
         )}
 
-        {renderedNonReasoning.length ? (
-          renderedNonReasoning
-        ) : !isUser && text === null ? (
-          <TbCursorText className="h-6 w-6 animate-pulse" />
-        ) : (
-          <p className="p-1" style={isUser ? { color: "white" } : {}}>
-            {text}
-          </p>
-        )}
+        {renderedNonReasoning.length > 0
+          ? renderedNonReasoning
+          : text?.length > 0 && (
+              <p className="p-3" dir="auto">
+                {text}
+              </p>
+            )}
       </div>
       <div className="flex-1"></div>
     </div>

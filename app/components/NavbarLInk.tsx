@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, MouseEventHandler } from "react";
 
 export interface NavbarLinkProps extends PropsWithChildren {
   href: string;
   border?: boolean;
   prefetch?: boolean;
-  onLinkClick?: React.MouseEventHandler<HTMLDivElement>;
+  onLinkClick?: MouseEventHandler<HTMLDivElement>;
 }
 
 export default function NavbarLink({

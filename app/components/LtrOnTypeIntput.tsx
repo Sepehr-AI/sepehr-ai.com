@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { DetailedHTMLProps, InputHTMLAttributes, useState } from "react";
 
 export default function LtrOnTypeInput({
   value: _value,
   ...props
-}: { value?: string } & React.DetailedHTMLProps<
-  React.InputHTMLAttributes<HTMLInputElement>,
+}: { value?: string } & DetailedHTMLProps<
+  InputHTMLAttributes<HTMLInputElement>,
   HTMLInputElement
 >) {
   const [value, setValue] = useState(_value || "");

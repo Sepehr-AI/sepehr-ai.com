@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { marked } from "marked";
-import { memo, ReactElement, ReactNode, useMemo } from "react";
+import { memo, ReactElement, MouseEvent, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -178,9 +178,7 @@ const MemoizedMarkdownBlock = memo(
               const { children, className, node, ...rest } = props;
               const match = /language-(\w+)/.exec(className || "");
               const codeText = String(children).replace(/\n$/, "");
-              const handleCopy = async (
-                e: React.MouseEvent<HTMLButtonElement>
-              ) => {
+              const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
                 e.preventDefault();
                 try {
                   copy(codeText);
