@@ -21,7 +21,11 @@ import {
   useEffect,
   MouseEvent,
   SyntheticEvent,
+  // ChangeEvent,
+  // useMemo,
 } from "react";
+import { useAttachments } from "../hooks/useAttachments";
+import { readFileAsDataURL } from "../hooks/useAttachments";
 
 const clientErrors = {
   internetIssue: {
@@ -29,6 +33,9 @@ const clientErrors = {
     id: 1,
   },
 };
+
+// const MAX_FILE_COUNT = 5;
+// const MAX_FILE_SIZE = 3 * 1024 * 1024;
 
 export default function ChatBody({
   uuid,
@@ -44,10 +51,19 @@ export default function ChatBody({
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuid || uuidv7());
+  const [waitingForFirstResp, setWaitingForFirstResp] = useState(false);
   const [messagesCount, setMessagesCount] = useState(
     initialMessages?.length || 0
   );
-  const [waitingForFirstResp, setWaitingForFirstResp] = useState(false);
+  const {
+    fileInputRef,
+    attachments,
+    handleFileChange,
+    selectedFileNames,
+    error: fileError,
+    clearAttachments,
+  } = useAttachments();
+  const [customError, setCustomError] = useState<string | null>(null);
 
   const {
     messages,
@@ -73,15 +89,19 @@ export default function ChatBody({
         finishReason !== "stop" ||
         (!newMessage.content.trim().length && !newMessage.parts?.length)
       ) {
-        return setCustomError(true);
+        return setCustomError(clientErrors.internetIssue.text);
       }
-
       setMessagesCount((c) => c + 1);
     },
   });
 
+  useEffect(() => {
+    if (fileError) {
+      setCustomError(fileError);
+    }
+  }, [fileError, setCustomError]);
+
   const endOfThePageRef = useRef<HTMLDivElement>(null);
-  const [customError, setCustomError] = useState<boolean>(false);
   const scrollToMsgInput = () => {
     if (endOfThePageRef.current) {
       endOfThePageRef.current.scrollIntoView({
@@ -121,18 +141,18 @@ export default function ChatBody({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-    e.preventDefault();
+  // const handleSubmit = (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  //   e.preventDefault();
 
-    setCustomError(false);
-    aiHandleSubmit(e, {
-      // experimental_attachments: files,
-    });
-  };
+  //   setCustomError(null);
+  //   aiHandleSubmit(e, {
+  //     // experimental_attachments: files,
+  //   });
+  // };
 
   const handleReload = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    setCustomError(false);
+    setCustomError(null);
     if (textAreaRef.current) textAreaRef.current.value = "";
     try {
       reload();
@@ -141,7 +161,6 @@ export default function ChatBody({
     }
   };
 
-  const isError = Boolean(error || customError || status === "error");
   useEffect(() => {
     if (error || customError || status === "error") {
       let errormsg: string = "";
@@ -149,33 +168,31 @@ export default function ChatBody({
         const parsed = JSON.parse(error?.message || "null");
         if (parsed && parsed.error && parsed.error.trim().length) {
           errormsg = parsed.error.trim();
+          switch (errormsg) {
+            case balanceNotEnoughMsg:
+              return router.push("/dashboard/payment?balanceInsufficient=true");
+
+            case UnauthorizedReason.UNAUTH:
+            case UnauthorizedReason.JWT_NOT_VALID:
+            case UnauthorizedReason.USER_NOT_FOUND:
+            case UnauthorizedReason.COOKIE_NOT_SET:
+              handleLogout(router);
+              return;
+
+            case unexpectedErrorMsg:
+              errormsg = "خطای داخلی! در صورت تداوم با پشتیبانی ارتباط بگیرید.";
+              break;
+
+            default:
+              errormsg =
+                "خطا در برقراری ارتباط با سرور. لطفا ارتباط اینترنت خود را بررسی کنید.";
+              break;
+          }
         } else {
-          errormsg = clientErrors.internetIssue.text;
+          errormsg = customError || clientErrors.internetIssue.text;
         }
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (_) {
-        errormsg = clientErrors.internetIssue.text;
-      }
-
-      switch (errormsg) {
-        case balanceNotEnoughMsg:
-          return router.push("/dashboard/payment?balanceInsufficient=true");
-
-        case UnauthorizedReason.UNAUTH:
-        case UnauthorizedReason.JWT_NOT_VALID:
-        case UnauthorizedReason.USER_NOT_FOUND:
-        case UnauthorizedReason.COOKIE_NOT_SET:
-          handleLogout(router);
-          return;
-
-        case unexpectedErrorMsg:
-          errormsg = "خطای داخلی! در صورت تداوم با پشتیبانی ارتباط بگیرید.";
-          break;
-
-        default:
-          errormsg =
-            "خطا در برقراری ارتباط با سرور. لطفا ارتباط اینترنت خود را بررسی کنید.";
-          break;
+      } catch {
+        errormsg = customError || clientErrors.internetIssue.text;
       }
 
       toast.error(errormsg, {
@@ -185,6 +202,29 @@ export default function ChatBody({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error, customError, status]);
+
+  const handleSubmit = async (
+    e: SyntheticEvent<HTMLFormElement, SubmitEvent>
+  ) => {
+    e.preventDefault();
+    setCustomError(null);
+
+    const attachmentsArray = attachments
+      ? await Promise.all(
+          Array.from(attachments).map(async (file) => ({
+            name: file.name,
+            contentType: file.type,
+            url: await readFileAsDataURL(file),
+          }))
+        )
+      : undefined;
+
+    aiHandleSubmit(e, {
+      experimental_attachments: attachmentsArray,
+    });
+
+    clearAttachments();
+  };
 
   return (
     <>
@@ -208,13 +248,20 @@ export default function ChatBody({
         {...{
           input,
           status,
-          isError,
+          isError: Boolean(
+            error ||
+              status === "error" ||
+              customError === clientErrors.internetIssue.text
+          ),
           textAreaRef,
-          handleReload,
+          selectedFileNames,
           handleSubmit,
           setCustomError,
           endOfThePageRef,
           handleInputChange,
+          handleFileChange,
+          fileInputRef,
+          handleReload,
         }}
       />
     </>

@@ -181,7 +181,7 @@ const MemoizedMarkdownBlock = memo(
               const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
                 e.preventDefault();
                 try {
-                  copy(codeText);
+                  copy(codeText.trim());
                   toast.success("کد در کلیپ‌بورد کپی شد.", {
                     position: "top-center",
                     toastId: `clipboard-code-${id}`,

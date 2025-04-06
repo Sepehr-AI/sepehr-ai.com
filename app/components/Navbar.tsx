@@ -8,6 +8,7 @@ import React, {
   HTMLAttributes,
   FC,
   ReactNode,
+  useRef,
 } from "react";
 import Link from "next/link";
 import { AiOutlinePlus } from "react-icons/ai";
@@ -56,10 +57,20 @@ interface NavContentProps {
 const NavContent: FC<NavContentProps> = ({ chats, onLinkClick }) => {
   const router = useRouter();
   const [search, setSearch] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [filteredChats, setFilteredChats] = useState(chats);
+  const [showBottomShadow, setShowBottomShadow] = useState(false);
+
+  // Check overflow on mount and when filtered chats change
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (container) {
+      const hasOverflow = container.scrollHeight > container.clientHeight;
+      setShowBottomShadow(hasOverflow);
+    }
+  }, [filteredChats]); // Also triggers when chats update
 
   // Filter chats based on search (case-insensitive).
-  //   const filteredChats =
   useEffect(() => {
     setFilteredChats(
       chats.filter((chat) =>
@@ -89,9 +100,31 @@ const NavContent: FC<NavContentProps> = ({ chats, onLinkClick }) => {
 
       {/* Chat List (scrollable) */}
       <div
-        className="mt-2 md:w-full flex-1 overflow-y-auto px-2"
+        ref={scrollContainerRef}
+        className={`mt-2 md:w-full flex-1 overflow-y-auto px-2 relative ${
+          showBottomShadow ? "shadow-bottom" : ""
+        }`}
         style={{ scrollbarWidth: "none" }}
+        onScroll={(e) => {
+          const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+          setShowBottomShadow(scrollTop + clientHeight < scrollHeight - 1);
+        }}
       >
+        <style jsx>{`
+          .shadow-bottom::after {
+            content: "";
+            position: sticky;
+            bottom: 0;
+            display: block;
+            height: 2rem;
+            background: linear-gradient(
+              to top,
+              rgba(255, 255, 255, 1) 5%,
+              rgba(255, 255, 255, 0) 50%
+            );
+            pointer-events: none;
+          }
+        `}</style>
         <input
           type="text"
           placeholder="جستجو در چت ها ..."

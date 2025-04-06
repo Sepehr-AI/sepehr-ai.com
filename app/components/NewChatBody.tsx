@@ -1,6 +1,6 @@
 "use client";
 
-import { generateId } from "ai";
+import { Attachment, generateId } from "ai";
 import { v7 as uuidv7 } from "uuid";
 import { Model } from "@/lib/models";
 import EngineToSvg from "./EngineToSvg";
@@ -11,10 +11,12 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import {
   Dispatch,
   useState,
-  RefObject,
   SetStateAction,
   SyntheticEvent,
+  useEffect,
 } from "react";
+import { toast } from "react-toastify";
+import { readFileAsDataURL, useAttachments } from "../hooks/useAttachments";
 
 export default function NewChatBody({
   router,
@@ -27,7 +29,7 @@ export default function NewChatBody({
   models: Model[];
   router: AppRouterInstance;
   setEngine: Dispatch<SetStateAction<Model>>;
-  textAreaRef: RefObject<HTMLTextAreaElement | null>;
+  textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuidv7());
   const [input, setInput] = useState("");
@@ -35,12 +37,38 @@ export default function NewChatBody({
   const [resetOnFocus, setResetOnFocus] = useState(false);
   const [modelSearchTerm, setModelSearchTerm] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const {
+    fileInputRef,
+    attachments: thisAttachments,
+    handleFileChange,
+    selectedFileNames,
+    error: fileError,
+    clearAttachments,
+  } = useAttachments();
 
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
+  useEffect(() => {
+    if (fileError) {
+      toast.error(fileError, { position: "top-center" });
+    }
+  }, [fileError]);
+
+  const handleSubmit = async (
+    e: SyntheticEvent<HTMLFormElement, SubmitEvent>
+  ) => {
     e.preventDefault();
-
     const val = textAreaRef.current?.value;
-    if (!val || !val.trim().length) return;
+    if (!val?.trim()) return;
+
+    let attachments: Attachment[] = [];
+    if (thisAttachments) {
+      attachments = await Promise.all(
+        Array.from(thisAttachments).map(async (file) => ({
+          name: file.name,
+          contentType: file.type,
+          url: await readFileAsDataURL(file),
+        }))
+      );
+    }
 
     createChat(chatUuid, engine.code, [
       {
@@ -48,11 +76,13 @@ export default function NewChatBody({
         role: "user",
         id: generateId(),
         parts: [{ type: "text", text: val }],
+        experimental_attachments: attachments,
       },
     ]);
-    router.push(`/dashboard/chat/${chatUuid}`);
-  };
 
+    router.push(`/dashboard/chat/${chatUuid}`);
+    clearAttachments();
+  };
   return (
     <>
       <div className="flex-auto flex justify-center flex-col mx-auto my-4 max-w-[90%] md:max-w-xl lg:max-w-3xl">
@@ -143,6 +173,9 @@ export default function NewChatBody({
           handleSubmit,
           textAreaRef,
           handleInputChange: (e) => setInput(e.target.value),
+          handleFileChange,
+          fileInputRef,
+          selectedFileNames,
         }}
       />
     </>
