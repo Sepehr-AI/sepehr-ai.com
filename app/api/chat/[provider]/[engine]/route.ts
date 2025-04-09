@@ -1,5 +1,5 @@
 import { z } from "zod";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextResponse } from "next/server";
 import { streamText, CoreMessage, coreMessageSchema } from "ai";

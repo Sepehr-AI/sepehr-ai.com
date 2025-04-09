@@ -1,7 +1,6 @@
 "use server";
 
-import prisma from "./prisma";
-import { WebPlans } from "@prisma/client";
+import { prisma, WebPlans } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 
 export type webPlansForUsers = (Pick<

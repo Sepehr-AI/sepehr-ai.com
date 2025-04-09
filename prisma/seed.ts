@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
-import { PrismaClient } from "@prisma/client";
-import { TiktokenEncoding } from "js-tiktoken";
-import { roundAiModelCost } from "../lib/cost";
-import { companyToWebsiteMap } from "../lib/aiCompaniesForBackend";
 import fs from "fs/promises";
+import path from "node:path";
 import { existsSync } from "fs";
 import { generateText } from "ai";
-import path from "node:path";
+import { TiktokenEncoding } from "js-tiktoken";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+// Paths MUST be relative.
+import { PrismaClient } from "./client";
+import { roundAiModelCost } from "../lib/cost";
+import { companyToWebsiteMap } from "../lib/aiCompaniesForBackend";
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,

@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "post-pull": "pnpm i && npx prisma generate && npx prisma generate --sql && next build",
+    "post-pull": "rm -Rf .next && pnpm i && npx prisma generate && npx prisma generate --sql && next build",
     "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start"
   },
   "dependencies": {

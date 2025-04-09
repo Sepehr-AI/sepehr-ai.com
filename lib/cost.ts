@@ -1,4 +1,4 @@
-import { LlmModel } from "@prisma/client";
+import { LlmModel } from "@/lib/prisma";
 
 export function roundWebPlanTokensAmount(tokens: number): number {
   return Math.round(tokens / 10_000) * 10_000;
