@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../prisma/client";
+import prismaSql from "../prisma/client/sql";
 
 declare global {
   // Prevent multiple instances of Prisma Client in development
@@ -13,5 +14,7 @@ const prisma = (global as any).prisma || new PrismaClient();
 if (process.env.NODE_ENV !== "production") (global as any).prisma = prisma;
 
 await prisma.$executeRaw`SET TIME ZONE 'UTC';`;
+
+export { prismaSql };
 
 export default prisma;

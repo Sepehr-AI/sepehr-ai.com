@@ -1,65 +1,71 @@
-import { error } from "@/lib/log";
 import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { error } from "@/lib/log";
 
 export async function GET(request: NextRequest) {
-  let authority;
+  let digitalreceipt;
+  let invoiceID;
+
   try {
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get("Status");
-    authority = searchParams.get("Authority");
-
-    // The transaction was canceled or failed.
-    if (status !== "OK" || !authority) throw new Error("FailedTransaction");
+    // Assume the gateway returns “digitalreceipt” and “invoiceID” as query parameters.
+    digitalreceipt = searchParams.get("digitalreceipt");
+    invoiceID = searchParams.get("invoiceID");
+    if (!digitalreceipt || !invoiceID) {
+      throw new Error("Missing parameters");
+    }
   } catch {
     return NextResponse.redirect("/payment?error=transaction_failed");
   }
 
-  let price: number;
+  // Look up the transaction using the invoiceID (which is the Transaction row’s id)
+  let transaction;
   try {
-    const webPlan = await prisma.webPlans.findUnique({
-      // TODO: FIX THIS
-      where: { id: 0 },
-      select: { price: true },
+    transaction = await prisma.transaction.findUnique({
+      where: { id: Number(invoiceID) },
     });
-    if (!webPlan || !webPlan.price) throw new Error("PlanNotFound");
-
-    price = webPlan.price;
+    if (!transaction) throw new Error("Transaction not found");
   } catch {
-    return NextResponse.redirect("/payment?error=transaction_failed");
+    return NextResponse.redirect("/payment?error=transaction_not_found");
   }
 
-  // Prepare the payload for verification.
-  const verifyPayload = {
-    merchant_id: process.env.ZARINPAL_MERCHANT_ID,
-    amount: price,
-    authority,
+  // Build payload for the Advice (verification) API.
+  const advicePayload = {
+    digitalreceipt: digitalreceipt,
+    Tid: process.env.SEPHER_TERMINAL_ID,
   };
 
   try {
-    // Call ZarinPal's verify API.
-    const verifyResponse = await fetch(
-      "https://payment.zarinpal.com/pg/v4/payment/verify.json",
+    const adviceResponse = await fetch(
+      "https://sepehr.shaparak.ir/Rest/V1/PeymentApi/Advice",
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(verifyPayload),
-      },
+        body: JSON.stringify(advicePayload),
+      }
     );
 
-    const verifyData = await verifyResponse.json();
+    const adviceData = await adviceResponse.json();
 
-    // Check for a successful verification: code 100 means success, code 101 means already verified.
-    if (verifyData.data.code === 100 || verifyData.data.code === 101) {
-      // Payment is successful.
-      // You can update the order status in your DB here and show the transaction ref_id.
+    // Successful verification should return Status "Ok"
+    if (adviceData.Status === "Ok") {
+      // Update the transaction with details from the Advice response.
+      await prisma.transaction.update({
+        where: { id: transaction.id },
+        data: {
+          refId: Number(adviceData.ReturnId) || null, // Adjust if ReturnId is not numeric
+          code: 0, // Set a success code (adjust if needed)
+          // You can update additional fields like exchangeRate or fee if provided.
+        },
+      });
       return NextResponse.redirect(
-        `/payment/success?ref_id=${verifyData.data.ref_id}`,
+        `/payment/success?ref_id=${encodeURIComponent(adviceData.ReturnId)}`
       );
     } else {
-      console.error("Verification failed", verifyData);
+      console.error("Advice verification failed", adviceData);
       return NextResponse.redirect("/payment?error=verification_failed");
     }
   } catch (e) {

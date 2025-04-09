@@ -3,7 +3,6 @@
 import { Attachment, generateId } from "ai";
 import { v7 as uuidv7 } from "uuid";
 import { Model } from "@/lib/models";
-import EngineToSvg from "./EngineToSvg";
 import { MdInput } from "react-icons/md";
 import { createChat } from "@/lib/chatDB";
 import NewMessageBox from "./NewMessageBox";
@@ -17,6 +16,17 @@ import {
 } from "react";
 import { toast } from "react-toastify";
 import { readFileAsDataURL, useAttachments } from "../hooks/useAttachments";
+import { companyWebsiteToRiMap } from "@/lib/aiCompaniesForFrontend";
+import { RiRobot2Fill } from "react-icons/ri";
+import { IconBaseProps } from "react-icons";
+
+function CompanyLogo({ model, ...props }: IconBaseProps & { model: Model }) {
+  return (
+    companyWebsiteToRiMap[
+      model.companyWebsite as keyof typeof companyWebsiteToRiMap
+    ] || RiRobot2Fill
+  )(props);
+}
 
 export default function NewChatBody({
   router,
@@ -89,7 +99,7 @@ export default function NewChatBody({
         <div className="flex-1"></div>
         <div className="flex-none space-y-4 flex flex-col">
           <div className="w-full flex justify-center items-center">
-            <div className="relative inline-block">
+            <div className="relative inline-block w-[50dvw]">
               <input
                 type="text"
                 placeholder="... جستجوی مدل"
@@ -110,7 +120,7 @@ export default function NewChatBody({
                   setDropdownVisible(false);
                   setResetOnFocus(true);
                 }}
-                className="mx-auto text-center rounded-md border border-gray-300 bg-white py-2 px-3 text-xl leading-6 text-gray-700 focus:outline-none"
+                className="w-[inherit] mx-auto text-center rounded-md border border-gray-300 bg-white py-2 px-3 text-xl leading-6 text-gray-700 focus:outline-none"
                 style={{ direction: "ltr", textAlignLast: "center" }}
               />
               {dropdownVisible && (
@@ -130,9 +140,12 @@ export default function NewChatBody({
                           setEngine(option);
                           setModelSearchTerm("");
                         }}
-                        className="cursor-pointer p-2 text-center hover:bg-blue-100"
+                        className="flex flex-row space-x-2 px-4 py-2 ltr items-center arial-sans-serif cursor-pointer p-2 text-center hover:bg-blue-100"
                       >
-                        {option.name}
+                        <span>
+                          <CompanyLogo model={option} />
+                        </span>
+                        <span>{option.name}</span>
                       </li>
                     ))}
                 </ul>
@@ -141,7 +154,7 @@ export default function NewChatBody({
           </div>
 
           <div className="hidden lg:flex justify-center items-center my-4 text-8xl">
-            <EngineToSvg engine={engine.code} />
+            <CompanyLogo model={engine} />
           </div>
           <p className="text-justify text-gray-600 overflow-y-auto max-h-[40dvh]">
             {engine.description}

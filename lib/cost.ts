@@ -8,6 +8,10 @@ export function roundWebCost(cost: number): number {
   return +(Math.round((cost + "e+3") as unknown as number) + "e-3");
 }
 
+export function roundAiModelCost(cost: number): number {
+  return +(Math.round((cost + "e+2") as unknown as number) + "e-2");
+}
+
 export function calcWebCostCost(
   inTokens: number,
   outTokens: number,

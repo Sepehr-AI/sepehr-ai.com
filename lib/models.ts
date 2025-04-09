@@ -1,18 +1,19 @@
 import prisma from "./prisma";
 import NodeCache from "node-cache";
 import { revalidateTag, unstable_cache } from "next/cache";
-import { EstimatedEncodingBase, LlmModel } from "@prisma/client";
+import { TiktokenEncoding, LlmModel } from "@prisma/client";
 
-export { EstimatedEncodingBase };
+export { TiktokenEncoding };
 
 export interface Model {
   id: number;
   name: string;
   code: string;
   description: string;
+  companyWebsite: string;
   creditCostPerMilInToken: number;
   creditCostPerMilOutToken: number;
-  estimatedEncodingBase: EstimatedEncodingBase;
+  estimatedEncodingBase: TiktokenEncoding;
 }
 
 const getModels = async (): Promise<LlmModel[]> => {
@@ -24,6 +25,7 @@ const getModels = async (): Promise<LlmModel[]> => {
         code: true,
         name: true,
         description: true,
+        companyWebsite: true,
         useToComparePlans: true,
         costPerMilInToken: true,
         costPerMilOutToken: true,
@@ -56,13 +58,22 @@ export const getModelsForWeb: () => Promise<Model[]> = unstable_cache(
     if (cached) return cached as Model[];
 
     const modelsForWeb = (await getModels()).map(
-      ({ code, name, description, costPerMilInToken, costPerMilOutToken }) => {
+      ({
+        code,
+        name,
+        description,
+        costPerMilInToken,
+        costPerMilOutToken,
+        companyWebsite,
+      }) => {
         const creditCostPerMilInToken = costPerMilInToken * 2 * 1000;
         const creditCostPerMilOutToken = costPerMilOutToken * 2 * 1000;
+
         return {
           code,
           name,
           description,
+          companyWebsite,
           creditCostPerMilInToken,
           creditCostPerMilOutToken,
         } as Model;

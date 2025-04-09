@@ -3,9 +3,8 @@
 
 import { permanentRedirect, redirect } from "next/navigation";
 import { cookies, headers } from "next/headers";
-import prisma from "@/lib/prisma";
+import prisma, { prismaSql } from "@/lib/prisma";
 import { SignJWT } from "jose";
-import { findOrCreateOtp } from "@prisma/client/sql";
 import { error, errorOnThrow } from "@/lib/log";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import {
@@ -18,6 +17,8 @@ import { hash, verify } from "@node-rs/argon2";
 import { User } from "@prisma/client";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+
+const findOrCreateOtp = prismaSql.findOrCreateOtp;
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;

@@ -2,7 +2,7 @@
 import type { NextConfig } from "next";
 
 const config: NextConfig = {
-  allowedDevOrigins: ["https://sepehr-ai.com"],
+  allowedDevOrigins: ["sepehr-ai.com"],
   experimental: {
     nodeMiddleware: true,
   },

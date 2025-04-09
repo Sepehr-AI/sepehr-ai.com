@@ -1,6 +1,7 @@
 generator client {
-  provider        = "prisma-client-js"
   previewFeatures = ["typedSql"]
+  provider        = "prisma-client-js"
+  output          = "./client"
 }
 
 datasource db {
@@ -38,7 +39,7 @@ model Referral {
 model Transaction {
   id           Int      @id @default(autoincrement())
   amount       Int
-  exchangeRate Int
+  exchangeRate Int?
   fee          Int?
   refId        Int?
   code         Int?
@@ -71,25 +72,28 @@ model WebLlmRequest {
   createdAt        DateTime @default(now())
 }
 
-enum EstimatedEncodingBase {
-  O200K
-  CL100K
-  P50K
-  R50K
+enum TiktokenEncoding {
+  gpt2
+  r50k_base
+  p50k_base
+  p50k_edit
+  cl100k_base
+  o200k_base
 }
 
 model LlmModel {
-  id                    Int                   @id @default(autoincrement())
-  code                  String                @unique()
-  name                  String                @unique()
+  id                    Int              @id @default(autoincrement())
+  code                  String           @unique()
+  name                  String
   description           String
+  companyWebsite        String
   costPerMilInToken     Float
   costPerMilOutToken    Float
-  useToComparePlans     Boolean               @default(false)
+  useToComparePlans     Boolean          @default(false)
   llmRequests           ApiLlmRequest[]
   WebLLMRequest         WebLlmRequest[]
-  estimatedEncodingBase EstimatedEncodingBase
-  createdAt             DateTime              @default(now())
+  estimatedEncodingBase TiktokenEncoding
+  createdAt             DateTime         @default(now())
 }
 
 model WebPlans {

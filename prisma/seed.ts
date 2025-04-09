@@ -1,94 +1,135 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
+import { TiktokenEncoding } from "js-tiktoken";
+import { roundAiModelCost } from "../lib/cost";
+import { companyToWebsiteMap } from "../lib/aiCompaniesForBackend";
+import fs from "fs/promises";
+import { existsSync } from "fs";
+import { generateText } from "ai";
+import path from "node:path";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+
+const openrouter = createOpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY,
+});
 
 const prisma = new PrismaClient();
 
-async function main() {
-  const mahdi = await prisma.user.upsert({
-    where: { email: "mail@mahdi-sharifi.ir" },
-    update: {},
-    create: {
-      webBalance: 100,
-      apiBalance: 100,
-      name: "مهدی شریفی",
-      mobile: "09150872550",
-      email: "mail@mahdi-sharifi.ir",
-    },
-  });
+export const openrouterModelListSchema = z.object({
+  data: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      description: z.string(),
+      context_length: z.number(),
+      architecture: z.object({
+        input_modalities: z.array(z.string()),
+        output_modalities: z.array(z.string()),
+      }),
+      pricing: z.object({
+        prompt: z.coerce.number(),
+        completion: z.coerce.number(),
+      }),
+    })
+  ),
+});
 
-  const llmModels = await Promise.all([
-    prisma.llmModel.upsert({
-      where: { code: "openai/o1" },
+const farsiDescriptionSchema = z.string().refine(
+  (value) => {
+    const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
+    return wordCount >= 100 && wordCount <= 200;
+  },
+  { message: "Farsi description must be between 100 and 200 words." }
+);
+
+function estimateTiktokenEncoding(contextLength: number): TiktokenEncoding {
+  if (contextLength < 10000) {
+    return "gpt2";
+  }
+  if (contextLength < 100000) {
+    return "p50k_base";
+  }
+  if (contextLength < 200000) {
+    return "cl100k_base";
+  }
+  return "o200k_base";
+}
+
+const USE_TO_COMPARE_PLANS: string[] = [
+  "openai/gpt-4o-mini",
+  "openai/o3-mini",
+  "openai/o3-mini",
+];
+
+const DESC_JSON_FILE = path.resolve(__dirname, "./modelDescriptionSeed.json");
+
+async function loadDescriptions(): Promise<Record<string, string>> {
+  if (!existsSync(DESC_JSON_FILE)) {
+    await fs.writeFile(DESC_JSON_FILE, JSON.stringify({}));
+    return {};
+  }
+  const fileContent = await fs.readFile(DESC_JSON_FILE, "utf8");
+  try {
+    return JSON.parse(fileContent);
+  } catch (e) {
+    console.error("Failed to parse descriptions file.", e);
+    return {};
+  }
+}
+
+async function saveDescriptions(
+  descriptions: Record<string, string>
+): Promise<void> {
+  await fs.writeFile(DESC_JSON_FILE, JSON.stringify(descriptions, null, 2));
+}
+
+async function fetchFarsiDescription(
+  modelName: string,
+  modelEnglishDescription: string
+): Promise<string> {
+  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 150 words long and must include all details mentioned within the parentheses of the model name. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Additionally, ensure that the Farsi text does not contain any Farsi half-spaces (نیم فاصله). Use the provided English description as a guide for generating the Farsi description: "${modelEnglishDescription}"`;
+
+  const maxRetries = 10;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const resp = await generateText({
+        prompt,
+        model: openrouter("deepseek/deepseek-r1:free"),
+      });
+      const parsRes = await farsiDescriptionSchema.safeParseAsync(resp.text);
+      if (!parsRes.success) {
+        console.log("Invalid output by AI. Retrying...", { resp });
+        await new Promise((res) => setTimeout(res, 500));
+        continue;
+      }
+
+      return resp.text;
+    } catch (error) {
+      console.error(`Attempt ${attempt} for model ${modelName} failed:`, error);
+      if (attempt === maxRetries) {
+        throw error;
+      }
+
+      await new Promise((res) => setTimeout(res, 500));
+    }
+  }
+
+  console.warn({ prompt });
+  throw new Error("Failed to fetch Farsi description after retries.");
+}
+
+async function main() {
+  await Promise.all([
+    prisma.user.upsert({
+      where: { email: "mail@mahdi-sharifi.ir" },
       update: {},
       create: {
-        id: 5,
-        name: "OpenAI O1",
-        code: "openai/o1",
-        costPerMilInToken: 15,
-        costPerMilOutToken: 60,
-        useToComparePlans: false,
-        estimatedEncodingBase: "CL100K",
-        description:
-          "مدل o1 شرکت OpenAI، نخستین نسخه از سری مدل‌های استدلال‌گر این شرکت است که با استفاده از الگوریتم‌های بهینه‌سازی جدید، داده‌های آموزشی اختصاصی و روش‌های یادگیری تقویتی، توانایی «تفکر» قبل از ارائه پاسخ را دارد. به عبارت دیگر، این مدل با تولید زنجیره‌های طولانی از تفکرات در پس‌زمینه، مانند یک انسان گام به گام به حل مسائل پیچیده ریاضی، علمی و برنامه‌نویسی می‌پردازد. عملکرد این مدل در آزمون‌های تخصصی، مانند آزمون‌های ریاضی و مسابقات برنامه‌نویسی، به سطح دانشجویان دکترا نزدیک شده و دقت آن نسبت به مدل‌های پیشین مانند GPT-4o به طور چشمگیری افزایش یافته است، اگرچه به هزینه‌ی محاسباتی و زمان پاسخ‌دهی بیشتری نیاز دارد.",
-      },
-    }),
-    prisma.llmModel.upsert({
-      where: { code: "openai/o3-mini" },
-      update: {},
-      create: {
-        id: 4,
-        name: "OpenAI O3 mini",
-        code: "openai/o3-mini",
-        costPerMilInToken: 1.1,
-        costPerMilOutToken: 4.4,
-        useToComparePlans: true,
-        estimatedEncodingBase: "CL100K",
-        description:
-          "مدل o3 mini شرکت OpenAI، نسخه‌ای مقرون‌به‌صرفه از مدل‌های استدلالی پیشرفته است که با بهره‌گیری از تکنیک‌های بهینه‌سازی و کاهش مصرف محاسباتی، امکان حل مسائل پیچیده در زمینه‌های ریاضی، علوم و برنامه‌نویسی را با هزینه‌ای کمتر فراهم می‌کند. این مدل با صرف زمان کمتر در تولید زنجیره‌های تفکری نسبت به نسخه‌های سنگین‌تر، پاسخ‌های دقیق و کارآمد ارائه می‌دهد و در عین حال از قابلیت‌های استدلالی قوی برخوردار است، که آن را برای کاربردهای عملی و پروژه‌های صنعتی جذاب می‌سازد.",
-      },
-    }),
-    prisma.llmModel.upsert({
-      where: { code: "openai/gpt-4.5-preview" },
-      update: {},
-      create: {
-        id: 3,
-        name: "OpenAI GPT-4.5 preview",
-        code: "openai/gpt-4.5-preview",
-        costPerMilInToken: 75,
-        costPerMilOutToken: 150,
-        useToComparePlans: true,
-        estimatedEncodingBase: "O200K",
-        description:
-          "مدل GPT-4.5 preview شرکت OpenAI، به عنوان بزرگ‌ترین مدل هوش مصنوعی فعلی این شرکت، نمونه‌ای از جهش‌های فنی و مقیاس‌پذیری پیشرفته در تولید زبان طبیعی محسوب می‌شود. این مدل که هنوز در قالب پیش‌نمایش عرضه شده است، نشانگر بهبود قابل توجهی نسبت به نسخه‌های قبلی مانند GPT-4 است و با استفاده از معماری‌های نوین و داده‌های گسترده، قادر به ارائه پاسخ‌های دقیق‌تر و حل مسائل پیچیده در حوزه‌های مختلف از جمله استدلال و تولید متن می‌باشد. اگرچه در حال حاضر فقط به عنوان پیش‌نمایش در دسترس است، اما انتظار می‌رود پس از ارزیابی‌های بیشتر و بهینه‌سازی‌های لازم، نقشی کلیدی در توسعه کاربردهای نوین هوش مصنوعی داشته باشد.",
-      },
-    }),
-    prisma.llmModel.upsert({
-      where: { code: "openai/gpt-4o" },
-      update: {},
-      create: {
-        id: 2,
-        name: "OpenAI GPT-4o",
-        code: "openai/gpt-4o",
-        costPerMilInToken: 2.5,
-        costPerMilOutToken: 10,
-        useToComparePlans: false,
-        estimatedEncodingBase: "O200K",
-        description:
-          "مدل GPT-4o شرکت OpenAI، جدیدترین و پیشرفته‌ترین مدل این شرکت است که با سرعت پردازش بالا، توانایی استدلال قوی و قابلیت تعامل چندحالته (متن، تصویر، صوت) طراحی شده است. این مدل در مقایسه با نسخه‌های قبلی، پاسخ‌های طبیعی‌تر، سریع‌تر و دقیق‌تر ارائه می‌دهد و می‌تواند مسائل پیچیده را با درک عمیق‌تر و استدلال منطقی‌تر حل کند. همچنین، مصرف بهینه‌تر منابع محاسباتی باعث شده تا عملکرد آن مقرون‌به‌صرفه‌تر باشد، در حالی که همچنان یکی از هوشمندترین مدل‌های زبانی موجود محسوب می‌شود.",
-      },
-    }),
-    prisma.llmModel.upsert({
-      where: { code: "openai/gpt-4o-mini" },
-      update: {},
-      create: {
-        id: 1,
-        name: "OpenAI GPT-4o mini",
-        costPerMilInToken: 0.15,
-        costPerMilOutToken: 0.6,
-        code: "openai/gpt-4o-mini",
-        useToComparePlans: true,
-        estimatedEncodingBase: "O200K",
-        description:
-          "مدل GPT-4o-mini شرکت OpenAI، نسخه‌ای بهینه‌شده و مقرون‌به‌صرفه از خانواده مدل‌های GPT-4o است که با حفظ توانایی‌های هوش بالا، نیاز به منابع محاسباتی کمتری دارد. این مدل به گونه‌ای طراحی شده که بتواند با صرف زمان و هزینه کمتر، همچنان عملکرد دقیقی در حل مسائل پیچیده، استدلال و تولید پاسخ‌های طبیعی ارائه دهد. به عبارت دیگر، GPT-4o-mini ترکیبی از قدرت پردازشی و دقت مدل‌های بزرگ و صرفه‌جویی اقتصادی را در یک بسته نرم‌افزاری ارائه می‌دهد که آن را برای کاربردهای گسترده، از جمله پروژه‌های صنعتی و استفاده‌های روزمره، بسیار مناسب می‌سازد.",
+        webBalance: 100,
+        apiBalance: 100,
+        name: "مهدی شریفی",
+        mobile: "09150872550",
+        email: "mail@mahdi-sharifi.ir",
       },
     }),
     prisma.webPlans.upsert({
@@ -129,7 +170,67 @@ async function main() {
     }),
   ]);
 
-  console.log({ users: { mahdi }, llmModels });
+  const descriptionsMap = await loadDescriptions();
+  const response = await fetch("https://openrouter.ai/api/v1/models", {
+    method: "GET",
+    headers: {},
+  });
+  const jsonResponse = await response.json();
+  const opnerouterRes = await openrouterModelListSchema.safeParseAsync(
+    jsonResponse
+  );
+  if (!opnerouterRes.success) {
+    console.warn(opnerouterRes.error);
+    throw new Error("Failed to parse OpenRouter response!");
+  }
+
+  const openrouterModels = opnerouterRes.data.data;
+  const total = openrouterModels.length;
+
+  let processed = 0;
+  for (const m of openrouterModels) {
+    if (
+      m.id.includes(":free") ||
+      m.pricing.completion === 0 ||
+      m.pricing.prompt === 0 ||
+      !m.architecture.input_modalities.includes("text") ||
+      m.id === "openrouter/auto"
+    ) {
+      continue;
+    }
+
+    const companyWebsite = (companyToWebsiteMap as any)[m.id.split("/")[0]];
+    if (!companyWebsite) {
+      console.error(m);
+      throw new Error("Company is not defined in the codebase!");
+    }
+
+    if (!descriptionsMap[m.id]) {
+      console.log(
+        `Fetching Farsi description for: ${m.name} (${processed + 1}/${total})`
+      );
+      const desc = await fetchFarsiDescription(m.name, m.description);
+      descriptionsMap[m.id] = desc;
+      await saveDescriptions(descriptionsMap);
+    }
+
+    await prisma.llmModel.upsert({
+      where: { code: m.id },
+      update: { description: descriptionsMap[m.id] },
+      create: {
+        code: m.id,
+        name: m.name,
+        companyWebsite,
+        description: descriptionsMap[m.id],
+        useToComparePlans: USE_TO_COMPARE_PLANS.includes(m.id),
+        estimatedEncodingBase: estimateTiktokenEncoding(m.context_length),
+        costPerMilInToken: roundAiModelCost(m.pricing.prompt * 1_000_000),
+        costPerMilOutToken: roundAiModelCost(m.pricing.completion * 1_000_000),
+      },
+    });
+
+    processed++;
+  }
 }
 
 main()

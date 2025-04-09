@@ -83,6 +83,10 @@ button {
   font-family: var(--font-vazir) !important;
 }
 
+.arial-sans-serif {
+  font-family: Arial, sans-serif !important;
+}
+
 .Toastify__toast {
   text-align: center;
   justify-content: center;
