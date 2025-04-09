@@ -91,14 +91,16 @@ async function fetchFarsiDescription(
   modelName: string,
   modelEnglishDescription: string
 ): Promise<string> {
-  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 150 words long and must include all details mentioned within the parentheses of the model name. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Additionally, ensure that the Farsi text does not contain any Farsi half-spaces (نیم فاصله). Use the provided English description as a guide for generating the Farsi description: "${modelEnglishDescription}"`;
+  // Additionally, ensure that the Farsi text does not contain any Farsi half-spaces (نیم فاصله).
+  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 150 words long and must include all details mentioned within the parentheses of the model name. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Use the provided English description as a guide for generating the Farsi description: "${modelEnglishDescription}"`;
 
   const maxRetries = 10;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const resp = await generateText({
         prompt,
-        model: openrouter("deepseek/deepseek-r1:free"),
+        model: openrouter("openai/o3-mini-high"),
+        // model: openrouter("deepseek/deepseek-r1:free"),
       });
       const parsRes = await farsiDescriptionSchema.safeParseAsync(resp.text);
       if (!parsRes.success) {
@@ -135,40 +137,34 @@ async function main() {
         email: "mail@mahdi-sharifi.ir",
       },
     }),
-    prisma.webPlans.upsert({
+    prisma.webPlan.upsert({
       where: { id: 1 },
       update: {},
       create: {
         id: 1,
-        balance: 6,
         name: "ابتدایی",
         credits: 6000,
-        price: 400_000,
-        displayPrice: "۴۰۰ هزار",
+        usdAmount: 10,
       },
     }),
-    prisma.webPlans.upsert({
+    prisma.webPlan.upsert({
       where: { id: 2 },
       update: {},
       create: {
         id: 2,
-        balance: 8,
-        credits: 8000,
         name: "متوسط",
-        price: 600_000,
-        displayPrice: "۶۰۰ هزار",
+        credits: 8000,
+        usdAmount: 15,
       },
     }),
-    prisma.webPlans.upsert({
+    prisma.webPlan.upsert({
       where: { id: 3 },
       update: {},
       create: {
         id: 3,
-        balance: 10,
         name: "حرفه‌ای",
         credits: 10000,
-        price: 1_000_000,
-        displayPrice: "یک میلیون",
+        usdAmount: 20,
       },
     }),
   ]);

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { MiddlewareUserData } from "@/middleware";
+import getExchangeRate from "@/lib/exchange";
 
 // Note: Make sure to use await headers()
 // and that your environment variables (SEPHER_TERMINAL_ID and SEPHER_CALLBACK_URL)
@@ -20,6 +21,7 @@ export async function chargeAccountAction(formData: FormData) {
   };
 
   if (isNaN(planId) || isNaN(user.id) || !user.email || !user.mobile) {
+    console.error("Unexpected:", { user });
     return redirect("/dashboard/payment");
   }
 
@@ -28,14 +30,18 @@ export async function chargeAccountAction(formData: FormData) {
 
 export async function chargeAccount(user: MiddlewareUserData, planId: number) {
   let price: number;
+  let usdAmount: number;
+  const exchangeRate = await getExchangeRate();
   try {
-    const webPlan = await prisma.webPlans.findUnique({
+    const webPlan = await prisma.webPlan.findUnique({
       where: { id: planId },
-      select: { price: true },
+      select: { usdAmount: true },
     });
-    if (!webPlan || !webPlan.price) throw new Error("PlanNotFound");
-    price = webPlan.price;
-  } catch {
+    if (!webPlan) throw new Error("PlanNotFound");
+    usdAmount = webPlan.usdAmount;
+    price = webPlan.usdAmount * exchangeRate;
+  } catch (e) {
+    console.error("Unexpected 2:", { planId, user, exchangeRate, e });
     return redirect("/dashboard/payment");
   }
 
@@ -45,6 +51,8 @@ export async function chargeAccount(user: MiddlewareUserData, planId: number) {
   // The auto-generated ID here is used as the invoice ID for the payment gateway.
   const transaction = await prisma.transaction.create({
     data: {
+      usdAmount,
+      exchangeRate,
       amount: price,
       user: { connect: { id: user.id } },
       // Other fields (exchangeRate, fee, refId, code) will be updated later.

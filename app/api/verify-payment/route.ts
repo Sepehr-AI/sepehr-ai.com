@@ -1,11 +1,17 @@
 import { error } from "@/lib/log";
-import { prisma } from "@/lib/prisma";
+import { prisma, type Transaction } from "@/lib/prisma";
+import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  let digitalreceipt;
-  let invoiceID;
+  const headersList = await headers();
+  const userId = Number(headersList.get("userId") || "abc");
+  if (isNaN(userId)) {
+    return NextResponse.redirect("/payment?error=transaction_failed");
+  }
 
+  let invoiceID;
+  let digitalreceipt;
   try {
     const { searchParams } = new URL(request.url);
     // Assume the gateway returns “digitalreceipt” and “invoiceID” as query parameters.
@@ -19,7 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Look up the transaction using the invoiceID (which is the Transaction row’s id)
-  let transaction;
+  let transaction: Transaction;
   try {
     transaction = await prisma.transaction.findUnique({
       where: { id: Number(invoiceID) },
@@ -53,6 +59,10 @@ export async function GET(request: NextRequest) {
     // Successful verification should return Status "Ok"
     if (adviceData.Status === "Ok") {
       // Update the transaction with details from the Advice response.
+      await prisma.user.update({
+        where: { id: userId },
+        data: { webBalance: { increment: transaction.usdAmount } },
+      });
       await prisma.transaction.update({
         where: { id: transaction.id },
         data: {

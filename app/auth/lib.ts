@@ -213,7 +213,7 @@ async function verifyOtp(
 ): Promise<{ error?: string }> {
   userId = Number(userId);
   const dbOpt = await errorOnThrow("findingOptInAuthLogin", () =>
-    prisma.otps.findUnique({
+    prisma.otp.findUnique({
       where: { userId },
       select: { code: true, createdAt: true },
     })
@@ -238,7 +238,7 @@ async function verifyOtp(
   }
 
   await errorOnThrow("deletingOptInAuthLogin", () =>
-    prisma.otps.delete({
+    prisma.otp.delete({
       where: { userId },
     })
   );
