@@ -2,23 +2,23 @@
 
 "use client";
 
-import React, {
-  useState,
-  useEffect,
-  HTMLAttributes,
-  FC,
-  ReactNode,
-  useRef,
-} from "react";
 import Link from "next/link";
-import { AiOutlinePlus } from "react-icons/ai";
-import { FaRegMoneyBill1 } from "react-icons/fa6";
-import { CiSettings } from "react-icons/ci";
 import { MdLogout } from "react-icons/md";
-import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
+import { CiSettings } from "react-icons/ci";
 import { handleLogout } from "@/lib/logout";
 import { useRouter } from "next/navigation";
-import { DbChat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
+import { AiOutlinePlus } from "react-icons/ai";
+import { FaRegMoneyBill1 } from "react-icons/fa6";
+import { RxCross1, RxHamburgerMenu } from "react-icons/rx";
+import { type DbChat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
+import React, {
+  useRef,
+  type FC,
+  useState,
+  useEffect,
+  type ReactNode,
+  type HTMLAttributes,
+} from "react";
 
 // A simple wrapper that places an onClick on a parent div for links.
 interface LinkWrapperProps extends HTMLAttributes<HTMLDivElement> {

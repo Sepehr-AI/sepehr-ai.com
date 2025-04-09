@@ -1,24 +1,24 @@
 "use client";
 
-import { Attachment, generateId } from "ai";
 import { v7 as uuidv7 } from "uuid";
-import { Model } from "@/lib/models";
+import { toast } from "react-toastify";
 import { MdInput } from "react-icons/md";
+import type { Model } from "@/lib/models";
 import { createChat } from "@/lib/chatDB";
 import NewMessageBox from "./NewMessageBox";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import {
-  Dispatch,
-  useState,
-  SetStateAction,
-  SyntheticEvent,
-  useEffect,
-} from "react";
-import { toast } from "react-toastify";
-import { readFileAsDataURL, useAttachments } from "../hooks/useAttachments";
-import { companyWebsiteToRiMap } from "@/lib/aiCompaniesForFrontend";
 import { RiRobot2Fill } from "react-icons/ri";
-import { IconBaseProps } from "react-icons";
+import type { IconBaseProps } from "react-icons";
+import { type Attachment, generateId } from "ai";
+import { companyWebsiteToRiMap } from "@/lib/aiCompaniesForFrontend";
+import { readFileAsDataURL, useAttachments } from "../hooks/useAttachments";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import {
+  useState,
+  useEffect,
+  type Dispatch,
+  type SetStateAction,
+  type SyntheticEvent,
+} from "react";
 
 function CompanyLogo({ model, ...props }: IconBaseProps & { model: Model }) {
   return (

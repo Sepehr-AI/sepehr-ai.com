@@ -1,8 +1,8 @@
 "use client";
 
-import { SyntheticEvent, useState, useTransition } from "react";
-import { changePasswordAction } from "./actions";
 import { toast } from "react-toastify";
+import { changePasswordAction } from "./actions";
+import { type SyntheticEvent, useState, useTransition } from "react";
 
 export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");

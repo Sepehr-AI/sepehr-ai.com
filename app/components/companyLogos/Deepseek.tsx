@@ -1,4 +1,4 @@
-import { IconBaseProps } from "react-icons";
+import type { IconBaseProps } from "react-icons";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DeepSeek(props: IconBaseProps) {

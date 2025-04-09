@@ -1,4 +1,4 @@
-import { IconBaseProps, IconType } from "react-icons";
+import type { IconBaseProps, IconType } from "react-icons";
 
 export default function WithColor(Comp: IconType, color: string) {
   return Object.assign(

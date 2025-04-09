@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useMemo, ChangeEvent } from "react";
+import { useRef, useState, useMemo, type ChangeEvent } from "react";
 
 const MAX_FILE_COUNT = 5;
 const MAX_FILE_SIZE = 3 * 1024 * 1024;

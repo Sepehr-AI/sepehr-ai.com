@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Model } from "@/lib/models";
 import dynamic from "next/dynamic";
-import { Message as SdkMessage } from "@ai-sdk/react";
+import { useRef, useState } from "react";
+import type { Model } from "@/lib/models";
 import { useRouter } from "next/navigation";
+import type { Message as SdkMessage } from "@ai-sdk/react";
 
 const ChatBody = dynamic(() => import("./ChatBody"), { ssr: false });
 const NewChatBody = dynamic(() => import("./NewChatBody"), { ssr: false });

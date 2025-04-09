@@ -2,8 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { SepehrAiJwtPayload } from "./app/auth/lib";
 import MultiStepLimiter from "./lib/MultiStepLimiter";
+import type { SepehrAiJwtPayload } from "./app/auth/lib";
 import { genUnauthorizedRes, UnauthorizedReason } from "./lib/chatErrors";
 
 const E403 = `<!DOCTYPE html>

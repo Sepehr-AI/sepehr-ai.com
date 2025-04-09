@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import humanizeDuration from "humanize-duration";
-import { FiHome } from "react-icons/fi";
 import { Suspense } from "react";
+import { FiHome } from "react-icons/fi";
 import Loading from "@/app/components/Loading";
+import humanizeDuration from "humanize-duration";
+import { useSearchParams } from "next/navigation";
 
 function Auth429() {
   const searchParams = useSearchParams();

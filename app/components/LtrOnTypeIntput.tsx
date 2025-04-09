@@ -1,4 +1,8 @@
-import { DetailedHTMLProps, InputHTMLAttributes, useState } from "react";
+import {
+  useState,
+  type DetailedHTMLProps,
+  type InputHTMLAttributes,
+} from "react";
 
 export default function LtrOnTypeInput({
   value: _value,

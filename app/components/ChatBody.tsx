@@ -2,13 +2,15 @@
 
 import Message from "./Message";
 import { v7 as uuidv7 } from "uuid";
-import { Model } from "@/lib/models";
 import { toast } from "react-toastify";
+import type { Model } from "@/lib/models";
 import { updateChat } from "@/lib/chatDB";
 import { handleLogout } from "@/lib/logout";
 import NewMessageBox from "./NewMessageBox";
-import { Message as SdkMessage, useChat } from "@ai-sdk/react";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useAttachments } from "../hooks/useAttachments";
+import { readFileAsDataURL } from "../hooks/useAttachments";
+import { type Message as SdkMessage, useChat } from "@ai-sdk/react";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
   balanceNotEnoughMsg,
   UnauthorizedReason,
@@ -17,15 +19,11 @@ import {
 import {
   useRef,
   useState,
-  RefObject,
   useEffect,
-  MouseEvent,
-  SyntheticEvent,
-  // ChangeEvent,
-  // useMemo,
+  type RefObject,
+  type MouseEvent,
+  type SyntheticEvent,
 } from "react";
-import { useAttachments } from "../hooks/useAttachments";
-import { readFileAsDataURL } from "../hooks/useAttachments";
 
 const clientErrors = {
   internetIssue: {

@@ -2,10 +2,18 @@
 
 "use client";
 
-import { Message } from "ai";
-import { EventHandler, listenOnEvent, dispatchEvent } from "./eventTransfer";
-import { AiMessage, sdkMessageToAiMessage, TextUIPart } from "./vercel-ai";
+import type { Message } from "ai";
 import { decodeJwt } from "jose";
+import {
+  listenOnEvent,
+  dispatchEvent,
+  type EventHandler,
+} from "./eventTransfer";
+import {
+  type AiMessage,
+  type TextUIPart,
+  sdkMessageToAiMessage,
+} from "./vercel-ai";
 
 export interface Chat {
   engine: string;

@@ -4,19 +4,20 @@ import fs from "fs/promises";
 import path from "node:path";
 import { existsSync } from "fs";
 import { generateText } from "ai";
-import { TiktokenEncoding } from "js-tiktoken";
+import { dirname } from "node:path";
+import { prisma } from "@/lib/prisma";
+import { fileURLToPath } from "node:url";
+import { roundAiModelCost } from "@/lib/cost";
+import type { TiktokenEncoding } from "js-tiktoken";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
 
-// Paths MUST be relative.
-import { PrismaClient } from "./client";
-import { roundAiModelCost } from "../lib/cost";
-import { companyToWebsiteMap } from "../lib/aiCompaniesForBackend";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
-
-const prisma = new PrismaClient();
 
 export const openrouterModelListSchema = z.object({
   data: z.array(

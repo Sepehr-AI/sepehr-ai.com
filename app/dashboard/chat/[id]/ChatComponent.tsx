@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useEffect, useState, useRef, use } from "react";
-import { useRouter } from "next/navigation";
-import { aiMessageToSdkMessage } from "@/lib/vercel-ai";
-import Loading from "@/app/components/Loading";
-import { Model } from "@/lib/models";
+import type { Model } from "@/lib/models";
 import Chat from "@/app/components/Chat";
-import { ChatSession, getChat } from "@/lib/chatDB";
+import { useRouter } from "next/navigation";
+import Loading from "@/app/components/Loading";
+import { aiMessageToSdkMessage } from "@/lib/vercel-ai";
+import { type ChatSession, getChat } from "@/lib/chatDB";
+import React, { useEffect, useState, useRef, use } from "react";
 
 export const dynamic = "force-static";
 

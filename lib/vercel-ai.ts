@@ -1,6 +1,12 @@
 "use client";
 
-import { Attachment, JSONValue, Message, ToolInvocation, UIMessage } from "ai";
+import type {
+  Message,
+  JSONValue,
+  UIMessage,
+  Attachment,
+  ToolInvocation,
+} from "ai";
 
 export type FileUIPart = {
   type: "file";

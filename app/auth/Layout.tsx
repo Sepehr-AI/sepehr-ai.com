@@ -2,15 +2,15 @@
 
 "use client";
 
-import { FormEvent, useActionState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { type FormEvent, useActionState, useEffect } from "react";
+import ValidatedInput from "../components/ValidatedInput";
 import Link from "next/link";
 import {
   checkMobileFormSchema,
   loginFormSchema,
   registerFormSchema,
 } from "./validationSchema";
-import ValidatedInput from "../components/ValidatedInput";
 
 export default function AuthLayout({
   otp,

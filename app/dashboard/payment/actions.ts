@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { MiddlewareUserData } from "@/middleware";
+import type { MiddlewareUserData } from "@/middleware";
 
 // Note: Make sure to use await headers()
 // and that your environment variables (SEPHER_TERMINAL_ID and SEPHER_CALLBACK_URL)

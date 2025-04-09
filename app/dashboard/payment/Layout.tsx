@@ -4,8 +4,8 @@ import { toast } from "react-toastify";
 import { useEffect, useState } from "react";
 import { CiDollar } from "react-icons/ci";
 import { roundWebCost } from "@/lib/cost";
-import { webPlansForUsers } from "@/lib/plans";
 import { chargeAccountAction } from "./actions";
+import type { webPlansForUsers } from "@/lib/plans";
 
 export default function PaymentLayout({
   plans,

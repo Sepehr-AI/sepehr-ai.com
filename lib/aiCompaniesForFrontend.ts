@@ -1,4 +1,4 @@
-import { IconType } from "react-icons";
+import type { IconType } from "react-icons";
 import { FaMicrosoft } from "react-icons/fa6";
 import { FaMeta, FaXTwitter } from "react-icons/fa6";
 import { SiAmazon, SiNvidia, SiOpenai } from "react-icons/si";

@@ -1,11 +1,18 @@
 "use server";
 
 import Icon from "./Icon";
-import { roundWebPlanTokensAmount } from "@/lib/cost";
-import { getModelsForPlanComparison } from "@/lib/models";
-import { getWebPlans } from "@/lib/plans";
 import Head from "next/head";
 import Link from "next/link";
+import Enamad from "./Enamad";
+import { GiAtom } from "react-icons/gi";
+import { getWebPlans } from "@/lib/plans";
+import FAQAccordion from "./FAQAccordion";
+import { TfiMoney } from "react-icons/tfi";
+import { TbInfoHexagon } from "react-icons/tb";
+import { MdOutlineSecurity } from "react-icons/md";
+import { roundWebPlanTokensAmount } from "@/lib/cost";
+import { getModelsForPlanComparison } from "@/lib/models";
+import { IoExtensionPuzzleOutline } from "react-icons/io5";
 import {
   FaLayerGroup,
   FaCalculator,
@@ -19,13 +26,6 @@ import {
   FaRegUser,
   FaBars,
 } from "react-icons/fa";
-import { TfiMoney } from "react-icons/tfi";
-import { TbInfoHexagon } from "react-icons/tb";
-import FAQAccordion from "./FAQAccordion";
-import { GiAtom } from "react-icons/gi";
-import { IoExtensionPuzzleOutline } from "react-icons/io5";
-import { MdOutlineSecurity } from "react-icons/md";
-import Enamad from "./Enamad";
 
 const faqItems = [
   {

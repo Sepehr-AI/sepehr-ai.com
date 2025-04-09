@@ -1,18 +1,18 @@
 "use client";
 
-import { FaPaperclip, FaRegCircleStop } from "react-icons/fa6";
 import { FiRefreshCw, FiSend } from "react-icons/fi";
+import { FaPaperclip, FaRegCircleStop } from "react-icons/fa6";
 import {
-  RefObject,
-  SyntheticEvent,
-  MouseEvent,
-  Dispatch,
-  SetStateAction,
-  ChangeEvent,
   useEffect,
-  DetailedHTMLProps,
-  ButtonHTMLAttributes,
-  ElementType,
+  type Dispatch,
+  type RefObject,
+  type MouseEvent,
+  type ChangeEvent,
+  type ElementType,
+  type SyntheticEvent,
+  type SetStateAction,
+  type DetailedHTMLProps,
+  type ButtonHTMLAttributes,
 } from "react";
 
 interface NewMessageBoxProps {

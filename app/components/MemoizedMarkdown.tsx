@@ -2,19 +2,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { marked } from "marked";
-import { memo, ReactElement, MouseEvent, useMemo } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeRaw from "rehype-raw";
-import rehypeMathml from "@daiji256/rehype-mathml";
-import remarkBreaks from "remark-breaks";
 import "katex/dist/katex.min.css";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { FaRegCopy } from "react-icons/fa6";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import remarkMath from "remark-math";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
+import remarkBreaks from "remark-breaks";
+import ReactMarkdown from "react-markdown";
+import { FaRegCopy } from "react-icons/fa6";
+import rehypeMathml from "@daiji256/rehype-mathml";
+import { memo, type MouseEvent, useMemo } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);

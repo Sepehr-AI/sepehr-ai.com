@@ -1,4 +1,8 @@
-import React, { DetailedHTMLProps, InputHTMLAttributes, useState } from "react";
+import React, {
+  useState,
+  type DetailedHTMLProps,
+  type InputHTMLAttributes,
+} from "react";
 
 function InputWithValue({
   value: _value,

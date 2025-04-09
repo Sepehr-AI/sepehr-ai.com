@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PropsWithChildren, MouseEventHandler } from "react";
+import type { PropsWithChildren, MouseEventHandler } from "react";
 
 export interface NavbarLinkProps extends PropsWithChildren {
   href: string;

@@ -1,8 +1,8 @@
 import {
   useState,
-  ChangeEvent,
-  DetailedHTMLProps,
-  InputHTMLAttributes,
+  type ChangeEvent,
+  type DetailedHTMLProps,
+  type InputHTMLAttributes,
 } from "react";
 
 function convertToEnglishDigits(input: string): string {

@@ -1,10 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { JSX, useEffect, useMemo, useState, MouseEvent } from "react";
-import { SiOpenai } from "react-icons/si";
+import type { UIMessage } from "ai";
+import copy from "copy-to-clipboard";
+import { toast } from "react-toastify";
 import { HiUser } from "react-icons/hi";
-import { UIMessage } from "ai";
+import { SiOpenai } from "react-icons/si";
+import LoadingMessage from "./LoadingMessage";
 import { MemoizedMarkdown } from "./MemoizedMarkdown";
 import {
   FaChevronDown,
@@ -12,9 +14,13 @@ import {
   FaPaperclip,
   FaRegCopy,
 } from "react-icons/fa6";
-import { toast } from "react-toastify";
-import copy from "copy-to-clipboard";
-import LoadingMessage from "./LoadingMessage";
+import React, {
+  useMemo,
+  useState,
+  type JSX,
+  useEffect,
+  type MouseEvent,
+} from "react";
 
 const Message = ({
   message,

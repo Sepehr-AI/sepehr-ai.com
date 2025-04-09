@@ -2,10 +2,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextResponse } from "next/server";
-import { streamText, CoreMessage, coreMessageSchema } from "ai";
+import { calcWebCostCost } from "@/lib/cost";
 import { getModelsMap } from "@/lib/models";
-import { getEncoding, TiktokenEncoding } from "js-tiktoken";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { getEncoding, type TiktokenEncoding } from "js-tiktoken";
+import { streamText, type CoreMessage, coreMessageSchema } from "ai";
 import {
   genBalanceNotEnoughRes,
   geninvalidJsonBodyRes,
@@ -14,7 +15,6 @@ import {
   genUnexpectedErrorRes,
   UnauthorizedReason,
 } from "@/lib/chatErrors";
-import { calcWebCostCost } from "@/lib/cost";
 
 const USE_ACTUAL_SELECTED_MODEL = Boolean(
   process.env.USE_ACTUAL_SELECTED_MODEL || "false"

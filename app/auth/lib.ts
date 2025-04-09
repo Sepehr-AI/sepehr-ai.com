@@ -1,21 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import { permanentRedirect, redirect } from "next/navigation";
-import { cookies, headers } from "next/headers";
-import { prisma, findOrCreateOtp, User } from "@/lib/prisma";
 import { SignJWT } from "jose";
+import { randomInt } from "node:crypto";
+import { hash, verify } from "@node-rs/argon2";
+import { cookies, headers } from "next/headers";
 import { error, errorOnThrow } from "@/lib/log";
+import MultiStepLimiter from "@/lib/MultiStepLimiter";
 import { PrismaClientKnownRequestError } from "@/lib/prisma";
+import { permanentRedirect, redirect } from "next/navigation";
+import { prisma, findOrCreateOtp, type User } from "@/lib/prisma";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import {
   checkMobileFormSchema,
   loginFormSchema,
   registerFormSchema,
 } from "./validationSchema";
-import { randomInt } from "node:crypto";
-import { hash, verify } from "@node-rs/argon2";
-import MultiStepLimiter from "@/lib/MultiStepLimiter";
-import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;

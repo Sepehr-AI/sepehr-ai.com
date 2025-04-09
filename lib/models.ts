@@ -1,6 +1,6 @@
 import NodeCache from "node-cache";
 import { revalidateTag, unstable_cache } from "next/cache";
-import { prisma, TiktokenEncoding, LlmModel } from "@/lib/prisma";
+import { prisma, TiktokenEncoding, type LlmModel } from "@/lib/prisma";
 
 export { TiktokenEncoding };
 
