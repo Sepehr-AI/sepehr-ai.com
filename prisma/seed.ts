@@ -91,7 +91,6 @@ async function fetchFarsiDescription(
   modelName: string,
   modelEnglishDescription: string
 ): Promise<string> {
-  // Additionally, ensure that the Farsi text does not contain any Farsi half-spaces (نیم فاصله).
   const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 150 words long and must include all details mentioned within the parentheses of the model name. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Use the provided English description as a guide for generating the Farsi description: "${modelEnglishDescription}"`;
 
   const maxRetries = 10;
@@ -184,9 +183,9 @@ async function main() {
   }
 
   const openrouterModels = opnerouterRes.data.data;
-  const total = openrouterModels.length;
 
-  let processed = 0;
+  let left = openrouterModels.length;
+  const modelsWithDescriptionUpsert: Promise<any>[] = [];
   for (const m of openrouterModels) {
     if (
       m.id.includes(":free") ||
@@ -195,6 +194,7 @@ async function main() {
       !m.architecture.input_modalities.includes("text") ||
       m.id === "openrouter/auto"
     ) {
+      left -= 1;
       continue;
     }
 
@@ -204,16 +204,7 @@ async function main() {
       throw new Error("Company is not defined in the codebase!");
     }
 
-    if (!descriptionsMap[m.id]) {
-      console.log(
-        `Fetching Farsi description for: ${m.name} (${processed + 1}/${total})`
-      );
-      const desc = await fetchFarsiDescription(m.name, m.description);
-      descriptionsMap[m.id] = desc;
-      await saveDescriptions(descriptionsMap);
-    }
-
-    await prisma.llmModel.upsert({
+    const upsertData = {
       where: { code: m.id },
       update: { description: descriptionsMap[m.id] },
       create: {
@@ -226,10 +217,26 @@ async function main() {
         costPerMilInToken: roundAiModelCost(m.pricing.prompt * 1_000_000),
         costPerMilOutToken: roundAiModelCost(m.pricing.completion * 1_000_000),
       },
-    });
+    };
+    if (!descriptionsMap[m.id] || !descriptionsMap[m.id].trim().length) {
+      console.log(
+        `Fetching Farsi description for: ${m.name} (${left} remaining)`
+      );
 
-    processed++;
+      const desc = await fetchFarsiDescription(m.name, m.description);
+      descriptionsMap[m.id] = desc;
+      upsertData.create.description = desc;
+      upsertData.update.description = desc;
+
+      await saveDescriptions(descriptionsMap);
+    }
+
+    modelsWithDescriptionUpsert.push(prisma.llmModel.upsert(upsertData));
+
+    left -= 1;
   }
+
+  await Promise.all(modelsWithDescriptionUpsert);
 }
 
 main()
