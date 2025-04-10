@@ -3,7 +3,6 @@
 import Message from "./Message";
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "react-toastify";
-import type { Model } from "@/lib/models";
 import { updateChat } from "@/lib/chatDB";
 import { handleLogout } from "@/lib/logout";
 import NewMessageBox from "./NewMessageBox";
@@ -32,18 +31,17 @@ const clientErrors = {
   },
 };
 
-// const MAX_FILE_COUNT = 5;
-// const MAX_FILE_SIZE = 3 * 1024 * 1024;
-
 export default function ChatBody({
   uuid,
-  engine,
   router,
+  engineCode,
   textAreaRef,
   initialMessages,
+  aiCompanyWebsite,
 }: {
   uuid?: string;
-  engine: Model;
+  engineCode: string;
+  aiCompanyWebsite: string;
   router: AppRouterInstance;
   initialMessages?: SdkMessage[];
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
@@ -74,7 +72,7 @@ export default function ChatBody({
     stop,
   } = useChat({
     experimental_throttle: 75,
-    api: `/api/chat/${engine.code}`,
+    api: `/api/chat/${engineCode}`,
     initialMessages: initialMessages || undefined,
     onError: () => {
       setWaitingForFirstResp(false);
@@ -123,7 +121,7 @@ export default function ChatBody({
 
   useEffect(() => {
     if (messages.length !== (initialMessages?.length || 0)) {
-      updateChat(chatUuid, engine.code, messages);
+      updateChat(chatUuid, engineCode, aiCompanyWebsite, messages);
     }
 
     scrollToMsgInput();
@@ -228,12 +226,13 @@ export default function ChatBody({
     <>
       <div className="flex-auto flex flex-col items-center text-sm">
         <div className="flex w-full items-center justify-center gap-1 border-b border-black/10 p-3 text-gray-500">
-          مدل: {engine.code}
+          مدل: {engineCode}
         </div>
         {messages.map((message, index) => (
           <Message
             message={message}
             key={message.id || index}
+            aiCompanyWebsite={aiCompanyWebsite}
             waitingForFirstResp={waitingForFirstResp}
             isTheLastMessage={
               !waitingForFirstResp && index === messages.length - 1
@@ -246,20 +245,20 @@ export default function ChatBody({
         {...{
           input,
           status,
+          textAreaRef,
+          handleSubmit,
+          handleReload,
+          fileInputRef,
+          setCustomError,
+          endOfThePageRef,
+          handleFileChange,
+          selectedFileNames,
+          handleInputChange,
           isError: Boolean(
             error ||
               status === "error" ||
               customError === clientErrors.internetIssue.text
           ),
-          textAreaRef,
-          selectedFileNames,
-          handleSubmit,
-          setCustomError,
-          endOfThePageRef,
-          handleInputChange,
-          handleFileChange,
-          fileInputRef,
-          handleReload,
         }}
       />
     </>

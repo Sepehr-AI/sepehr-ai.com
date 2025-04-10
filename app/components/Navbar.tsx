@@ -198,7 +198,7 @@ export default function ResponsiveNavbar() {
 
     const removeListener = newChatListener((e: any) => {
       if (!e.detail) return;
-      const { newChat } = e.detail as { newChat: DbChat };
+      const newChat = e.detail as DbChat;
       setChats((prev) => [newChat, ...prev]);
     });
     return () => {

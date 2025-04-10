@@ -16,9 +16,12 @@ import {
   UnauthorizedReason,
 } from "@/lib/chatErrors";
 
-const USE_ACTUAL_SELECTED_MODEL = Boolean(
-  process.env.USE_ACTUAL_SELECTED_MODEL || "false"
-);
+const USE_ACTUAL_SELECTED_MODEL: boolean =
+  (process.env.USE_ACTUAL_SELECTED_MODEL || "").toLowerCase() === "true";
+
+console.log({
+  USE_ACTUAL_SELECTED_MODEL,
+});
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -64,9 +67,10 @@ export async function POST(
   }
   if (!webBalance) return genBalanceNotEnoughRes();
 
+  let json;
   let parsed;
   try {
-    const json = await req.json();
+    json = await req.json();
     parsed = RequestSchema.safeParse(json);
     if (!parsed.success) throw new Error("InvalidJson");
   } catch (e: unknown) {
@@ -80,7 +84,7 @@ export async function POST(
     return geninvalidJsonBodyRes();
   }
 
-  const { messages: _messages } = parsed.data;
+  const { messages: _messages } = json;
   if (!_messages?.length) return NextResponse.json({}, { status: 204 });
   const messages: CoreMessage[] = [defaultAiSystemPrompt, ..._messages];
 
@@ -121,31 +125,36 @@ export async function POST(
       // experimental_transform: smoothStream({chunking: 'word'}),
       model: openrouter(
         USE_ACTUAL_SELECTED_MODEL ? code : "deepseek/deepseek-r1:free"
+        // "deepseek/deepseek-r1:free"
       ),
       onError: (e) => error("WebChatStreamingError", { error: e }),
       onFinish: async ({ usage }) => {
-        if (
-          !usage ||
-          typeof usage.promptTokens === "undefined" ||
-          typeof usage.completionTokens === "undefined" ||
-          usage.promptTokens === null ||
-          usage.completionTokens === null
-        ) {
-          return;
+        if (!usage) return;
+
+        const promptTokens = !isNaN(Number(usage.promptTokens || "abc"))
+          ? Number(usage.promptTokens)
+          : 0;
+        const completionTokens = !isNaN(Number(usage.completionTokens || "abc"))
+          ? Number(usage.completionTokens)
+          : 0;
+        if (promptTokens === 0 && completionTokens === 0) return;
+        if (promptTokens < 0 || completionTokens < 0) {
+          return error("WebChatUsageUpdateError", {
+            usage,
+            promptTokens,
+            completionTokens,
+            error: "Negative token usage!",
+          });
         }
 
-        const cost = calcWebCostCost(
-          usage.promptTokens,
-          usage.completionTokens,
-          model
-        );
+        const cost = calcWebCostCost(promptTokens, completionTokens, model);
         const newWebLlmRequest = {
           data: {
             cost,
             userId,
             llmModelId: model.id,
-            inputTokensUsed: usage.promptTokens,
-            outputTokensUsed: usage.completionTokens,
+            inputTokensUsed: promptTokens,
+            outputTokensUsed: completionTokens,
           },
         };
 

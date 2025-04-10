@@ -1,9 +1,9 @@
 import type { IconBaseProps } from "react-icons";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function DeepSeek(props: IconBaseProps) {
   return (
     <svg
+      {...props}
       width="1.25em"
       height="1.25em"
       strokeWidth="0"

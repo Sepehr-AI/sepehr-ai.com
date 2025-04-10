@@ -5,8 +5,8 @@ import type { UIMessage } from "ai";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
 import { HiUser } from "react-icons/hi";
-import { SiOpenai } from "react-icons/si";
 import LoadingMessage from "./LoadingMessage";
+import CompanyLogo from "./companyLogos/CompanyLogo";
 import { MemoizedMarkdown } from "./MemoizedMarkdown";
 import {
   FaChevronDown,
@@ -25,11 +25,13 @@ import React, {
 const Message = ({
   message,
   className,
+  aiCompanyWebsite,
   isTheLastMessage,
   waitingForFirstResp,
 }: {
   message: UIMessage;
   className?: string;
+  aiCompanyWebsite: string;
   isTheLastMessage: boolean;
   waitingForFirstResp?: boolean;
 }) => {
@@ -230,7 +232,7 @@ const Message = ({
     (waitingForFirstResp ||
       (!renderedReasoning.length && !renderedNonReasoning.length))
   ) {
-    return <LoadingMessage />;
+    return <LoadingMessage aiCompanyWebsite={aiCompanyWebsite} />;
   }
 
   return (
@@ -250,11 +252,16 @@ const Message = ({
             : "")
         }
       >
-        <div className="w-8 h-8 p-1.5 float-left m-2 bg-gray-700 rounded-full shrink-0 grow-0">
+        <div className="w-8 h-8 float-left m-2 border-2 p-[0.15rem] border-gray-700 rounded-full shrink-0 grow-0">
           {isUser ? (
-            <HiUser className="text-white w-full h-full" />
+            <HiUser className="text-gray-700 w-auto h-full" />
           ) : (
-            <SiOpenai className="text-white w-full h-full" />
+            <div className="flex justify-center items-center w-full h-full">
+              <CompanyLogo
+                className="!w-auto !h-full"
+                companyWebsite={aiCompanyWebsite}
+              />
+            </div>
           )}
         </div>
       </div>
@@ -309,7 +316,7 @@ const Message = ({
                 </p>
               )}
           {renderedAttachments && renderedAttachments.length > 0 && (
-            <ul className="mt-2 float-left ltr list-none">
+            <ul className="mt-2 float-left ltr list-none w-full">
               {renderedAttachments}
             </ul>
           )}

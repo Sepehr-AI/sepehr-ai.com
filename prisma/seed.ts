@@ -60,9 +60,9 @@ function estimateTiktokenEncoding(contextLength: number): TiktokenEncoding {
 }
 
 const USE_TO_COMPARE_PLANS: string[] = [
+  "openai/o3-mini",
   "openai/gpt-4o-mini",
-  "openai/o3-mini",
-  "openai/o3-mini",
+  "openai/gpt-4.5-preview",
 ];
 
 const DESC_JSON_FILE = path.resolve(__dirname, "./modelDescriptionSeed.json");
@@ -204,19 +204,22 @@ async function main() {
       throw new Error("Company is not defined in the codebase!");
     }
 
+    const newData = {
+      code: m.id,
+      name: m.name,
+      companyWebsite,
+      description: descriptionsMap[m.id],
+      inputModalities: m.architecture.input_modalities,
+      outputModalities: m.architecture.output_modalities,
+      useToComparePlans: USE_TO_COMPARE_PLANS.includes(m.id),
+      estimatedEncodingBase: estimateTiktokenEncoding(m.context_length),
+      costPerMilInToken: roundAiModelCost(m.pricing.prompt * 1_000_000),
+      costPerMilOutToken: roundAiModelCost(m.pricing.completion * 1_000_000),
+    };
     const upsertData = {
       where: { code: m.id },
-      update: { description: descriptionsMap[m.id] },
-      create: {
-        code: m.id,
-        name: m.name,
-        companyWebsite,
-        description: descriptionsMap[m.id],
-        useToComparePlans: USE_TO_COMPARE_PLANS.includes(m.id),
-        estimatedEncodingBase: estimateTiktokenEncoding(m.context_length),
-        costPerMilInToken: roundAiModelCost(m.pricing.prompt * 1_000_000),
-        costPerMilOutToken: roundAiModelCost(m.pricing.completion * 1_000_000),
-      },
+      update: newData,
+      create: newData,
     };
     if (!descriptionsMap[m.id] || !descriptionsMap[m.id].trim().length) {
       console.log(

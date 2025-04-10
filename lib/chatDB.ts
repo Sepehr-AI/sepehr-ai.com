@@ -16,8 +16,9 @@ import {
 } from "./vercel-ai";
 
 export interface Chat {
-  engine: string;
+  engineCode: string;
   namePrefix: string;
+  aiCompanyWebsite: string;
 }
 
 export interface DbChat {
@@ -25,14 +26,10 @@ export interface DbChat {
   value: Chat;
 }
 
-export interface NewChatEventMap {
-  newChat: DbChat;
-  provider: string;
-}
-
 export interface ChatSession {
-  engine: string;
+  engineCode: string;
   messages: AiMessage[];
+  aiCompanyWebsite: string;
 }
 
 const DATABASE_VERSION: number = 1;
@@ -116,22 +113,22 @@ const getAllData = async (
   });
 };
 
-export const engineToProvider = (engine: string) =>
-  engine.split("/")[0] || "unknown";
-
 export const updateChat = async (
   uuid: string,
-  engine: string,
+  engineCode: string,
+  aiCompanyWebsite: string,
   _messages: Message[]
 ): Promise<void> =>
   await putData("sessions", uuid, {
-    engine,
+    engineCode,
+    aiCompanyWebsite,
     messages: _messages.map((m) => sdkMessageToAiMessage(m)),
   } as ChatSession);
 
 export const createChat = async (
   uuid: string,
-  engine: string,
+  engineCode: string,
+  aiCompanyWebsite: string,
   _messages: Message[]
 ): Promise<string> => {
   if (
@@ -147,7 +144,6 @@ export const createChat = async (
     );
   }
 
-  const provider: string = engineToProvider(engine);
   const messages = _messages.map((m) => sdkMessageToAiMessage(m));
   let firstMessageText: string;
   if ((messages[0].parts[0] as TextUIPart).text) {
@@ -164,22 +160,27 @@ export const createChat = async (
   const newChat: DbChat = {
     key: uuid,
     value: {
-      engine,
+      engineCode,
+      aiCompanyWebsite,
       namePrefix: firstMessageText.length > 20 ? `${subText} ...` : subText,
     },
   };
 
   await putData("chats", uuid, newChat.value);
-  await putData("sessions", uuid, { messages, engine } as ChatSession);
+  await putData("sessions", uuid, {
+    messages,
+    engineCode,
+    aiCompanyWebsite,
+  } as ChatSession);
 
-  dispatchEvent<NewChatEventMap>("NewChat", { newChat, provider });
+  dispatchEvent<DbChat>("NewChat", newChat);
 
   return uuid;
 };
 
-export type NewChatHandler = EventHandler<NewChatEventMap>;
+export type NewChatHandler = EventHandler<DbChat>;
 export const newChatListener = (handler: NewChatHandler) =>
-  listenOnEvent<NewChatEventMap>("NewChat", handler);
+  listenOnEvent<DbChat>("NewChat", handler);
 
 export const getChat = async (chatId: string): Promise<ChatSession | null> =>
   (await getData("sessions", chatId)) || null;

@@ -1,6 +1,5 @@
 "use client";
 
-import type { Model } from "@/lib/models";
 import Chat from "@/app/components/Chat";
 import { useRouter } from "next/navigation";
 import Loading from "@/app/components/Loading";
@@ -9,17 +8,6 @@ import { type ChatSession, getChat } from "@/lib/chatDB";
 import React, { useEffect, useState, useRef, use } from "react";
 
 export const dynamic = "force-static";
-
-const placeholderModels = [
-  {
-    code: "openai/gpt-4o-mini",
-    creditCostPerMilInToken: 300,
-    creditCostPerMilOutToken: 1200,
-    description:
-      "مدل GPT-4o-mini شرکت OpenAI، نسخه‌ای بهینه‌شده و مقرون‌به‌صرفه از خانواده مدل‌های GPT-4o است که با حفظ توانایی‌های هوش بالا، نیاز به منابع محاسباتی کمتری دارد. این مدل به گونه‌ای طراحی شده که بتواند با صرف زمان و هزینه کمتر، همچنان عملکرد دقیقی در حل مسائل پیچیده، استدلال و تولید پاسخ‌های طبیعی ارائه دهد. به عبارت دیگر، GPT-4o-mini ترکیبی از قدرت پردازشی و دقت مدل‌های بزرگ و صرفه‌جویی اقتصادی را در یک بسته نرم‌افزاری ارائه می‌دهد که آن را برای کاربردهای گسترده، از جمله پروژه‌های صنعتی و استفاده‌های روزمره، بسیار مناسب می‌سازد.",
-    name: "OpenAI GPT-4o mini",
-  } as Model,
-];
 
 export default function ChatComponent({
   params,
@@ -64,9 +52,10 @@ export default function ChatComponent({
 
   return (
     <Chat
+      models={[]}
       uuid={chatId as string}
-      models={placeholderModels}
-      engine={chatInitialSession.engine}
+      engineCode={chatInitialSession.engineCode}
+      aiCompanyWebsite={chatInitialSession.aiCompanyWebsite}
       initialMessages={chatInitialSession?.messages.map((m) =>
         aiMessageToSdkMessage(m)
       )}

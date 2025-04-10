@@ -6,39 +6,19 @@ import { MdInput } from "react-icons/md";
 import type { Model } from "@/lib/models";
 import { createChat } from "@/lib/chatDB";
 import NewMessageBox from "./NewMessageBox";
-import { RiRobot2Fill } from "react-icons/ri";
-import type { IconBaseProps } from "react-icons";
 import { type Attachment, generateId } from "ai";
-import { companyWebsiteToRiMap } from "@/lib/aiCompaniesForFrontend";
+import CompanyLogo from "./companyLogos/CompanyLogo";
+import { useState, useEffect, type SyntheticEvent } from "react";
 import { readFileAsDataURL, useAttachments } from "../hooks/useAttachments";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import {
-  useState,
-  useEffect,
-  type Dispatch,
-  type SetStateAction,
-  type SyntheticEvent,
-} from "react";
-
-function CompanyLogo({ model, ...props }: IconBaseProps & { model: Model }) {
-  return (
-    companyWebsiteToRiMap[
-      model.companyWebsite as keyof typeof companyWebsiteToRiMap
-    ] || RiRobot2Fill
-  )(props);
-}
 
 export default function NewChatBody({
   router,
-  engine,
   models,
-  setEngine,
   textAreaRef,
 }: {
-  engine: Model;
   models: Model[];
   router: AppRouterInstance;
-  setEngine: Dispatch<SetStateAction<Model>>;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuidv7());
@@ -47,6 +27,7 @@ export default function NewChatBody({
   const [resetOnFocus, setResetOnFocus] = useState(false);
   const [modelSearchTerm, setModelSearchTerm] = useState("");
   const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [selectedEngine, setSelectedEngine] = useState(models[0]);
   const {
     fileInputRef,
     attachments: thisAttachments,
@@ -80,7 +61,7 @@ export default function NewChatBody({
       );
     }
 
-    createChat(chatUuid, engine.code, [
+    createChat(chatUuid, selectedEngine.code, selectedEngine.companyWebsite, [
       {
         content: "",
         role: "user",
@@ -104,7 +85,9 @@ export default function NewChatBody({
                 type="text"
                 placeholder="... جستجوی مدل"
                 value={
-                  isFocused ? modelSearchTerm : modelSearchTerm || engine.name
+                  isFocused
+                    ? modelSearchTerm
+                    : modelSearchTerm || selectedEngine.name
                 }
                 onChange={(e) => setModelSearchTerm(e.target.value)}
                 onFocus={() => {
@@ -137,13 +120,16 @@ export default function NewChatBody({
                       <li
                         key={option.code}
                         onMouseDown={() => {
-                          setEngine(option);
+                          setSelectedEngine(
+                            models.find((m) => m.code === option.code) ||
+                              models[0]
+                          );
                           setModelSearchTerm("");
                         }}
                         className="flex flex-row space-x-2 px-4 py-2 ltr items-center arial-sans-serif cursor-pointer p-2 text-center hover:bg-blue-100"
                       >
                         <span>
-                          <CompanyLogo model={option} />
+                          <CompanyLogo companyWebsite={option.companyWebsite} />
                         </span>
                         <span>{option.name}</span>
                       </li>
@@ -154,24 +140,24 @@ export default function NewChatBody({
           </div>
 
           <div className="hidden lg:flex justify-center items-center my-4 text-8xl">
-            <CompanyLogo model={engine} />
+            <CompanyLogo companyWebsite={selectedEngine.companyWebsite} />
           </div>
           <p className="text-justify text-gray-600 overflow-y-auto max-h-[40dvh]">
-            {engine.description}
+            {selectedEngine.description}
           </p>
           <div className="flex flex-col items-center gap-2">
             <div className="flex items-center gap-1">
               <MdInput className="text-gray-700" />
               <span>هزینه خروجی (میلیون توکن):</span>
               <span className="text-gray-700">
-                {engine.creditCostPerMilInToken.toLocaleString()}
+                {selectedEngine.creditCostPerMilInToken.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <MdInput className="text-gray-700" />
               <span>هزینه ورودی (میلیون توکن):</span>
               <span className="text-gray-700">
-                {engine.creditCostPerMilOutToken.toLocaleString()}
+                {selectedEngine.creditCostPerMilOutToken.toLocaleString()}
               </span>
             </div>
           </div>
@@ -183,12 +169,12 @@ export default function NewChatBody({
       <NewMessageBox
         {...{
           input,
-          handleSubmit,
           textAreaRef,
-          handleInputChange: (e) => setInput(e.target.value),
-          handleFileChange,
           fileInputRef,
+          handleSubmit,
+          handleFileChange,
           selectedFileNames,
+          handleInputChange: (e) => setInput(e.target.value),
         }}
       />
     </>

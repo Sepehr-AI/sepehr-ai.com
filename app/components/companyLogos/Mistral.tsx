@@ -1,9 +1,9 @@
 import type { IconBaseProps } from "react-icons";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function Mistral(props: IconBaseProps) {
   return (
     <svg
+      {...props}
       width="1em"
       height="1em"
       strokeWidth="0"

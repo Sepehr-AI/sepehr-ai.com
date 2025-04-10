@@ -91,6 +91,8 @@ model LlmModel {
   costPerMilInToken     Float
   costPerMilOutToken    Float
   useToComparePlans     Boolean          @default(false)
+  inputModalities       String[]         @default(["text"])
+  outputModalities      String[]         @default(["text"])
   llmRequests           ApiLlmRequest[]
   WebLLMRequests        WebLlmRequest[]
   estimatedEncodingBase TiktokenEncoding

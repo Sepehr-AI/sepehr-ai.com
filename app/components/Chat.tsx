@@ -1,7 +1,7 @@
 "use client";
 
+import { useRef } from "react";
 import dynamic from "next/dynamic";
-import { useRef, useState } from "react";
 import type { Model } from "@/lib/models";
 import { useRouter } from "next/navigation";
 import type { Message as SdkMessage } from "@ai-sdk/react";
@@ -11,27 +11,37 @@ const NewChatBody = dynamic(() => import("./NewChatBody"), { ssr: false });
 
 export default function Chat({
   uuid,
-  engine: _engine,
-  initialMessages,
   models,
+  initialMessages,
+  engineCode: _engineCode,
+  aiCompanyWebsite: _aiCompanyWebsite,
 }: {
   uuid?: string;
-  engine?: string;
   models: Model[];
+  engineCode?: string;
+  aiCompanyWebsite?: string;
   initialMessages?: SdkMessage[];
 }) {
   const router = useRouter();
+  const engineCode = _engineCode || models[0].code;
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [engine, setEngine] = useState<Model>(
-    models.find((m) => m.code === _engine) || models[0]
-  );
+  const aiCompanyWebsite = _aiCompanyWebsite || "openai.com";
 
   return (
     <div className="flex flex-col flex-auto w-[95%] mx-auto min-h-[100%] md:min-h-dvh">
       {initialMessages && initialMessages.length > 0 ? (
-        <ChatBody {...{ uuid, router, engine, textAreaRef, initialMessages }} />
+        <ChatBody
+          {...{
+            uuid,
+            router,
+            engineCode,
+            textAreaRef,
+            initialMessages,
+            aiCompanyWebsite,
+          }}
+        />
       ) : (
-        <NewChatBody {...{ router, engine, models, setEngine, textAreaRef }} />
+        <NewChatBody {...{ router, models, textAreaRef }} />
       )}
     </div>
   );
