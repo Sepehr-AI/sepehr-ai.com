@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextResponse } from "next/server";
 import { calcWebCostCost } from "@/lib/cost";
@@ -95,7 +95,7 @@ export async function POST(
 
   try {
     const enc = getEncoding(
-      `${model.estimatedEncodingBase.toLocaleLowerCase()}_base` as TiktokenEncoding
+      `${model.estimatedEncodingBase.toLocaleLowerCase()}` as TiktokenEncoding
     );
     const inTokenEstCount = enc.encode(
       messages.map((m) => m.content).join(" ")

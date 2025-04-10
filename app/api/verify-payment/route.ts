@@ -1,5 +1,6 @@
 import { error } from "@/lib/log";
-import { prisma, type Transaction } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
+import type { Transaction } from "@/prisma/client";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 

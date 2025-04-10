@@ -1,5 +1,5 @@
-import { prisma } from "@/lib/prisma";
 import { jwtVerify } from "jose";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import MultiStepLimiter from "./lib/MultiStepLimiter";

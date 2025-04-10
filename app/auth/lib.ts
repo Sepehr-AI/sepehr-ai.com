@@ -2,15 +2,17 @@
 "use server";
 
 import { SignJWT } from "jose";
+import prisma from "@/lib/prisma";
 import { randomInt } from "node:crypto";
+import type { User } from "@/prisma/client";
 import { hash, verify } from "@node-rs/argon2";
 import { cookies, headers } from "next/headers";
 import { error, errorOnThrow } from "@/lib/log";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
-import { PrismaClientKnownRequestError } from "@/lib/prisma";
+import { findOrCreateOtp } from "@/prisma/client/sql";
 import { permanentRedirect, redirect } from "next/navigation";
-import { prisma, findOrCreateOtp, type User } from "@/lib/prisma";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { PrismaClientKnownRequestError } from "@/prisma/client/runtime/library";
 import {
   checkMobileFormSchema,
   loginFormSchema,

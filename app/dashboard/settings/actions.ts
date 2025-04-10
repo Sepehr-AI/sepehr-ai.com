@@ -2,7 +2,7 @@
 
 import bcrypt from "bcrypt";
 import { warn } from "@/lib/log";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 
 export async function changePasswordAction(

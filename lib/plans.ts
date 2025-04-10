@@ -1,8 +1,9 @@
 "use server";
 
+import prisma from "@/lib/prisma";
 import getExchangeRate from "./exchange";
 import { unstable_cache } from "next/cache";
-import { prisma, type WebPlan } from "@/lib/prisma";
+import type { WebPlan } from "@/prisma/client";
 import { numberToReadableFarsi, roundWebPlan } from "./cost";
 
 export type webPlansForUsers = ((Pick<WebPlan, "id" | "name" | "credits"> &
