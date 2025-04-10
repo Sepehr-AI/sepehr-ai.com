@@ -91,7 +91,7 @@ export const getModelsForWeb: () => Promise<Model[]> = unstable_cache(
 export const getModelsForPlanComparison: () => Promise<Model[]> =
   unstable_cache(
     async () => {
-      const cached = cache.get("modelsForWeb");
+      const cached = cache.get("modelsForPlanComparison");
       if (cached) return cached as Model[];
 
       const modelsForWeb = (await getModels()).reduce((acc, model) => {
@@ -117,10 +117,10 @@ export const getModelsForPlanComparison: () => Promise<Model[]> =
         return acc;
       }, [] as Model[]);
 
-      cache.set("getModelsForPlanComparison", modelsForWeb);
+      cache.set("modelsForPlanComparison", modelsForWeb);
 
       return modelsForWeb;
     },
-    ["getModelsForPlanComparison"],
+    ["modelsForPlanComparison"],
     { revalidate: 60 * 60 }
   );
