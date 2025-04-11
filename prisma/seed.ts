@@ -136,6 +136,23 @@ async function main() {
         email: "mail@mahdi-sharifi.ir",
       },
     }),
+    prisma.faq.upsert({
+      where: { id: 1 },
+      update: {},
+      create: {
+        title: "برای ثبت نام چی نیاز دارم؟",
+        description:
+          "برای ثبت نام کافیست بر روی دکمه «شروع» کلیک کرده و شماره تلفن خود را وارد نمایید. پس از دریافت و ثبت کد تایید ثبت نام شما کامل می‌شود.",
+      },
+    }),
+    prisma.faq.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        title: "مدل زبانی به اینترنت دسترسی داره؟",
+        description: "بله. برخی از مدل ها دسترسی به اینترنت هم دارند.",
+      },
+    }),
     prisma.webPlan.upsert({
       where: { id: 1 },
       update: {},

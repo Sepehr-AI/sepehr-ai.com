@@ -1,5 +1,4 @@
 "use client";
-
 import Message from "./Message";
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "react-toastify";
@@ -51,6 +50,7 @@ export default function ChatBody({
   const [messagesCount, setMessagesCount] = useState(
     initialMessages?.length || 0
   );
+
   const {
     fileInputRef,
     attachments,
@@ -59,6 +59,7 @@ export default function ChatBody({
     error: fileError,
     clearAttachments,
   } = useAttachments();
+
   const [customError, setCustomError] = useState<string | null>(null);
 
   const {
@@ -98,6 +99,7 @@ export default function ChatBody({
   }, [fileError, setCustomError]);
 
   const endOfThePageRef = useRef<HTMLDivElement>(null);
+
   const scrollToMsgInput = () => {
     if (endOfThePageRef.current) {
       endOfThePageRef.current.scrollIntoView({
@@ -115,7 +117,6 @@ export default function ChatBody({
       setMessagesCount((c) => c + 1);
     }
     if (status === "streaming") setWaitingForFirstResp(false);
-
     scrollToMsgInput();
   }, [messages, status]);
 
@@ -123,28 +124,17 @@ export default function ChatBody({
     if (messages.length !== (initialMessages?.length || 0)) {
       updateChat(chatUuid, engineCode, aiCompanyWebsite, messages);
     }
-
     scrollToMsgInput();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messagesCount]);
 
   useEffect(() => {
     if (initialMessages?.length === 1) reload();
-
     return () => {
       stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // const handleSubmit = (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => {
-  //   e.preventDefault();
-
-  //   setCustomError(null);
-  //   aiHandleSubmit(e, {
-  //     // experimental_attachments: files,
-  //   });
-  // };
 
   const handleReload = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -167,18 +157,15 @@ export default function ChatBody({
           switch (errormsg) {
             case balanceNotEnoughMsg:
               return router.push("/dashboard/payment?balanceInsufficient=true");
-
             case UnauthorizedReason.UNAUTH:
             case UnauthorizedReason.JWT_NOT_VALID:
             case UnauthorizedReason.USER_NOT_FOUND:
             case UnauthorizedReason.COOKIE_NOT_SET:
               handleLogout(router);
               return;
-
             case unexpectedErrorMsg:
               errormsg = "خطای داخلی! در صورت تداوم با پشتیبانی ارتباط بگیرید.";
               break;
-
             default:
               errormsg =
                 "خطا در برقراری ارتباط با سرور. لطفا ارتباط اینترنت خود را بررسی کنید.";
@@ -190,10 +177,8 @@ export default function ChatBody({
       } catch {
         errormsg = customError || clientErrors.internetIssue.text;
       }
-
       toast.error(errormsg, {
         position: "top-center",
-        // toastId: clientErrors.internetIssue.id,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -204,7 +189,6 @@ export default function ChatBody({
   ) => {
     e.preventDefault();
     setCustomError(null);
-
     const attachmentsArray = attachments
       ? await Promise.all(
           Array.from(attachments).map(async (file) => ({
@@ -214,53 +198,67 @@ export default function ChatBody({
           }))
         )
       : undefined;
-
     aiHandleSubmit(e, {
       experimental_attachments: attachmentsArray,
     });
-
     clearAttachments();
   };
 
+  // Calculate if we need minimal height or scrolling
+  const messagesContainerClass =
+    messages.length < 3
+      ? "flex-grow min-h-[50vh] md:min-h-[60vh]"
+      : "flex-1 overflow-y-auto";
+
   return (
-    <>
-      <div className="flex-auto flex flex-col items-center text-sm">
-        <div className="flex w-full items-center justify-center gap-1 border-b border-black/10 p-3 text-gray-500">
-          مدل: {engineCode}
+    <div className="flex flex-col h-full bg-white dark:bg-gray-800 md:rounded-xl shadow-md overflow-hidden transition-colors duration-200">
+      <div className="flex items-center justify-center py-3 px-4 bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-600 shadow-sm sticky top-0 z-10">
+        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-200">
+          <span>مدل:</span>
+          <span className="font-medium text-emerald-600 dark:text-emerald-400">
+            {engineCode}
+          </span>
         </div>
-        {messages.map((message, index) => (
-          <Message
-            message={message}
-            key={message.id || index}
-            aiCompanyWebsite={aiCompanyWebsite}
-            waitingForFirstResp={waitingForFirstResp}
-            isTheLastMessage={
-              !waitingForFirstResp && index === messages.length - 1
-            }
-          />
-        ))}
       </div>
 
-      <NewMessageBox
-        {...{
-          input,
-          status,
-          textAreaRef,
-          handleSubmit,
-          handleReload,
-          fileInputRef,
-          setCustomError,
-          endOfThePageRef,
-          handleFileChange,
-          selectedFileNames,
-          handleInputChange,
-          isError: Boolean(
-            error ||
-              status === "error" ||
-              customError === clientErrors.internetIssue.text
-          ),
-        }}
-      />
-    </>
+      <div className={messagesContainerClass} dir="rtl">
+        <div className="max-w-3xl mx-auto">
+          {messages.map((message, index) => (
+            <Message
+              message={message}
+              key={message.id || index}
+              aiCompanyWebsite={aiCompanyWebsite}
+              waitingForFirstResp={waitingForFirstResp}
+              isTheLastMessage={
+                !waitingForFirstResp && index === messages.length - 1
+              }
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t border-gray-100 dark:border-gray-700 shadow-md">
+        <NewMessageBox
+          {...{
+            input,
+            status,
+            textAreaRef,
+            handleSubmit,
+            handleReload,
+            fileInputRef,
+            setCustomError,
+            endOfThePageRef,
+            handleFileChange,
+            selectedFileNames,
+            handleInputChange,
+            isError: Boolean(
+              error ||
+                status === "error" ||
+                customError === clientErrors.internetIssue.text
+            ),
+          }}
+        />
+      </div>
+    </div>
   );
 }

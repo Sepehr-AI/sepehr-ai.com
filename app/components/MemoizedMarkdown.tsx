@@ -14,7 +14,10 @@ import { FaRegCopy } from "react-icons/fa6";
 import rehypeMathml from "@daiji256/rehype-mathml";
 import { memo, type MouseEvent, useMemo } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  oneDark,
+  oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
@@ -57,6 +60,8 @@ const MemoizedMarkdownBlock = memo(
     content: string;
     className?: string;
   }) => {
+    const isDarkMode = document.documentElement.classList.contains("dark");
+    const syntaxTheme = isDarkMode ? oneDark : oneLight;
     // const containsMath = RegExp(`(?:\d+(\.\d+)?|\([^\)]*\)|[+\-*/^])`);
 
     return (
@@ -206,7 +211,7 @@ const MemoizedMarkdownBlock = memo(
                   </div>
                   <SyntaxHighlighter
                     {...(rest as any)}
-                    style={oneLight}
+                    style={syntaxTheme}
                     language={match[1]}
                   >
                     {codeText}

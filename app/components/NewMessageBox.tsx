@@ -1,7 +1,6 @@
 "use client";
-
-import { FiRefreshCw, FiSend } from "react-icons/fi";
-import { FaPaperclip, FaRegCircleStop } from "react-icons/fa6";
+import { FiRefreshCw, FiSend, FiPaperclip } from "react-icons/fi";
+import { FaRegCircleStop } from "react-icons/fa6";
 import {
   useEffect,
   type Dispatch,
@@ -41,10 +40,10 @@ function ActionButton({
 > & { svg: ElementType }) {
   return (
     <button
-      className="flex-none p-1 rounded-md bottom-1.5 md:bottom-2.5 bg-gray-800 right-1 md:right-2 disabled:opacity-70 outline-none"
+      className="flex-none p-2 rounded-full text-white bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:hover:bg-emerald-500 transition-colors shadow-md"
       {...props}
     >
-      <Svg className="h-5 w-5 text-white" />
+      <Svg className="h-5 w-5" />
     </button>
   );
 }
@@ -72,73 +71,89 @@ export default function NewMessageBox({
   }, [input, textAreaRef]);
 
   return (
-    <div className="flex-none py-3 lg:py-0 w-[95%] md:max-w-xl lg:max-w-3xl xl:max-w-5xl mx-auto border-t-0 md:border-transparent md:bg-vert-light-gradient bg-white md:!bg-transparent">
-      <form className="my-auto" onSubmit={handleSubmit}>
-        <div className="flex flex-row p-1 border border-black/10 bg-whit rounded-md shadow-[0_0_10px_rgba(0,0,0,0.10)]">
-          <div className="flex-none flex flex-col ml-1">
-            <div className="flex-auto"></div>
+    <div
+      className="p-4 bg-white dark:bg-gray-800 transition-colors duration-200"
+      dir="rtl"
+    >
+      <div className="max-w-3xl mx-auto">
+        <form onSubmit={handleSubmit}>
+          <div className="flex items-end gap-3">
             <ActionButton
-              type="button"
-              onClick={() => fileInputRef?.current?.click()}
-              svg={FaPaperclip}
+              type={isError ? "button" : "submit"}
+              disabled={!isError && (status !== "ready" || !input?.length)}
+              svg={
+                isError
+                  ? FiRefreshCw
+                  : status !== "ready"
+                  ? FaRegCircleStop
+                  : FiSend
+              }
+              onClick={
+                isError
+                  ? handleReload
+                  : status !== "ready"
+                  ? () => {
+                      if (setCustomError) setCustomError(null);
+                      stop();
+                    }
+                  : undefined
+              }
             />
-            {/* Hidden file input */}
-            <input
-              multiple
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              style={{ display: "none" }}
-            />
+
+            <div className="relative flex-grow bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 focus-within:border-emerald-300 dark:focus-within:border-emerald-700 focus-within:ring-1 focus-within:ring-emerald-300 dark:focus-within:ring-emerald-700 transition-all shadow-sm">
+              <textarea
+                tabIndex={0}
+                value={input}
+                ref={textAreaRef}
+                onChange={handleInputChange}
+                placeholder="پیامت رو تایپ کن ..."
+                style={{
+                  height: "24px",
+                  minHeight: "56px",
+                  maxHeight: "200px",
+                  scrollbarWidth: "none",
+                }}
+                className="w-full resize-none bg-transparent border-0 focus:ring-0 focus-visible:ring-0 py-3 px-4 dark:text-white"
+                {...(input?.valueOf().length && { dir: "auto" })}
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef?.current?.click()}
+                className="absolute bottom-2 right-3 text-gray-400 dark:text-gray-500 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors"
+              >
+                <FiPaperclip className="w-5 h-5" />
+              </button>
+
+              <input
+                multiple
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: "none" }}
+              />
+            </div>
           </div>
 
-          <div className="flex-none flex flex-col">
-            <div className="flex-auto"></div>
-            {isError ? (
-              <ActionButton onClick={handleReload} svg={FiRefreshCw} />
-            ) : status !== "ready" ? (
-              <ActionButton
-                onClick={() => {
-                  if (setCustomError) setCustomError(null);
-                  stop();
-                }}
-                svg={FaRegCircleStop}
-              />
-            ) : (
-              <ActionButton
-                type="submit"
-                disabled={status !== "ready" || input?.length === 0}
-                svg={FiSend}
-              />
-            )}
-          </div>
-          <textarea
-            tabIndex={0}
-            value={input}
-            ref={textAreaRef}
-            style={{
-              height: "24px",
-              scrollbarWidth: "none",
-            }}
-            onChange={handleInputChange}
-            placeholder="پیامت رو تایپ کن ..."
-            {...(input?.valueOf().length && { dir: "auto" })}
-            className="max-h-[20dvh] overflow-y-auto flex-auto resize-none border-0 bg-transparent focus:ring-0 focus-visible:ring-0 p-1 px-3"
-          />
+          {selectedFileNames && selectedFileNames.length > 0 && (
+            <div className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+              <div className="flex items-center gap-1 mb-1">
+                <FiPaperclip className="text-emerald-500 dark:text-emerald-400" />
+                <span>فایل‌های انتخاب شده:</span>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg text-gray-700 dark:text-gray-300 break-all max-h-20 overflow-y-auto shadow-sm">
+                {selectedFileNames.join(", ")}
+              </div>
+            </div>
+          )}
+        </form>
+
+        <div className="text-center text-xs text-gray-400 dark:text-gray-500 mt-3">
+          جهت جلوگیری از بروز خطا، صحت اطلاعاتی خروجی را بررسی کنید.
         </div>
-        {selectedFileNames && selectedFileNames.length > 0 && (
-          <div className="mt-2 text-sm text-gray-600 text-right">
-            <p className="inline">فایل ها: </p>
-            <span className="inline-block mx-2 break-all max-w-full text-left">
-              {selectedFileNames.join(", ")}
-            </span>
-          </div>
-        )}
-      </form>
-      <div className="px-3 py-1.5 text-center text-xs text-black/50 md:px-4 md:pt-3 md:pb-6">
-        <span>جهت جلوگیری از بروز خطا، صحت اطلاعاتی خروجی را بررسی کنید.</span>
+
+        <div ref={endOfThePageRef}></div>
       </div>
-      <div ref={endOfThePageRef}></div>
     </div>
   );
 }

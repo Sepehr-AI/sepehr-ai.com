@@ -1,0 +1,17 @@
+import type { Faq } from "@/prisma/client";
+import { unstable_cache } from "next/cache";
+
+export type FaqsForLandingPage = (Pick<Faq, "title" | "description"> &
+  Partial<Faq>)[];
+
+export const getFaqs: () => Promise<FaqsForLandingPage> = unstable_cache(
+  () =>
+    prisma.faq.findMany({
+      select: {
+        title: true,
+        description: true,
+      },
+    }) || [],
+  ["faqs"],
+  { revalidate: 60 * 60 * 24 }
+);

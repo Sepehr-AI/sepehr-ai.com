@@ -21,10 +21,12 @@ export default function NavbarLink({
         href={href}
         shallow={true}
         prefetch={prefetch}
-        className={
-          "flex py-3 px-3 items-center gap-3 rounded-md hover:bg-gray-500/10 transition-colors duration-200 text-white cursor-pointer text-sm mb-1" +
-          (border ? " border border-white/20" : "")
-        }
+        className={`
+          flex py-3 px-4 items-center gap-3 rounded-lg 
+          hover:bg-gray-50 transition-colors duration-200 
+          text-gray-700 cursor-pointer text-sm mb-2
+          ${border ? "border border-gray-100 hover:border-emerald-200" : ""}
+        `}
       >
         {children}
       </Link>

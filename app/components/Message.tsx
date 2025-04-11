@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
-
 import type { UIMessage } from "ai";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
@@ -9,11 +8,11 @@ import LoadingMessage from "./LoadingMessage";
 import CompanyLogo from "./companyLogos/CompanyLogo";
 import { MemoizedMarkdown } from "./MemoizedMarkdown";
 import {
-  FaChevronDown,
-  FaChevronUp,
-  FaPaperclip,
-  FaRegCopy,
-} from "react-icons/fa6";
+  FiChevronDown,
+  FiChevronUp,
+  FiPaperclip,
+  FiCopy,
+} from "react-icons/fi";
 import React, {
   useMemo,
   useState,
@@ -43,6 +42,7 @@ const Message = ({
       const renderedReasoning: JSX.Element[] = [];
       const renderedAttachments: JSX.Element[] = [];
       const renderedNonReasoning: JSX.Element[] = [];
+
       const Markdown = ({
         content,
         className,
@@ -83,7 +83,12 @@ const Message = ({
           } else if (part.type === "source" && part.source.url.trim().length) {
             renderedNonReasoning.push(
               <div key={`source-${index}`}>
-                <a href={part.source.url}>{part.source.url}</a>
+                <a
+                  href={part.source.url}
+                  className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                >
+                  {part.source.url}
+                </a>
               </div>
             );
           } else if (part.type === "file" && part.data.trim().length) {
@@ -105,23 +110,26 @@ const Message = ({
                       _part.url || `data:${part.mimeType};base64,${part.data}`
                     }
                     alt={_part.name || "attachment"}
-                    className="max-w-full h-auto my-2"
+                    className="max-w-full h-auto my-2 rounded-lg shadow-md"
                   />
                 </a>
               );
             } else {
               renderedNonReasoning.push(
-                <li key={`file-${index}`} className="flex flex-row gap-1 my-2">
-                  <FaPaperclip className="flex-none" />
+                <div
+                  key={`file-${index}`}
+                  className="flex items-center gap-2 my-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm"
+                >
+                  <FiPaperclip className="text-emerald-500 dark:text-emerald-400" />
                   <a
                     href={part.data}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-auto underline"
+                    className="text-emerald-600 dark:text-emerald-400 hover:underline"
                   >
                     دانلود فایل
                   </a>
-                </li>
+                </div>
               );
             }
           } else if (part.type === "tool-invocation") {
@@ -150,27 +158,27 @@ const Message = ({
                   <img
                     src={attachment.url}
                     alt={attachment.name || "attachment"}
-                    className="max-w-full h-auto my-2 mx-auto"
+                    className="max-w-full h-auto my-2 mx-auto rounded-lg border border-gray-100 dark:border-gray-700 shadow-md"
                   />
                 </a>
               );
             } else {
               renderedAttachments.push(
-                <li
+                <div
                   key={`attachment-${index}`}
-                  className="flex flex-row gap-1 my-2"
+                  className="flex items-center gap-2 my-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm"
                 >
-                  <FaPaperclip className="flex-none" />
+                  <FiPaperclip className="text-emerald-500 dark:text-emerald-400" />
                   <a
                     href={attachment.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     download={attachment.name || "download"}
-                    className="flex-auto underline"
+                    className="text-emerald-600 dark:text-emerald-400 hover:underline"
                   >
                     {attachment.name || "دانلود فایل"}
                   </a>
-                </li>
+                </div>
               );
             }
           });
@@ -215,7 +223,6 @@ const Message = ({
           })
           .join("\n");
     }
-
     try {
       copy(textToCopy.trim());
       toast.success("پیام در کلیپ‌بورد کپی شد.", {
@@ -237,92 +244,92 @@ const Message = ({
 
   return (
     <div
-      className={
-        `mt-2 pb-2 group text-[0.920rem] mx-auto w-full text-gray-800 ${
-          !isTheLastMessage && "border-b border-black/10"
-        } break-words flex flex-row ${isTheLastMessage && "mb-4"}` +
-        (className ? ` ${className}` : "")
-      }
+      className={`py-6 ${isUser ? "" : "bg-gray-50 dark:bg-gray-700/30"} px-4 ${
+        !isTheLastMessage ? "border-b border-gray-100 dark:border-gray-700" : ""
+      } transition-colors duration-200`}
     >
-      <div
-        className={
-          "flex-1" +
-          (text.length < 50 && !renderedReasoning.length
-            ? " content-center"
-            : "")
-        }
-      >
-        <div className="w-8 h-8 float-left m-2 border-2 p-[0.15rem] border-gray-700 rounded-full shrink-0 grow-0">
-          {isUser ? (
-            <HiUser className="text-gray-700 w-auto h-full" />
-          ) : (
-            <div className="flex justify-center items-center w-full h-full">
+      <div className="flex gap-4 max-w-3xl mx-auto">
+        <div className="flex-shrink-0">
+          <div
+            className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md
+            ${
+              isUser
+                ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
+            }`}
+          >
+            {isUser ? (
+              <HiUser className="w-5 h-5" />
+            ) : (
               <CompanyLogo
-                className="!w-auto !h-full"
+                className="w-7 h-7"
                 companyWebsite={aiCompanyWebsite}
               />
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-      <div className="min-h-[10vh] flex-none flex flex-col justify-center xl:w-2xl lg:w-xl w-[85%] gap-1">
-        {/* Action Block: Copy and Toggle */}
-        {!isUser && (
-          <div className="w-full my-2">
-            <div className="relative w-full float-left ltr pl-0.5 flex flex-row gap-2 items-center">
-              <button
-                onClick={handleCopy}
-                className="bg-gray-700 rounded p-1.5 text-white h-full"
-              >
-                <FaRegCopy />
-              </button>
 
-              {renderedReasoning.length > 0 && (
-                <div>
+        <div className="flex-grow">
+          {/* Action Block: Copy and Toggle */}
+          {!isUser && (
+            <div className="flex justify-end mb-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCopy}
+                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 hover:border-emerald-200 dark:hover:border-emerald-700 transition-colors shadow-sm"
+                  aria-label="Copy message"
+                >
+                  <FiCopy size={16} />
+                </button>
+
+                {renderedReasoning.length > 0 && (
                   <button
-                    className="flex flex-row items-center px-1.5 outline-none text-white bg-gray-700 rounded"
+                    className="flex items-center gap-1 px-2 py-1 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 hover:border-emerald-200 dark:hover:border-emerald-700 transition-colors shadow-sm"
                     onClick={(e) => {
                       e.preventDefault();
                       setShowReasoning((prev) => !prev);
                     }}
                   >
-                    {showReasoning ? <FaChevronDown /> : <FaChevronUp />}
-                    <span className="align-middle will-change-auto opacity-100 px-2 py-1 text-sm">
+                    {showReasoning ? (
+                      <FiChevronUp size={16} />
+                    ) : (
+                      <FiChevronDown size={16} />
+                    )}
+                    <span className="text-sm">
                       {showReasoning ? "پنهان" : "نمایش"} استدلال
                     </span>
                   </button>
-                  <div className="flex-auto"></div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
-
-        {showReasoning && renderedReasoning.length > 0 && (
-          <div className="relative z-0 whitespace-pre-wrap pl-4 pr-2 md:pl-7 md:pr-5 h-auto overflow-y-hidden will-change-auto opacity-100 rounded-2xl py-4 shadow-xl ltr text-pretty text-justify">
-            <div className="flex flex-col gap-2">
-              {renderedReasoning}
-              <div className="absolute bottom-0 left-0 top-0 w-1 rounded-full bg-token-border-light bg-[#0000001a]"></div>
-            </div>
-          </div>
-        )}
-
-        <div>
-          {renderedNonReasoning.length > 0
-            ? renderedNonReasoning
-            : text?.length > 0 && (
-                <p className="p-3" dir="auto">
-                  {text}
-                </p>
-              )}
-          {renderedAttachments && renderedAttachments.length > 0 && (
-            <ul className="mt-2 float-left ltr list-none w-full">
-              {renderedAttachments}
-            </ul>
           )}
+
+          {/* Message Content */}
+          <div
+            className={`prose dark:prose-invert max-w-none ${
+              isUser
+                ? "text-gray-800 dark:text-gray-200"
+                : "text-gray-700 dark:text-gray-200"
+            }`}
+          >
+            {showReasoning && renderedReasoning.length > 0 && (
+              <div className="bg-white dark:bg-gray-800 p-4 border-r-4 border-emerald-500 dark:border-emerald-400 rounded-r-md rounded-l my-3 shadow-md">
+                {renderedReasoning}
+              </div>
+            )}
+
+            <div>
+              {renderedNonReasoning.length > 0
+                ? renderedNonReasoning
+                : text?.length > 0 && <p dir="auto">{text}</p>}
+            </div>
+
+            {renderedAttachments && renderedAttachments.length > 0 && (
+              <div className="mt-4 space-y-2">{renderedAttachments}</div>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex-1"></div>
     </div>
   );
 };

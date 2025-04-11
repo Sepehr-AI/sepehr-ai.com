@@ -1,414 +1,368 @@
 "use server";
 
-import Icon from "./Icon";
-import Head from "next/head";
-import Link from "next/link";
-import Enamad from "./Enamad";
-import { GiAtom } from "react-icons/gi";
+import { getFaqs } from "@/lib/faqs";
 import { getWebPlans } from "@/lib/plans";
-import FAQAccordion from "./FAQAccordion";
-import { TfiMoney } from "react-icons/tfi";
-import { TbInfoHexagon } from "react-icons/tb";
-import { MdOutlineSecurity } from "react-icons/md";
-import { roundWebPlanTokensAmount } from "@/lib/cost";
 import { getModelsForPlanComparison } from "@/lib/models";
-import { IoExtensionPuzzleOutline } from "react-icons/io5";
-import {
-  FaLayerGroup,
-  FaCalculator,
-  FaCode,
-  FaUserPlus,
-  FaCogs,
-  FaLock,
-  FaFacebookF,
-  FaTwitter,
-  FaInstagram,
-  FaRegUser,
-  FaBars,
-} from "react-icons/fa";
+import { roundWebPlanTokensAmount } from "@/lib/cost";
+import Icon from "./Icon";
+import FAQSection from "./FAQSection";
+import Enamad from "./Enamad";
+import Link from "next/link";
 
-const faqItems = [
-  {
-    question: "برای ثبت نام چی نیاز دارم؟",
-    answer:
-      "برای ثبت نام کافیست بر روی دکمه «شروع کنید» کلیک کنید و اطلاعات اولیه مانند ایمیل و شماره تلفن خود را وارد نمایید.",
-  },
-  {
-    question: "مدل زبانی به اینترنت دسترسی داره؟",
-    answer: "در حال حاضر این پشتیبانی وجود ندارد اما به زودی اضافه خواهد شد.",
-  },
-  {
-    question: "به چه مدل‌های هوش مصنوعی دسترسی داریم؟",
-    answer:
-      "سپهر AI مجموعه‌ای از مدل‌های پیشرفته هوش مصنوعی، شامل مدل‌های GPT و سایر مدل‌های بهینه‌شده برای ریاضیات، برنامه نویسی و ویرایش متون را ارائه می‌دهد.",
-  },
-  {
-    question: "چرا باید از هوش مصنوعی شما استفاده کنم؟",
-    answer:
-      "سپهر AI با ارائه مدل‌های به‌روز و بهینه در زمینه‌های ریاضیات، برنامه نویسی و ویرایش متون، تجربه‌ای امن و کارآمد را به شما ارائه می‌دهد.",
-  },
-  {
-    question: "چرا GPT-4 شما مثل اشتراک پلاس OpenAI نیست؟",
-    answer:
-      "به دلیل بهینه‌سازی‌های اختصاصی و تنظیمات متفاوت، عملکرد GPT-4 ما تجربه‌ای متفاوت از اشتراک پلاس OpenAI ارائه می‌دهد.",
-  },
-  {
-    question: "تفاوت اشتراک سپهر AI با اشتراک رسمی OpenAI چیه؟",
-    answer:
-      "در حالی که سپهر AI از زیرساخت‌های اختصاصی بهره می‌برد، سپهر AI ترکیبی از امنیت، قیمت‌گذاری انعطاف‌پذیر و دسترسی به مدل‌های به‌روز را ارائه می‌دهد که تفاوت‌های قابل توجهی ایجاد می‌کند.",
-  },
-  {
-    question: "با خرید اشتراک چه امکاناتی دریافت می‌کنیم؟",
-    answer:
-      "با خرید اشتراک پلاس، به مدل‌های پیشرفته، اعتبار بیشتر و امکانات ویژه در زمینه‌های ریاضیات، برنامه نویسی و ویرایش متون دسترسی خواهید داشت.",
-  },
-  {
-    question:
-      "با خرید اشتراک سپهر AI از تمام امکانات اشتراک پلاس شرکت OpenAI بهره‌مند میشوم؟",
-    answer:
-      "خیر، هر سرویس امکانات و ویژگی‌های منحصر به فرد خود را دارد. برای اطلاعات دقیق به صفحه پلن‌ها مراجعه کنید.",
-  },
-  {
-    question: "آیا میتوانم اشتراک خود را با دوستانم به اشتراک بگذارم؟",
-    answer:
-      "بله. منتها بسته به اعتبار اکانت شما تعداد کاربر های همزمانی که از سرویس استفاده میکنن محدود میشوند.",
-  },
-  {
-    question: "توکن چیه و چجوری محاسبه میشه؟",
-    answer:
-      "توکن واحد اندازه‌گیری مصرف مدل‌های زبانی است که بر اساس تعداد کاراکترها و واژگان محاسبه می‌شود.",
-  },
-  {
-    question: "حالت استدلال منطقی با حالت عادی چه فرقی داره؟",
-    answer:
-      "حالت استدلال منطقی برای تحلیل عمیق‌تر مسائل طراحی شده و نسبت به حالت عادی دقت و کارایی بیشتری دارد.",
-  },
-  {
-    question: "چه افزونه‌هایی در اشتراک ارائه میشود؟",
-    answer:
-      "اشتراک پلاس شامل افزونه‌های متنوعی برای بهبود تجربه کاربری، برنامه نویسی و ریاضیات است.",
-  },
-  {
-    question: "برای کودکان مناسبه؟",
-    answer:
-      "سرویس ما برای تمام سنین مناسب است، اما توصیه می‌شود کودکان تحت نظارت والدین از آن استفاده کنند.",
-  },
-  {
-    question: "چطور کار میکنه؟",
-    answer:
-      "سپهر AI با استفاده از مدل‌های پیشرفته و زیرساخت‌های امن، خدماتی در زمینه‌های ریاضیات، برنامه نویسی و ویرایش متون ارائه می‌دهد.",
-  },
-  {
-    question: "همه چیز بلده؟",
-    answer:
-      "مدل‌های ما توانایی پردازش و تحلیل اطلاعات در حوزه‌های مختلف را دارند اما ممکن است در برخی موارد محدودیت‌هایی وجود داشته باشد.",
-  },
-  {
-    question: "بعضی اوقات سرعت خیلی افت میکنه",
-    answer:
-      "ممکن است به دلیل ترافیک بالا یا مشکلات موقتی سرور باشد. لطفاً کمی صبر کنید یا به صفحه وضعیت سرور مراجعه کنید.",
-  },
-  {
-    question: "چطور میتونم از طریق هوش مصنوعی کسب درآمد کنم؟",
-    answer:
-      "با استفاده از مدل‌های ما می‌توانید برنامه‌ها و خدماتی را توسعه دهید که از هوش مصنوعی بهره می‌برند و به این ترتیب درآمد کسب کنید. برای اطلاعات بیشتر به بخش راهنمای کسب درآمد مراجعه کنید.",
-  },
-];
+// Icons
+import {
+  HiOutlineLightBulb,
+  HiOutlineChip,
+  HiOutlineGlobe,
+} from "react-icons/hi";
+import {
+  MdOutlineInsights,
+  MdOutlineAutoAwesome,
+  MdOutlineRocketLaunch,
+} from "react-icons/md";
+import { FiShield, FiCode, FiUsers } from "react-icons/fi";
+import { BsArrowRight, BsCheckCircle } from "react-icons/bs";
+import { RiRobot2Line } from "react-icons/ri";
 
 export default async function Home() {
+  const faqs = await getFaqs();
   const plans = await getWebPlans();
   const modelsForPlanComparison = await getModelsForPlanComparison();
 
   return (
-    <>
-      <Head>
-        <meta name="robots" content="nofollow" />
-        <meta name="google" content="notranslate" />
-      </Head>
+    <div className="min-h-screen bg-white" dir="rtl">
+      {/* Navigation */}
+      <nav className="fixed w-full z-50 bg-black/90 backdrop-blur-sm border-b border-white/10">
+        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-12">
+            <Icon fill="#fff" className="h-10" />
 
-      {/* Main Container */}
-      <div className="min-h-screen w-full" dir="rtl">
-        {/* Header (with collapsible menu) */}
-        <header className="bg-black py-4">
-          <div className="mx-auto px-6 flex items-center text-white relative">
-            {/* Logo / Icon */}
-            <Icon fill="#fff" className="flex-none h-[inherit] max-h-[8dvh]" />
-
-            <div className="flex-auto"></div>
-
-            {/* Hidden checkbox to toggle mobile nav */}
-            <input
-              type="checkbox"
-              id="menuToggle"
-              className="peer hidden"
-              aria-label="Toggle navigation menu"
-            />
-
-            {/* Hamburger icon (visible on mobile) */}
-            <label
-              htmlFor="menuToggle"
-              className="flex-none ml-auto md:hidden block text-2xl cursor-pointer"
-            >
-              <FaBars />
-            </label>
-
-            {/* Navigation */}
-            <nav
-              className={`
-                hidden
-                peer-checked:flex    /* Show menu when checkbox is checked */
-                flex-col
-                absolute
-                top-full
-                left-0
-                w-full
-                bg-black
-                text-white
-                md:static
-                md:flex
-                md:flex-row
-                md:w-auto
-                z-50
-                items-center
-                shadow-lg
-                shadow-amber-50
-                md:shadow-none
-              `}
-            >
-              <ul className="flex flex-col gap-4 md:flex-row md:space-x-6 p-4 md:p-0">
-                <li className="flex items-center gap-2 mb-2 md:mb-0">
-                  <FaRegUser />
-                  <Link
-                    href="/auth"
-                    className="hover:text-gray-300 transition-colors"
-                  >
-                    ورود / ثبت‌نام
-                  </Link>
-                </li>
-                <li className="flex items-center gap-2 mb-2 md:mb-0">
-                  <TfiMoney />
-                  <a
-                    href="#pricing"
-                    className="hover:text-gray-300 transition-colors"
-                  >
-                    قیمت گذاری
-                  </a>
-                </li>
-                <li className="flex items-center gap-2">
-                  <TbInfoHexagon />
-                  <a
-                    href="#faq"
-                    className="hover:text-gray-300 transition-colors"
-                  >
-                    سوالات متداول
-                  </a>
-                </li>
-              </ul>
-            </nav>
+            <div className="hidden md:flex space-x-8">
+              <a
+                href="#features"
+                className="text-white hover:text-emerald-400 transition-colors"
+              >
+                ویژگی‌ها
+              </a>
+              <a
+                href="#models"
+                className="text-white hover:text-emerald-400 transition-colors"
+              >
+                مدل‌ها
+              </a>
+              <a
+                href="#pricing"
+                className="text-white hover:text-emerald-400 transition-colors"
+              >
+                قیمت‌گذاری
+              </a>
+              <a
+                href="#faq"
+                className="text-white hover:text-emerald-400 transition-colors"
+              >
+                سوالات متداول
+              </a>
+            </div>
           </div>
-        </header>
 
-        {/* Hero Section */}
-        <section id="hero" className="bg-black text-white py-16 text-center">
-          <div className="container mx-auto px-6">
-            <h1 className="text-5xl md:text-7xl font-extrabold mb-6">
-              تجربه‌ی نوین مدل‌های هوش مصنوعی
-            </h1>
-            <p className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">
-              مدل های هوش مصنوعی مختلف از جمله دیپ‌سیک، چت‌جی‌پی‌تی، کلاد، و...
-            </p>
+          <div className="flex items-center gap-4">
             <Link
               href="/auth"
-              className="inline-block bg-white text-black font-semibold py-4 px-10 rounded-full text-xl transition-transform hover:scale-105 hover:shadow-lg"
+              className="py-2 px-4 text-white hover:text-emerald-400 transition-colors"
             >
-              شروع کنید
+              ورود
+            </Link>
+            <Link
+              href="/auth?register=true"
+              className="py-2 px-6 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full transition-colors"
+            >
+              ثبت‌نام
             </Link>
           </div>
-        </section>
+        </div>
+      </nav>
 
-        {/* Features Section */}
-        <section id="features" className="bg-white text-black py-16">
-          <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold text-center mb-4">
-              ویژگی‌های منحصربه‌فرد
-            </h2>
-            <p className="text-center text-gray-700 mb-12 max-w-2xl mx-auto">
-              سپهر AI بهترین ابزارها و مدل‌های هوش مصنوعی را برای کاربردهای
-              متنوع در اختیار شما قرار می‌دهد.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Feature 1: Advanced AI Models */}
-              <div className="p-6 bg-gray-50 rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <FaLayerGroup className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">مدل‌های پیشرفته</h3>
-                <p className="text-gray-700">
-                  دسترسی به آخرین مدل‌های هوش مصنوعی برای پردازش زبان، تحلیل
-                  داده و سایر نیازها.
-                </p>
+      {/* Hero Section */}
+      <section className="pt-32 pb-20 bg-gradient-to-b from-black to-gray-900 text-white">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-8">
+              <div className="inline-block py-1 px-3 bg-emerald-500/20 rounded-full text-emerald-400 text-sm font-medium mb-4">
+                +300 مدل هوش مصنوعی
               </div>
-              {/* Feature 2: Smart Solutions */}
-              <div className="p-6 bg-gray-50 rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <FaCalculator className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">
-                  راهکارهای هوشمند
-                </h3>
-                <p className="text-gray-700">
-                  از تحلیل دقیق داده تا پیش‌بینی‌های هوشمند، راهکارهایی که کسب و
-                  کار شما را متحول می‌کند.
-                </p>
-              </div>
-              {/* Feature 3: Comprehensive Services */}
-              <div className="p-6 bg-gray-50 rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <FaCode className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">خدمات جامع</h3>
-                <p className="text-gray-700">
-                  از اتوماسیون فرآیندها تا سفارشی‌سازی مدل‌ها، ابزارهای ما همه
-                  نیازهای شما را برآورده می‌کند.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works Section */}
-        <section id="how-it-works" className="bg-gray-100 text-black py-16">
-          <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold text-center mb-4">
-              چگونه کار می‌کند؟
-            </h2>
-            <p className="text-center text-gray-700 mb-12 max-w-2xl mx-auto">
-              استفاده از سپهر AI بسیار ساده و سریع است؛ تنها با چند قدم
-              می‌توانید به دنیای هوش مصنوعی وارد شوید.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Step 1: Sign Up */}
-              <div className="p-6 bg-white rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <FaUserPlus className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">ثبت نام سریع</h3>
-                <p className="text-gray-700">
-                  با ثبت نام ساده، حساب کاربری خود را بسازید و به سرعت وارد
-                  دنیای هوش مصنوعی شوید.
-                </p>
-              </div>
-              {/* Step 2: Choose Your Plan */}
-              <div className="p-6 bg-white rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <FaLock className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">
-                  انتخاب پلن مناسب
-                </h3>
-                <p className="text-gray-700">
-                  از میان پلن‌های متنوع ما، آنچه بهترین پاسخ به نیاز شماست را
-                  انتخاب کنید.
-                </p>
-              </div>
-              {/* Step 3: Start Using AI */}
-              <div className="p-6 bg-white rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <FaCogs className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">شروع استفاده</h3>
-                <p className="text-gray-700">
-                  بلافاصله پس از انتخاب پلن، از مدل‌های هوش مصنوعی برای پروژه‌ها
-                  و کسب و کار خود بهره‌مند شوید.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Why Sepahr AI Section */}
-        <section id="why-sepehr-ai" className="bg-white text-black py-16">
-          <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold text-center mb-6">
-              چرا سپهر AI؟
-            </h2>
-            <p className="text-center text-gray-700 mb-12 max-w-2xl mx-auto">
-              سپهر AI پلی است که با بهره‌گیری از تکنولوژی‌های پیشرفته هوش
-              مصنوعی، تجربه‌ای منحصر به‌فرد و کارآمد را برای کاربران فراهم
-              می‌کند.
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Benefit 1: Cutting-Edge Technology */}
-              <div className="p-6 bg-gray-50 rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <GiAtom className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">تکنولوژی برتر</h3>
-                <p className="text-gray-700">
-                  استفاده از جدیدترین و به‌روزترین مدل‌های هوش مصنوعی برای ارائه
-                  پاسخ‌های دقیق و کاربردی.
-                </p>
-              </div>
-              {/* Benefit 2: Versatility */}
-              <div className="p-6 bg-gray-50 rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <IoExtensionPuzzleOutline className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">
-                  انعطاف‌پذیری بالا
-                </h3>
-                <p className="text-gray-700">
-                  ارائه خدمات در حوزه‌های متنوع از پردازش زبان طبیعی تا تحلیل
-                  داده، که متناسب با نیازهای هر کاربر تنظیم شده است.
-                </p>
-              </div>
-              {/* Benefit 3: Security & Support */}
-              <div className="p-6 bg-gray-50 rounded-xl shadow hover:shadow-md transition-shadow text-center">
-                <div className="flex justify-center mb-4">
-                  <MdOutlineSecurity className="w-12 h-12 text-black" />
-                </div>
-                <h3 className="text-2xl font-semibold mb-2">
-                  امنیت و پشتیبانی
-                </h3>
-                <p className="text-gray-700">
-                  تضمین حریم خصوصی و امنیت داده‌های شما همراه با پشتیبانی برای
-                  رفع مشکلات و ارائه مشاوره.
-                </p>
-              </div>
-            </div>
-            <div className="mt-12 text-center">
-              <p className="text-gray-700 max-w-3xl mx-auto">
-                سپهر AI با تکیه بر تجربه، نوآوری و تعهد به کیفیت، همراه شماست تا
-                دنیای هوش مصنوعی را به شیوه‌ای امن، کاربردی و قابل دسترس به شما
-                ارائه دهد.
+              <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+                قدرت <span className="text-emerald-400">هوش مصنوعی</span> در
+                دستان شما
+              </h1>
+              <p className="text-xl text-gray-300 md:pr-12">
+                با استفاده از پیشرفته‌ترین مدل‌های هوش مصنوعی، کسب‌وکار، محتوا و
+                ایده‌های خود را به سطح بعدی ببرید.
               </p>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Link
+                  href="/auth"
+                  className="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full text-lg font-medium flex items-center justify-center gap-2 transition-all"
+                >
+                  شروع کنید
+                  <BsArrowRight />
+                </Link>
+                <a
+                  href="#models"
+                  className="px-8 py-4 bg-white/10 hover:bg-white/20 text-white rounded-full text-lg font-medium flex items-center justify-center transition-all"
+                >
+                  مشاهده مدل‌ها
+                </a>
+              </div>
+            </div>
+            <div className="relative hidden lg:block">
+              <div className="absolute -z-10 w-[500px] h-[500px] bg-emerald-500/20 rounded-full blur-3xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+              <div className="grid grid-cols-2 gap-6">
+                {[1, 2, 3, 4].map((item) => (
+                  <div
+                    key={item}
+                    className="backdrop-blur-sm bg-white/5 border border-white/10 p-6 rounded-2xl"
+                  >
+                    <RiRobot2Line className="text-4xl text-emerald-400 mb-4" />
+                    <h3 className="font-medium text-lg mb-2">
+                      {item === 1 && "تولید محتوا"}
+                      {item === 2 && "برنامه‌نویسی"}
+                      {item === 3 && "داده‌کاوی"}
+                      {item === 4 && "پردازش تصویر"}
+                    </h3>
+                    <p className="text-gray-400 text-sm">
+                      {item === 1 &&
+                        "ایجاد محتوای خلاقانه و جذاب با کمک هوش مصنوعی"}
+                      {item === 2 && "نوشتن و دیباگ کد با سرعت بیشتر"}
+                      {item === 3 && "تحلیل حجم عظیمی از داده‌ها در زمان کوتاه"}
+                      {item === 4 && "تجزیه و تحلیل و بهینه‌سازی تصاویر"}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="bg-gray-100 text-black py-16">
-          <div className="container mx-auto px-6">
-            <h2 className="text-4xl font-bold text-center mb-12">پلن ها</h2>
-            <div className="flex flex-col md:flex-row justify-center items-stretch gap-8">
-              {plans.map((plan, index) => (
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-emerald-500 font-medium">
+              ویژگی‌های منحصر به فرد
+            </span>
+            <h2 className="text-4xl font-bold mt-4 mb-6">
+              چه چیزی ما را متمایز می‌کند؟
+            </h2>
+            <p className="text-gray-600 text-lg">
+              پلتفرم ما با ارائه بیش از ۳۰۰ مدل هوش مصنوعی، تجربه‌ای متفاوت و
+              کاربردی برای تمام نیازهای شما فراهم می‌کند.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<HiOutlineChip />}
+              title="به‌روزترین مدل‌ها"
+              description="دسترسی به پیشرفته‌ترین مدل‌های هوش مصنوعی از معتبرترین شرکت‌های دنیا"
+            />
+            <FeatureCard
+              icon={<MdOutlineInsights />}
+              title="همه‌کاره"
+              description="از تولید محتوا تا برنامه‌نویسی و تحلیل داده، همه در یک پلتفرم"
+              featured={true}
+            />
+            <FeatureCard
+              icon={<FiShield />}
+              title="امنیت بالا"
+              description="محافظت از داده‌های شما با بالاترین استانداردهای امنیتی موجود"
+            />
+            <FeatureCard
+              icon={<HiOutlineLightBulb />}
+              title="خلاقیت نامحدود"
+              description="ایده‌های خود را با کمک هوش مصنوعی به واقعیت تبدیل کنید"
+            />
+            <FeatureCard
+              icon={<MdOutlineAutoAwesome />}
+              title="شخصی‌سازی"
+              description="تنظیم پارامترها و مدل‌ها مطابق با نیازهای خاص شما"
+            />
+            <FeatureCard
+              icon={<HiOutlineGlobe />}
+              title="پشتیبانی از فارسی"
+              description="پشتیبانی قدرتمند از زبان فارسی در تمام مدل‌های هوش مصنوعی"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Models Showcase */}
+      <section id="models" className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-emerald-500 font-medium">
+              مدل‌های هوش مصنوعی
+            </span>
+            <h2 className="text-4xl font-bold mt-4 mb-6">
+              بیش از ۳۰۰ مدل برای انواع کاربردها
+            </h2>
+            <p className="text-gray-600 text-lg">
+              از معروف‌ترین مدل‌ها مانند ChatGPT و Claude تا مدل‌های تخصصی برای
+              کاربردهای خاص
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <ModelCategory title="تولید متن" count="120+" icon={<FiCode />} />
+            <ModelCategory
+              title="پردازش تصویر"
+              count="80+"
+              icon={<MdOutlineInsights />}
+            />
+            <ModelCategory title="برنامه‌نویسی" count="50+" icon={<FiCode />} />
+            <ModelCategory
+              title="تحلیل داده"
+              count="40+"
+              icon={<HiOutlineLightBulb />}
+            />
+            <ModelCategory
+              title="ترجمه"
+              count="25+"
+              icon={<HiOutlineGlobe />}
+            />
+            <ModelCategory
+              title="بازاریابی"
+              count="35+"
+              icon={<MdOutlineRocketLaunch />}
+            />
+            <ModelCategory
+              title="تولید محتوا"
+              count="45+"
+              icon={<MdOutlineAutoAwesome />}
+            />
+            <ModelCategory
+              title="سایر کاربردها"
+              count="20+"
+              icon={<FiUsers />}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-24 bg-black text-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-emerald-400 font-medium">
+              به سادگی شروع کنید
+            </span>
+            <h2 className="text-4xl font-bold mt-4 mb-6">چگونه کار می‌کند؟</h2>
+            <p className="text-gray-300 text-lg">
+              تنها با چند گام ساده به دنیای هوش مصنوعی وارد شوید و از مزایای آن
+              بهره‌مند شوید
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <StepCard
+              number="۱"
+              title="ثبت‌نام و انتخاب پلن"
+              description="در چند ثانیه ثبت‌نام کنید و پلن مناسب خود را انتخاب کنید"
+            />
+            <StepCard
+              number="۲"
+              title="انتخاب مدل مناسب"
+              description="از میان صدها مدل، مدل مناسب نیاز خود را پیدا کنید"
+            />
+            <StepCard
+              number="۳"
+              title="استفاده از قدرت هوش مصنوعی"
+              description="به سادگی از هوش مصنوعی برای رسیدن به اهداف خود استفاده کنید"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-emerald-500 font-medium">
+              قیمت‌گذاری شفاف
+            </span>
+            <h2 className="text-4xl font-bold mt-4 mb-6">
+              پلن‌های متناسب با نیاز شما
+            </h2>
+            <p className="text-gray-600 text-lg">
+              پلن‌های مقرون به صرفه برای کاربران فردی تا سازمان‌های بزرگ
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {plans.map((plan, index) => (
+              <div
+                key={index}
+                className={`rounded-2xl overflow-hidden ${
+                  index === 1
+                    ? "border-2 border-emerald-500 shadow-xl shadow-emerald-100"
+                    : "border border-gray-200"
+                }`}
+              >
                 <div
-                  key={index}
-                  className="flex-1 bg-white px-6 py-10 rounded-xl shadow hover:shadow-lg transition-shadow"
+                  className={`p-8 ${
+                    index === 1 ? "bg-emerald-50" : "bg-gray-50"
+                  }`}
                 >
-                  <h3 className="text-2xl font-semibold mb-4 text-center">
-                    {plan.name}
-                  </h3>
-                  <p className="text-xl text-gray-700 mb-4 text-center">
-                    <span>{plan.displayPrice} تومان/ماه</span>
+                  <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
+                  <div className="flex items-end gap-1 mb-6">
+                    <span className="text-3xl font-bold">
+                      {plan.displayPrice}
+                    </span>
+                    <span className="text-gray-500 mb-1">تومان/ماه</span>
+                  </div>
+                  <Link
+                    href={`/auth?selectedPlan=${plan.id}`}
+                    className={`block w-full py-3 px-6 rounded-lg text-center font-medium transition-colors ${
+                      index === 1
+                        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+                        : "bg-black hover:bg-gray-800 text-white"
+                    }`}
+                  >
+                    انتخاب پلن
+                  </Link>
+                </div>
+
+                <div className="p-8 bg-white">
+                  <p className="flex items-center gap-2 mb-4">
+                    <BsCheckCircle
+                      className={`${
+                        index === 1 ? "text-emerald-500" : "text-gray-500"
+                      }`}
+                    />
+                    <span>دسترسی به مدل‌های اصلی</span>
                   </p>
-                  <ul className="text-gray-700 mb-6 space-y-2 text-sm text-center">
-                    <li>دسترسی به مدل‌های اصلی</li>
-                    <li>امکانات پیشرفته برای ریاضیات و برنامه نویسی</li>
-                    <li>
-                      <span>{plan.credits} </span>
-                      <span>اعتبار</span>
-                    </li>
+                  <p className="flex items-center gap-2 mb-4">
+                    <BsCheckCircle
+                      className={`${
+                        index === 1 ? "text-emerald-500" : "text-gray-500"
+                      }`}
+                    />
+                    <span>امکانات پیشرفته برای ریاضیات و برنامه نویسی</span>
+                  </p>
+                  <p className="flex items-center gap-2 mb-4">
+                    <BsCheckCircle
+                      className={`${
+                        index === 1 ? "text-emerald-500" : "text-gray-500"
+                      }`}
+                    />
+                    <span>{plan.credits} اعتبار</span>
+                  </p>
+
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <p className="text-sm text-gray-600 mb-3">
+                      معادل استفاده در:
+                    </p>
+
                     {modelsForPlanComparison.map((model, idx) => {
                       const inputTokens = roundWebPlanTokensAmount(
                         (plan.credits / model.creditCostPerMilInToken) *
@@ -418,93 +372,258 @@ export default async function Home() {
                         (plan.credits / model.creditCostPerMilOutToken) *
                           1_000_000
                       );
+
                       return (
-                        <li key={idx}>
-                          <p>
-                            <span>معادل: </span>
-                            <span>{model.name}</span>
+                        <div key={idx} className="mb-4 last:mb-0">
+                          <p className="font-medium mb-1">{model.name}</p>
+                          <p className="text-sm text-gray-600">
+                            {inputTokens.toLocaleString()} توکن ورودی |{" "}
+                            {outputTokens.toLocaleString()} توکن خروجی
                           </p>
-                          <p>
-                            <span>{inputTokens.toLocaleString()} </span>
-                            <span>توکن ورودی</span>
-                          </p>
-                          <span>{outputTokens.toLocaleString()} </span>
-                          <span>توکن خروجی</span>
-                        </li>
+                        </div>
                       );
                     })}
-                  </ul>
-                  <div className="text-center">
-                    <Link
-                      href={`/auth?selectedPlan=${plan.id}`}
-                      className="inline-block bg-black text-white py-3 px-8 rounded-full text-lg font-medium transition-colors hover:bg-gray-800"
-                    >
-                      خرید اشتراک
-                    </Link>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* FAQ Section */}
-        <section id="faq" className="bg-white text-black py-16">
-          <div className="container mx-auto max-w-[90%]">
-            <FAQAccordion items={faqItems} />
-          </div>
-        </section>
-
-        {/* Contact Section */}
-        <section id="contact" className="bg-black text-white py-16">
-          <div className="container mx-auto px-6 text-center">
-            <h2 className="text-4xl font-bold mb-6">تماس با ما</h2>
-            <p className="text-xl mb-4">
-              برای اطلاعات بیشتر از طریق ایمیل با ما در ارتباط باشید:{" "}
-              <a
-                href="mailto:info@sepehr-ai.com"
-                className="underline hover:text-gray-300"
-              >
-                info@sepehr-ai.com
-              </a>
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-emerald-500 font-medium">سوالات متداول</span>
+            <h2 className="text-4xl font-bold mt-4 mb-6">پاسخ به سوالات شما</h2>
+            <p className="text-gray-600 text-lg">
+              پاسخ به سوالات رایج کاربران برای آشنایی بیشتر با خدمات ما
             </p>
           </div>
-        </section>
 
-        {/* Footer */}
-        <footer className="bg-black text-white py-8 flex">
-          <div className="flex-1 flex justify-center">
-            <Enamad />
-          </div>
-          <div className="flex-1 flex flex-col container mx-auto px-6 text-center">
-            <div className="flex-auto"></div>
-            <p className="flex-none text-sm">
-              &copy; 2025 سپهر AI. کلیه حقوق محفوظ است.
+          <FAQSection items={faqs} />
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-black text-white">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-4xl font-bold mb-6">
+              آماده‌اید تا قدرت هوش مصنوعی را تجربه کنید؟
+            </h2>
+            <p className="text-xl text-gray-300 mb-10">
+              همین امروز به جمع هزاران کاربر راضی بپیوندید و کسب‌وکار خود را
+              متحول کنید.
             </p>
-            <div className="flex-none flex justify-center space-x-6 mt-4">
-              <a
-                href="#"
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                <FaFacebookF className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                <FaTwitter className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-white hover:text-gray-300 transition-colors"
-              >
-                <FaInstagram className="w-5 h-5" />
-              </a>
+            <Link
+              href="/auth"
+              className="inline-block px-10 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full text-lg font-medium transition-colors"
+            >
+              رایگان شروع کنید
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-white py-12 border-t border-gray-100">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <Icon fill="#000" className="h-10 mb-6" />
+              <p className="text-gray-600 mb-6 max-w-md">
+                پلتفرم پیشرو در ارائه خدمات هوش مصنوعی با دسترسی به بیش از ۳۰۰
+                مدل مختلف برای تمام نیازهای شما
+              </p>
+
+              <div className="flex items-center">
+                <Enamad />
+                <div className="mr-4">
+                  <p className="text-sm text-gray-500">
+                    &copy; ۱۴۰۳ سپهر AI. تمامی حقوق محفوظ است.
+                  </p>
+                  <a
+                    href="mailto:info@sepehr-ai.com"
+                    className="text-sm text-emerald-500 hover:underline"
+                  >
+                    info@sepehr-ai.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+              <div>
+                <h4 className="font-bold mb-4">محصولات</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      مدل‌های متنی
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      مدل‌های تصویری
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      برنامه‌نویسی
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      تحلیل داده
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-bold mb-4">شرکت</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      درباره ما
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      تماس با ما
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      همکاری با ما
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      وبلاگ
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-bold mb-4">پشتیبانی</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      راهنما
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      حریم خصوصی
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      قوانین استفاده
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      className="text-gray-600 hover:text-emerald-500 transition-colors"
+                    >
+                      امنیت
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-          <div className="flex-1"></div>
-        </footer>
+        </div>
+      </footer>
+    </div>
+  );
+}
+
+// Helper Components
+
+function FeatureCard({ icon, title, description, featured = false }) {
+  return (
+    <div
+      className={`
+      p-8 rounded-2xl transition-all hover:shadow-lg
+      ${
+        featured
+          ? "bg-emerald-500 text-white"
+          : "bg-white border border-gray-100 hover:border-emerald-200"
+      }
+    `}
+    >
+      <div
+        className={`
+        text-4xl mb-4
+        ${featured ? "text-white" : "text-emerald-500"}
+      `}
+      >
+        {icon}
       </div>
-    </>
+      <h3 className="text-xl font-semibold mb-3">{title}</h3>
+      <p className={featured ? "text-white/90" : "text-gray-600"}>
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function ModelCategory({ title, count, icon }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-6 hover:shadow-md hover:border-emerald-200 transition-all">
+      <div className="text-3xl text-emerald-500 mb-4">{icon}</div>
+      <h3 className="font-medium text-lg">{title}</h3>
+      <p className="text-emerald-500 font-bold">{count}</p>
+    </div>
+  );
+}
+
+function StepCard({ number, title, description }) {
+  return (
+    <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+      <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-xl font-bold mb-6">
+        {number}
+      </div>
+      <h3 className="text-xl font-semibold mb-3">{title}</h3>
+      <p className="text-gray-300">{description}</p>
+    </div>
   );
 }
