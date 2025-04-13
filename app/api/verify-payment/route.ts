@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           Accept: "application/json",
         },
         body: JSON.stringify(advicePayload),
-      }
+      },
     );
 
     const adviceData = await adviceResponse.json();
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         },
       });
       return NextResponse.redirect(
-        `/payment/success?ref_id=${encodeURIComponent(adviceData.ReturnId)}`
+        `/payment/success?ref_id=${encodeURIComponent(adviceData.ReturnId)}`,
       );
     } else {
       console.error("Advice verification failed", adviceData);

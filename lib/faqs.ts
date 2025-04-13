@@ -1,3 +1,4 @@
+import prisma from "@/lib/prisma";
 import type { Faq } from "@/prisma/client";
 import { unstable_cache } from "next/cache";
 
@@ -13,5 +14,5 @@ export const getFaqs: () => Promise<FaqsForLandingPage> = unstable_cache(
       },
     }) || [],
   ["faqs"],
-  { revalidate: 60 * 60 * 24 }
+  { revalidate: 60 * 60 * 24 },
 );

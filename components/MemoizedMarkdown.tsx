@@ -18,6 +18,7 @@ import {
   oneDark,
   oneLight,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { useTheme } from "./ThemeProvider";
 
 function parseMarkdownIntoBlocks(markdown: string): string[] {
   const tokens = marked.lexer(markdown);
@@ -60,14 +61,15 @@ const MemoizedMarkdownBlock = memo(
     content: string;
     className?: string;
   }) => {
-    const isDarkMode = document.documentElement.classList.contains("dark");
-    const syntaxTheme = isDarkMode ? oneDark : oneLight;
+    const theme = useTheme();
+    const syntaxTheme = theme.theme === "dark" ? oneDark : oneLight;
     // const containsMath = RegExp(`(?:\d+(\.\d+)?|\([^\)]*\)|[+\-*/^])`);
 
     return (
       <div
         className={
-          "w-full markdown markdown-body" + (className ? ` ${className}` : "")
+          "overflow-x-auto overflow-y-hidden markdown-body space-y-4" +
+          (className ? ` ${className}` : "")
         }
         dir={getTextDirection(content)}
         style={{ direction: getTextDirection(content) }}
@@ -198,7 +200,7 @@ const MemoizedMarkdownBlock = memo(
 
               return match ? (
                 <div className="my-4 ltr rounded p-1 border-1 border-gray-875">
-                  <div className="flex pt-[1em] px-[1em]">
+                  <div className="flex px-[1em] py-[0.75em]">
                     <p className="flex-none text-sm">{match[1]}</p>
                     <div className="flex-auto"></div>
                     <button
@@ -209,18 +211,22 @@ const MemoizedMarkdownBlock = memo(
                       کپی
                     </button>
                   </div>
-                  <SyntaxHighlighter
-                    {...(rest as any)}
-                    style={syntaxTheme}
-                    language={match[1]}
-                  >
-                    {codeText}
-                  </SyntaxHighlighter>
+                  <div className="syntax-highliter-container">
+                    <SyntaxHighlighter
+                      {...(rest as any)}
+                      style={syntaxTheme}
+                      language={match[1]}
+                    >
+                      {codeText}
+                    </SyntaxHighlighter>
+                  </div>
                 </div>
               ) : (
-                <code {...rest} dir="auto">
-                  {children}
-                </code>
+                <div className="syntax-highliter-container">
+                  <code {...rest} dir="auto">
+                    {children}
+                  </code>
+                </div>
               );
             },
           }}
@@ -233,7 +239,7 @@ const MemoizedMarkdownBlock = memo(
   (prevProps, nextProps) => {
     if (prevProps.content !== nextProps.content) return false;
     return true;
-  }
+  },
 );
 
 MemoizedMarkdownBlock.displayName = "MemoizedMarkdownBlock";
@@ -258,7 +264,7 @@ export const MemoizedMarkdown = memo(
         key={`${id}-block_${index}`}
       />
     ));
-  }
+  },
 );
 
 MemoizedMarkdown.displayName = "MemoizedMarkdown";

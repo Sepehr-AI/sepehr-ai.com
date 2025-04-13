@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const config: NextConfig = {
+export default {
   allowedDevOrigins: ["sepehr-ai.com"],
   experimental: {
     nodeMiddleware: true,
@@ -48,6 +48,4 @@ const config: NextConfig = {
   //     },
   //   ];
   // },
-};
-
-export default config;
+} satisfies NextConfig;

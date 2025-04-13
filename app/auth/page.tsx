@@ -45,7 +45,7 @@ export default async function AuthPage(props: {
   const mobile = _mobile ? decodeURIComponent(_mobile) : undefined;
   const fullName = _fullName ? decodeURIComponent(_fullName) : undefined;
   const selectedPlan: number | undefined = !isNaN(
-    Number(decodeURIComponent(_selectedPlan || "abc"))
+    Number(decodeURIComponent(_selectedPlan || "abc")),
   )
     ? Number(decodeURIComponent(_selectedPlan || "abc"))
     : undefined;

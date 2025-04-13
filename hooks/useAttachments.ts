@@ -33,7 +33,7 @@ export const useAttachments = () => {
           setError(
             `حجم فایل "${newFiles[i].name}" بیشتر از ${
               MAX_FILE_SIZE / 1024 / 1024
-            } مگابایت است.`
+            } مگابایت است.`,
           );
           return;
         }
@@ -43,7 +43,7 @@ export const useAttachments = () => {
       const newCount = newFiles.length;
       if (currentCount + newCount > MAX_FILE_COUNT) {
         setError(
-          `تعداد فایل های مجاز برای آپلود در هر پیام ${MAX_FILE_COUNT} عدد است.`
+          `تعداد فایل های مجاز برای آپلود در هر پیام ${MAX_FILE_COUNT} عدد است.`,
         );
         return;
       }
@@ -52,6 +52,7 @@ export const useAttachments = () => {
       if (attachments) {
         Array.from(attachments).forEach((file) => dt.items.add(file));
       }
+
       Array.from(newFiles).forEach((file) => dt.items.add(file));
 
       setAttachments(dt.files);

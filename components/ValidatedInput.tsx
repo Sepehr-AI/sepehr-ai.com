@@ -38,10 +38,10 @@ export default function ValidatedInput({
 >) {
   const [value, setValue] = useState(_value || "");
   const [direction, setDirection] = useState(
-    !_value && dir === "auto" ? "rtl" : dir
+    !_value && dir === "auto" ? "rtl" : dir,
   );
   const [textAlign, setTextAlign] = useState(
-    !_value && align === "auto" ? "rtl" : align
+    !_value && align === "auto" ? "rtl" : align,
   );
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {

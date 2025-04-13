@@ -1,11 +1,12 @@
-import "./globals.css";
-
-import Head from "next/head";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
-import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import ThemeProvider from "@/components/ThemeProvider";
+
+import "@radix-ui/themes/styles.css";
+import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 
 const vazir = localFont({
   src: [
@@ -81,22 +82,14 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html
-      lang="fa-IR"
-      // dir="rtl"
-    >
-      <Head>
-        <title>سپهر AI - تجربه‌ی نوین هوش مصنوعی</title>
-        <meta
-          name="description"
-          content="تجربه نوین مدل های هوش مصنوعی با سپهر AI."
-        />
+    <html lang="fa-IR" dir="rtl">
+      {/* <Head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head>
+      </Head> */}
       <body className={vazir.variable}>
         <ToastContainer toastClassName="font-vazir-force text-center" />
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

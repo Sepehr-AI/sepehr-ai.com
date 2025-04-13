@@ -70,7 +70,7 @@ const openDB = (): Promise<IDBDatabase> => dbPromise;
 const putData = async (
   storeName: string,
   key: string,
-  data: any
+  data: any,
 ): Promise<void> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -91,8 +91,8 @@ const getData = async (storeName: string, key: string): Promise<any> => {
     request.onerror = () => reject(request.error);
   });
 };
-const getAllData = async (
-  storeName: string
+const getAllDataReversed = async (
+  storeName: string,
 ): Promise<{ key: IDBValidKey; value: any }[]> => {
   const db = await openDB();
   return new Promise((resolve, reject) => {
@@ -103,7 +103,7 @@ const getAllData = async (
     request.onsuccess = (event) => {
       const cursor = (event.target as IDBRequest).result;
       if (cursor) {
-        result.push({ key: cursor.key, value: cursor.value });
+        result.unshift({ key: cursor.key, value: cursor.value });
         cursor.continue();
       } else {
         resolve(result);
@@ -117,7 +117,7 @@ export const updateChat = async (
   uuid: string,
   engineCode: string,
   aiCompanyWebsite: string,
-  _messages: Message[]
+  _messages: Message[],
 ): Promise<void> =>
   await putData("sessions", uuid, {
     engineCode,
@@ -129,7 +129,7 @@ export const createChat = async (
   uuid: string,
   engineCode: string,
   aiCompanyWebsite: string,
-  _messages: Message[]
+  _messages: Message[],
 ): Promise<string> => {
   if (
     !_messages ||
@@ -140,7 +140,7 @@ export const createChat = async (
   ) {
     console.error("Invalid messages.", _messages);
     throw new Error(
-      "Invalid messages passed to createChat. Check the console for more information."
+      "Invalid messages passed to createChat. Check the console for more information.",
     );
   }
 
@@ -150,7 +150,7 @@ export const createChat = async (
     firstMessageText = (messages[0].parts[0] as TextUIPart).text;
   } else {
     const _firstMessageText = messages[0].parts.find(
-      (p) => p.type === "text"
+      (p) => p.type === "text",
     )?.text;
     if (_firstMessageText) firstMessageText = _firstMessageText;
     else firstMessageText = uuid;
@@ -185,4 +185,5 @@ export const newChatListener = (handler: NewChatHandler) =>
 export const getChat = async (chatId: string): Promise<ChatSession | null> =>
   (await getData("sessions", chatId)) || null;
 
-export const getChatsForNavbar = () => getAllData("chats") as Promise<DbChat[]>;
+export const getChatsForNavbar = () =>
+  getAllDataReversed("chats") as Promise<DbChat[]>;

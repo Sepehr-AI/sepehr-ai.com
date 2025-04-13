@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 import MultiStepLimiter from "./lib/MultiStepLimiter";
 import type { SepehrAiJwtPayload } from "./app/auth/lib";
 import { genUnauthorizedRes, UnauthorizedReason } from "./lib/chatErrors";
+import { cookies } from "next/headers";
 
 const E403 = `<!DOCTYPE html>
 <html lang="fa">
@@ -111,7 +112,7 @@ export async function middleware(req: NextRequest) {
     } else {
       return NextResponse.json(
         { error: "Too many requests!" },
-        { status: 429 }
+        { status: 429 },
       );
     }
   }
@@ -121,6 +122,7 @@ export async function middleware(req: NextRequest) {
     try {
       user = await authenticate(req);
     } catch {
+      (await cookies()).delete("token");
       return NextResponse.redirect(new URL("/auth", req.url));
     }
   } else if (pathname.startsWith("/api/chat")) {

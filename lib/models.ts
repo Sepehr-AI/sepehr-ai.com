@@ -78,14 +78,14 @@ export const getModelsForWeb: () => Promise<Model[]> = unstable_cache(
           creditCostPerMilInToken,
           creditCostPerMilOutToken,
         } as Model;
-      }
+      },
     );
     cache.set("modelsForWeb", modelsForWeb);
 
     return modelsForWeb;
   },
   ["modelsForWeb"],
-  { revalidate: 60 * 60 }
+  { revalidate: 60 * 60 },
 );
 
 export const getModelsForPlanComparison: () => Promise<Model[]> =
@@ -122,5 +122,8 @@ export const getModelsForPlanComparison: () => Promise<Model[]> =
       return modelsForWeb;
     },
     ["modelsForPlanComparison"],
-    { revalidate: 60 * 60 }
+    { revalidate: 60 * 60 },
   );
+
+export const getWebModelsLength: () => Promise<number> = async () =>
+  (await getModelsForWeb()).length;

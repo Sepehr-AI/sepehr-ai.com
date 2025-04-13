@@ -10,7 +10,7 @@ import { cookies, headers } from "next/headers";
 import { error, errorOnThrow } from "@/lib/log";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
 import { findOrCreateOtp } from "@/prisma/client/sql";
-import { permanentRedirect, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { PrismaClientKnownRequestError } from "@/prisma/client/runtime/library";
 import {
@@ -23,7 +23,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
 const ARGON2_SECRET_BUF = Buffer.from(
   process.env.ARGON2_SECRET as string,
-  "utf-8"
+  "utf-8",
 );
 const cookiesConfig: Partial<ResponseCookie> = {
   path: "/",
@@ -49,7 +49,7 @@ export interface SepehrAiJwtPayload {
  */
 function redirectWithParams(
   path: string,
-  params: Record<string, string | number | boolean | undefined>
+  params: Record<string, string | number | boolean | undefined>,
 ) {
   const searchParams = new URLSearchParams();
   for (const key in params) {
@@ -84,7 +84,7 @@ const otpLimiter = new MultiStepLimiter([
 ]);
 export async function checkMobileAction(
   formData: FormData,
-  selectedPlan?: number
+  selectedPlan?: number,
 ) {
   const ip = await getClientIp();
   let mobile = formData.get("mobile")?.toString();
@@ -96,7 +96,7 @@ export async function checkMobileAction(
   }
 
   const validationResult = await checkMobileFormSchema.spa(
-    Object.fromEntries(formData)
+    Object.fromEntries(formData),
   );
   mobile = validationResult.data?.mobile as string;
 
@@ -104,7 +104,7 @@ export async function checkMobileAction(
     error?: string,
     exists: boolean = false,
     mobile?: string,
-    userId?: number
+    userId?: number,
   ) => {
     return redirectWithParams("/auth", {
       error,
@@ -128,7 +128,7 @@ export async function checkMobileAction(
         mobile,
         name: mobile,
       },
-    })
+    }),
   );
   const userExists = user.name !== mobile;
 
@@ -151,11 +151,11 @@ async function setTokenCookie(user: User) {
       .setNotBefore(iat)
       .setExpirationTime(exp)
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-      .sign(new TextEncoder().encode(JWT_SECRET))
+      .sign(new TextEncoder().encode(JWT_SECRET)),
   );
 
   await errorOnThrow("settingTokenCookieInAuthLogin", async () =>
-    (await cookies()).set("token", token, cookiesConfig)
+    (await cookies()).set("token", token, cookiesConfig),
   );
 }
 
@@ -164,11 +164,11 @@ async function sendOtp(mobile: string): Promise<{ error?: string }> {
   const otpHashed = await errorOnThrow("OtpHashingInAuth", () =>
     hash(otp.toString(), {
       secret: ARGON2_SECRET_BUF,
-    })
+    }),
   );
 
   const gotten = await errorOnThrow("findOrCreateOtpRawQueryInAuth", () =>
-    prisma.$queryRawTyped(findOrCreateOtp(mobile, otpHashed))
+    prisma.$queryRawTyped(findOrCreateOtp(mobile, otpHashed)),
   );
   if (!gotten.length) {
     return { error: "برای ارسال مجدد کد تایید باید حداقل دو دقیقه صبر کنید." };
@@ -193,7 +193,7 @@ async function sendOtp(mobile: string): Promise<{ error?: string }> {
             },
           ],
         }),
-      })
+      }),
     );
     if (otpSendRes.status !== 200) {
       error("OtpSmsUnexpectedApiResponse", {
@@ -211,14 +211,14 @@ async function sendOtp(mobile: string): Promise<{ error?: string }> {
 
 async function verifyOtp(
   otp: string | number,
-  userId: string | number
+  userId: string | number,
 ): Promise<{ error?: string }> {
   userId = Number(userId);
   const dbOpt = await errorOnThrow("findingOptInAuthLogin", () =>
     prisma.otp.findUnique({
       where: { userId },
       select: { code: true, createdAt: true },
-    })
+    }),
   );
 
   if (!dbOpt) return { error: "کد تاییدی ارسال نشده!" };
@@ -233,7 +233,7 @@ async function verifyOtp(
   }
   if (
     !(await errorOnThrow("verifyingOtpInAuthLogin", () =>
-      verify(dbOpt.code, String(otp), { secret: ARGON2_SECRET_BUF })
+      verify(dbOpt.code, String(otp), { secret: ARGON2_SECRET_BUF }),
     ))
   ) {
     return { error: "کد تایید اشتباه است!" };
@@ -242,7 +242,7 @@ async function verifyOtp(
   await errorOnThrow("deletingOptInAuthLogin", () =>
     prisma.otp.delete({
       where: { userId },
-    })
+    }),
   );
 
   return {};
@@ -267,7 +267,7 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
   }
 
   const validationResult = await loginFormSchema.spa(
-    Object.fromEntries(formData)
+    Object.fromEntries(formData),
   );
   const otp = formData.get("otp")?.toString();
   let userId: number | string | undefined = formData.get("userId")?.toString();
@@ -289,7 +289,7 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
 
   const { error: otpVerifyErr } = await verifyOtp(
     otp as string,
-    userId as string
+    userId as string,
   );
   if (otpVerifyErr) return authErr(otpVerifyErr);
 
@@ -298,7 +298,7 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
     prisma.user.findUnique({
       select: { id: true, mobile: true, name: true },
       where: { id: userId },
-    })
+    }),
   );
   if (!user) return authErr("کاربر پیدا نشد!");
 
@@ -308,7 +308,7 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
 
 export async function registerAction(
   formData: FormData,
-  selectedPlan?: number
+  selectedPlan?: number,
 ) {
   try {
     await loginAndRegisterLimiter.consume(await getClientIp());
@@ -320,7 +320,7 @@ export async function registerAction(
   if (!email?.length) formData.delete("email");
 
   const validationResult = await registerFormSchema.spa(
-    Object.fromEntries(formData)
+    Object.fromEntries(formData),
   );
   email = validationResult.data?.email;
   const otp = formData.get("otp")?.toString();
@@ -349,7 +349,7 @@ export async function registerAction(
 
   const { error: otpVerifyErr } = await verifyOtp(
     otp as string,
-    userId as string
+    userId as string,
   );
   if (otpVerifyErr) return authErr(otpVerifyErr);
 
@@ -388,9 +388,9 @@ export async function isUserAuth(): Promise<boolean> {
 }
 
 export async function redirectToDashboardIfUserAuth() {
-  if (await isUserAuth()) return permanentRedirect("/dashboard");
+  if (await isUserAuth()) return redirect("/dashboard");
 }
 
 export async function userIsAuthOrRedirect() {
-  if (!(await isUserAuth())) return permanentRedirect("/");
+  if (!(await isUserAuth())) return redirect("/");
 }

@@ -34,7 +34,7 @@ export const openrouterModelListSchema = z.object({
         prompt: z.coerce.number(),
         completion: z.coerce.number(),
       }),
-    })
+    }),
   ),
 });
 
@@ -43,7 +43,7 @@ const farsiDescriptionSchema = z.string().refine(
     const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
     return wordCount >= 100 && wordCount <= 200;
   },
-  { message: "Farsi description must be between 100 and 200 words." }
+  { message: "Farsi description must be between 100 and 200 words." },
 );
 
 function estimateTiktokenEncoding(contextLength: number): TiktokenEncoding {
@@ -82,14 +82,14 @@ async function loadDescriptions(): Promise<Record<string, string>> {
 }
 
 async function saveDescriptions(
-  descriptions: Record<string, string>
+  descriptions: Record<string, string>,
 ): Promise<void> {
   await fs.writeFile(DESC_JSON_FILE, JSON.stringify(descriptions, null, 2));
 }
 
 async function fetchFarsiDescription(
   modelName: string,
-  modelEnglishDescription: string
+  modelEnglishDescription: string,
 ): Promise<string> {
   const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 150 words long and must include all details mentioned within the parentheses of the model name. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Use the provided English description as a guide for generating the Farsi description: "${modelEnglishDescription}"`;
 
@@ -191,9 +191,8 @@ async function main() {
     headers: {},
   });
   const jsonResponse = await response.json();
-  const opnerouterRes = await openrouterModelListSchema.safeParseAsync(
-    jsonResponse
-  );
+  const opnerouterRes =
+    await openrouterModelListSchema.safeParseAsync(jsonResponse);
   if (!opnerouterRes.success) {
     console.warn(opnerouterRes.error);
     throw new Error("Failed to parse OpenRouter response!");
@@ -240,7 +239,7 @@ async function main() {
     };
     if (!descriptionsMap[m.id] || !descriptionsMap[m.id].trim().length) {
       console.log(
-        `Fetching Farsi description for: ${m.name} (${left} remaining)`
+        `Fetching Farsi description for: ${m.name} (${left} remaining)`,
       );
 
       const desc = await fetchFarsiDescription(m.name, m.description);

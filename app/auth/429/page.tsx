@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { FiHome } from "react-icons/fi";
-import Loading from "@/app/components/Loading";
+import Loading from "@/components/Loading";
 import humanizeDuration from "humanize-duration";
 import { useSearchParams } from "next/navigation";
 
 function Auth429() {
   const searchParams = useSearchParams();
   let untilNextReq: number | undefined = Number(
-    searchParams.get("untilNextReq") || "abc"
+    searchParams.get("untilNextReq") || "abc",
   );
   if (isNaN(untilNextReq)) untilNextReq = undefined;
 

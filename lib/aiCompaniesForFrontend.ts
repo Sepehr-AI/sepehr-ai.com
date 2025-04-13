@@ -4,10 +4,10 @@ import { FaMeta, FaXTwitter } from "react-icons/fa6";
 import { SiAmazon, SiNvidia, SiOpenai } from "react-icons/si";
 import { RiAnthropicFill, RiGeminiFill } from "react-icons/ri";
 
-import Qwen from "../app/components/companyLogos/Qwen";
-import Mistral from "../app/components/companyLogos/Mistral";
-import DeepSeek from "../app/components/companyLogos/Deepseek";
-import WithColor from "../app/components/companyLogos/WithColor";
+import Qwen from "@/components/companyLogos/Qwen";
+import Mistral from "@/components/companyLogos/Mistral";
+import DeepSeek from "@/components/companyLogos/Deepseek";
+import WithColor from "@/components/companyLogos/WithColor";
 import { companyToWebsiteMap } from "./aiCompaniesForBackend";
 
 type CompanyWebsite =
@@ -20,7 +20,7 @@ export const companyWebsiteToRiMap: Partial<
   "mistral.ai": Mistral,
   "openai.com": SiOpenai,
   "deepseek.com": DeepSeek,
-  "x.ai": WithColor(FaXTwitter, "#000000"),
+  "x.ai": WithColor(FaXTwitter, "#231f1e"),
   "llama.com": WithColor(FaMeta, "#0080fb"),
   "amazon.com": WithColor(SiAmazon, "#231f1e"),
   "nvidia.com": WithColor(SiNvidia, "#76b900"),

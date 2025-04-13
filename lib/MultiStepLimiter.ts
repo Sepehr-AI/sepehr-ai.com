@@ -11,7 +11,7 @@ export default class MultiStepLimiter {
   constructor(steps: Step[]) {
     this.#limiters = steps.map(
       (step, idx) =>
-        new RateLimiterMemory({ ...step, keyPrefix: `step-${idx}-` })
+        new RateLimiterMemory({ ...step, keyPrefix: `step-${idx}-` }),
     );
   }
 
@@ -25,7 +25,7 @@ export default class MultiStepLimiter {
     } catch (error) {
       // Rollback consumption on all limiters that succeeded
       await Promise.all(
-        consumedLimiters.map((limiter) => limiter.reward(key, points))
+        consumedLimiters.map((limiter) => limiter.reward(key, points)),
       );
 
       throw error;

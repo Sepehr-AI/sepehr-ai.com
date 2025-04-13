@@ -11,7 +11,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = async (
-    e: SyntheticEvent<HTMLFormElement, SubmitEvent>
+    e: SyntheticEvent<HTMLFormElement, SubmitEvent>,
   ) => {
     e.preventDefault();
     startTransition(async () => {

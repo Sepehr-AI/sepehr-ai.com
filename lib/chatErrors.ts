@@ -13,7 +13,7 @@ export const genBalanceNotEnoughRes = (otherOptions?: ResponseInit) =>
     {
       ...otherOptions,
       status: balanceNotEnoughStatus,
-    }
+    },
   );
 
 export const unauthorizedStatus: number = 403;
@@ -28,7 +28,7 @@ export interface UnauthorizedBodyType {
 }
 export const genUnauthorizedRes = (
   error: UnauthorizedReason,
-  otherOptions?: ResponseInit
+  otherOptions?: ResponseInit,
 ) =>
   NextResponse.json({ error } as UnauthorizedBodyType, {
     ...otherOptions,
@@ -54,7 +54,7 @@ export interface UnexpectedErrorBodyType {
 }
 export const genUnexpectedErrorRes = (
   error: any,
-  otherOptions?: ResponseInit
+  otherOptions?: ResponseInit,
 ) =>
   NextResponse.json({ error } as UnexpectedErrorBodyType, {
     ...otherOptions,
@@ -71,3 +71,38 @@ export const geninvalidJsonBodyRes = (otherOptions?: ResponseInit) =>
     ...otherOptions,
     status: invalidJsonBodyStatus,
   });
+
+export const invalidMessagesErrorStatus: number = 400;
+export const invalidMessagesErrorMsg = "Invalid messages!";
+export interface InvalidMessagesErrorBodyType {
+  details: string;
+  error: typeof invalidMessagesErrorMsg;
+}
+export const genInvalidMessagesErrorRes = (
+  details: string,
+  otherOptions?: ResponseInit,
+) =>
+  NextResponse.json(
+    { error: invalidMessagesErrorMsg, details } as InvalidMessagesErrorBodyType,
+    {
+      ...otherOptions,
+      status: invalidMessagesErrorStatus,
+    },
+  );
+
+export const maxContextReachedErrorStatus: number = 400;
+export const maxContextReachedErrorMsg =
+  "Maximum context tokens reached for the model!";
+export interface MaxContextReachedErrorBodyType {
+  error: typeof maxContextReachedErrorMsg;
+}
+export const genMaxContextReachedErrorRes = (otherOptions?: ResponseInit) =>
+  NextResponse.json(
+    {
+      error: maxContextReachedErrorMsg,
+    } as MaxContextReachedErrorBodyType,
+    {
+      ...otherOptions,
+      status: maxContextReachedErrorStatus,
+    },
+  );

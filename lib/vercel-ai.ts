@@ -153,12 +153,12 @@ export interface AiMessage {
 
 export function sdkMessageToAiMessage(
   msg: Message | UIMessage,
-  partsFilter?: (p: AiMessageType) => boolean
+  partsFilter?: (p: AiMessageType) => boolean,
 ): AiMessage {
   if (!msg.parts) {
     console.error("Invalid message.", msg);
     throw new Error(
-      "Invalid message passed to sdkMessageToAiMessage. Check the console for more information."
+      "Invalid message passed to sdkMessageToAiMessage. Check the console for more information.",
     );
   }
 
@@ -169,7 +169,7 @@ export function sdkMessageToAiMessage(
     annotations: msg.annotations,
     experimental_attachments: msg.experimental_attachments,
     parts: (!partsFilter ? msg.parts : msg.parts.filter(partsFilter)).filter(
-      (v) => v.type !== "reasoning" || v.reasoning.trim().length
+      (v) => v.type !== "reasoning" || v.reasoning.trim().length,
     ),
   } as AiMessage;
 }
@@ -190,7 +190,7 @@ export function mapMessagePartsToContent(msg: Message[]): Message[] {
 }
 
 export function aiMessageToSdkMessage<
-  Type extends Message | UIMessage = Message
+  Type extends Message | UIMessage = Message,
 >(msg: AiMessage): Type {
   return {
     id: msg.id,

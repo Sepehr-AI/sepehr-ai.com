@@ -15,24 +15,24 @@ export const info = (context: string, _msg: any) => {
   const msg = msgToString(_msg);
   if (!msg) return;
 
-  console.log("Log info:", { context, msg });
+  console.log("Log info:", { context, _msg });
 };
 export const warn = (context: string, _msg: any) => {
   const msg = msgToString(_msg);
   if (!msg) return;
 
-  console.log("Log warn:", { context, msg });
+  console.log("Log warn:", { context, _msg });
 };
 export const error = (context: string, _msg: any) => {
   const msg = msgToString(_msg);
   if (!msg) return;
 
-  console.log("Log error:", { context, msg });
+  console.log("Log error:", { context, _msg });
 };
 
 export const errorOnThrow = async <Type>(
   context: string,
-  handler: () => Promise<Type> | Type
+  handler: () => Promise<Type> | Type,
 ) => {
   let ret: Type | undefined = undefined;
   try {

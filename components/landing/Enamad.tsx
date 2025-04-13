@@ -3,7 +3,7 @@
 
 // href="https://trustseal.enamad.ir/?id=593304&Code=iBVvanLu9LP3vHi1re7rpmxqplW0S7mq"
 export default function Enamad() {
-  return (
+  return process.env.NODE_ENV === "production" ? (
     <a target="_blank" referrerPolicy="origin">
       <img
         alt="enamad"
@@ -13,5 +13,7 @@ export default function Enamad() {
         {...({ code: "iBVvanLu9LP3vHi1re7rpmxqplW0S7mq" } as any)}
       />
     </a>
+  ) : (
+    <></>
   );
 }

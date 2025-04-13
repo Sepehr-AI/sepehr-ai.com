@@ -58,10 +58,10 @@ export function roundAiModelCost(cost: number): number {
 export function calcWebCostCost(
   inTokens: number,
   outTokens: number,
-  model: LlmModel
+  model: LlmModel,
 ): number {
   return roundWebCost(
     (model.costPerMilInToken * 2 * Math.floor(inTokens)) / 1_000_000 +
-      (model.costPerMilOutToken * 2 * Math.floor(outTokens)) / 1_000_000
+      (model.costPerMilOutToken * 2 * Math.floor(outTokens)) / 1_000_000,
   );
 }

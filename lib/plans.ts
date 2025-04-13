@@ -24,11 +24,11 @@ export const getWebPlans: () => Promise<webPlansForUsers> = unstable_cache(
         ...p,
         usdAmount: undefined,
         displayPrice: numberToReadableFarsi(
-          roundWebPlan((p.usdAmount * exchangeRate) / 10)
+          roundWebPlan((p.usdAmount * exchangeRate) / 10),
         ),
       })) || []
     );
   },
   ["webPlans"],
-  { revalidate: 60 * 60 * 24 }
+  { revalidate: 60 * 60 * 24 },
 );

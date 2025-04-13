@@ -1,16 +1,22 @@
 "use server";
 
+import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type { MiddlewareUserData } from "@/middleware";
 import getExchangeRate from "@/lib/exchange";
+import type { MiddlewareUserData } from "@/middleware";
 
-// Note: Make sure to use await headers()
-// and that your environment variables (SEPHER_TERMINAL_ID and SEPHER_CALLBACK_URL)
-// are correctly set. Also, see the note below regarding port 8081 restrictions.
+const SEPEHR_AI_IPG_ADDR: string =
+  process.env.SEPEHR_AI_IPG_ADDR || "10.8.0.1:4040";
 
-export async function chargeAccountAction(formData: FormData) {
+interface SepehrAiIpgPayload {
+  amount: number;
+  payload: string;
+  invoiceId: string;
+}
+
+export async function chargeAccountAction(formData: FormData): Promise<void> {
   const headersList = await headers();
   const planId = Number(formData.get("planId"));
   const user: MiddlewareUserData = {
@@ -21,17 +27,14 @@ export async function chargeAccountAction(formData: FormData) {
   };
 
   if (isNaN(planId) || isNaN(user.id) || !user.email || !user.mobile) {
-    console.error("Unexpected:", { user });
+    console.error("Unexpected input:", { user });
     return redirect("/dashboard/payment");
   }
 
-  return chargeAccount(user, planId);
-}
-
-export async function chargeAccount(user: MiddlewareUserData, planId: number) {
-  let price: number;
-  let usdAmount: number;
   const exchangeRate = await getExchangeRate();
+
+  let usdAmount: number;
+  let price: number;
   try {
     const webPlan = await prisma.webPlan.findUnique({
       where: { id: planId },
@@ -39,69 +42,53 @@ export async function chargeAccount(user: MiddlewareUserData, planId: number) {
     });
     if (!webPlan) throw new Error("PlanNotFound");
     usdAmount = webPlan.usdAmount;
-    price = webPlan.usdAmount * exchangeRate;
+    price = usdAmount * exchangeRate;
   } catch (e) {
-    console.error("Unexpected 2:", { planId, user, exchangeRate, e });
+    error("Database or exchange error:", {
+      user,
+      planId,
+      error: e,
+      exchangeRate,
+    });
     return redirect("/dashboard/payment");
   }
 
   price = 10_000;
 
-  // Create a new Transaction row using your Prisma model.
-  // The auto-generated ID here is used as the invoice ID for the payment gateway.
   const transaction = await prisma.transaction.create({
     data: {
       usdAmount,
       exchangeRate,
       amount: price,
       user: { connect: { id: user.id } },
-      // Other fields (exchangeRate, fee, refId, code) will be updated later.
     },
   });
 
-  const invoiceID = transaction.id.toString(); // Use this as the InvoiceID
-
-  // Build payload for the GetToken API of the new payment gateway.
-  const paymentPayload = {
-    TerminalID: process.env.SEPHER_TERMINAL_ID, // Ensure it is exactly 8 characters.
-    Amount: price, // Price in Rial; check that it complies with minimum requirements.
-    InvoiceID: invoiceID,
-    callbackURL:
-      process.env.SEPHER_CALLBACK_URL ||
-      "http://localhost:3000/api/verify-payment",
+  const invoiceId = transaction.id.toString();
+  const paymentPayload: SepehrAiIpgPayload = {
+    invoiceId,
+    amount: price,
     payload: `پلن ${planId} برای کاربر ${user.id}`,
   };
 
   try {
-    // Send payment initiation (GetToken)
-    const tokenResponse = await fetch(
-      "https://sepehr.shaparak.ir/Rest/V1/PeymentApi/GetToken",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(paymentPayload),
-      }
-    );
+    const response = await fetch(`http://${SEPEHR_AI_IPG_ADDR}/api/charge`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(paymentPayload),
+    });
+    const data = await response.json();
 
-    const tokenData = await tokenResponse.json();
-
-    // A Status of 0 indicates success, as per the provider’s documentation.
-    if (tokenData.Status !== 0 || !tokenData.Accesstoken) {
-      console.error("Token request failed", tokenData);
+    if (data.status === "ok" && data.paymentURL) {
+      return redirect(data.paymentURL);
+    } else {
+      error("sepehrAiIpgInitilizationFailed.", { error: data });
       return redirect("/dashboard/payment");
     }
-
-    // Redirect the customer to the payment gateway page.
-    const paymentURL = `https://sepehr.shaparak.ir/Pay?token=${encodeURIComponent(
-      tokenData.Accesstoken
-    )}&terminalID=${encodeURIComponent(process.env.SEPHER_TERMINAL_ID || "")}`;
-
-    return redirect(paymentURL);
   } catch (e) {
-    console.error("Error during token request", e);
+    error("UnableToConnectToSepehrAiIpgServer.", { error: e });
     return redirect("/dashboard/payment");
   }
 }

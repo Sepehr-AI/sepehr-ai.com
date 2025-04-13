@@ -6,14 +6,25 @@ import { calcWebCostCost } from "@/lib/cost";
 import { getModelsMap } from "@/lib/models";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { getEncoding, type TiktokenEncoding } from "js-tiktoken";
-import { streamText, type CoreMessage, coreMessageSchema } from "ai";
 import {
+  streamText,
+  type CoreMessage,
+  coreMessageSchema,
+  TypeValidationError,
+  JSONParseError,
+} from "ai";
+import {
+  genUnauthorizedRes,
+  UnauthorizedReason,
+  genModelNotFoundRes,
   genBalanceNotEnoughRes,
   geninvalidJsonBodyRes,
-  genModelNotFoundRes,
-  genUnauthorizedRes,
   genUnexpectedErrorRes,
-  UnauthorizedReason,
+  genInvalidMessagesErrorRes,
+  genMaxContextReachedErrorRes,
+  maxContextReachedErrorMsg,
+  invalidMessagesErrorMsg,
+  unexpectedErrorMsg,
 } from "@/lib/chatErrors";
 
 const USE_ACTUAL_SELECTED_MODEL: boolean =
@@ -39,7 +50,7 @@ const defaultAiSystemPrompt: CoreMessage = {
 
 export async function POST(
   req: Request,
-  { params }: { params: Promise<{ provider: string; engine: string }> }
+  { params }: { params: Promise<{ provider: string; engine: string }> },
 ) {
   let provider, engine;
   try {
@@ -54,7 +65,7 @@ export async function POST(
   try {
     const userIdMayBeNan = Number(req.headers.get("userId") || "abc");
     const webBalanceMayBeNan = Number(
-      req.headers.get("userWebBalance") || "abc"
+      req.headers.get("userWebBalance") || "abc",
     );
     if (isNaN(userIdMayBeNan) || isNaN(webBalanceMayBeNan)) {
       throw new Error("Unauthorized");
@@ -77,7 +88,7 @@ export async function POST(
     if ((e as { message: string }).message === "InvalidJson") {
       return NextResponse.json(
         { error: parsed?.error?.format() },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -86,7 +97,10 @@ export async function POST(
 
   const { messages: _messages } = json;
   if (!_messages?.length) return NextResponse.json({}, { status: 204 });
-  const messages: CoreMessage[] = [defaultAiSystemPrompt, ..._messages];
+  let messages: CoreMessage[] = [defaultAiSystemPrompt, ..._messages];
+  for (let i = 0; i <= 2_000_000; i++) {
+    messages = [defaultAiSystemPrompt, ..._messages];
+  }
 
   let model;
   const code: string = `${provider}/${engine}`;
@@ -99,10 +113,10 @@ export async function POST(
 
   try {
     const enc = getEncoding(
-      `${model.estimatedEncodingBase.toLocaleLowerCase()}` as TiktokenEncoding
+      `${model.estimatedEncodingBase.toLocaleLowerCase()}` as TiktokenEncoding,
     );
     const inTokenEstCount = enc.encode(
-      messages.map((m) => m.content).join(" ")
+      messages.map((m) => m.content).join(" "),
     ).length;
 
     if (calcWebCostCost(inTokenEstCount, 1000, model) > webBalance) {
@@ -124,7 +138,7 @@ export async function POST(
       // abortSignal: req.signal,
       // experimental_transform: smoothStream({chunking: 'word'}),
       model: openrouter(
-        USE_ACTUAL_SELECTED_MODEL ? code : "deepseek/deepseek-r1:free"
+        USE_ACTUAL_SELECTED_MODEL ? code : "deepseek/deepseek-r1:free",
         // "deepseek/deepseek-r1:free"
       ),
       onError: (e) => error("WebChatStreamingError", { error: e }),
@@ -177,9 +191,33 @@ export async function POST(
       status: 200,
       sendUsage: false,
       sendReasoning: true,
+      getErrorMessage: (e) => {
+        if (e == null) return unexpectedErrorMsg;
+
+        if (TypeValidationError.isInstance(e)) {
+          if (e.message.toLowerCase().includes("maximum context length is")) {
+            return maxContextReachedErrorMsg;
+          }
+
+          return invalidMessagesErrorMsg;
+        }
+
+        return unexpectedErrorMsg;
+      },
     });
   } catch (e) {
-    error("WebChatUnexpectedError", { error: e });
+    if (TypeValidationError.isInstance(e)) {
+      if (e.message.toLowerCase().includes("maximum context length is")) {
+        return genMaxContextReachedErrorRes();
+      }
+
+      return genInvalidMessagesErrorRes(e.message);
+    } else if (JSONParseError.isInstance(e)) {
+      error("WebChatUnexpectedParseError", { error: e });
+    } else {
+      error("WebChatUnexpectedError", { error: e });
+    }
+
     return genUnexpectedErrorRes(e);
   }
 }

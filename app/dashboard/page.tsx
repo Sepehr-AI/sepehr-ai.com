@@ -1,6 +1,6 @@
 "use server";
 
-import Chat from "../components/Chat";
+import Chat from "@/components/Chat";
 import { getModelsForWeb } from "@/lib/models";
 
 export default async function DashboardPage() {

@@ -6,6 +6,6 @@ export default function WithColor(Comp: IconType, color: string) {
     ({ color: _, ...props }: IconBaseProps) => (
       <Comp color={color} {...props} />
     ),
-    { displayName: "WithColorAnonymousComponent" }
+    { displayName: "WithColorAnonymousComponent" },
   );
 }

@@ -11,7 +11,7 @@ const brsapiSchema = z.object({
       name: z.string(),
       price: z.number(),
       symbol: z.string(),
-    })
+    }),
   ),
 });
 
@@ -43,7 +43,7 @@ export default async function getExchangeRate(): Promise<number> {
     let response: Response;
     try {
       response = await fetch(
-        `https://BrsApi.ir/Api/Market/Gold_Currency.php?key=${BRSAPI_KEY}`
+        `https://BrsApi.ir/Api/Market/Gold_Currency.php?key=${BRSAPI_KEY}`,
       );
     } catch (e) {
       return onError(e, "Exchange: Unsuccessful fetch!");
@@ -68,7 +68,7 @@ export default async function getExchangeRate(): Promise<number> {
       currency = apiData.currency[0];
     } else {
       currency = apiData.currency.filter(
-        (e) => e.name === "ﺩﻻﺭ" || e.symbol === "USD"
+        (e) => e.name === "ﺩﻻﺭ" || e.symbol === "USD",
       )[0];
       if (!currency) {
         return onError(response, "Exchange: Failed to find the USD rate!");

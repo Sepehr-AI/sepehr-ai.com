@@ -1,38 +1,32 @@
 /* eslint-disable @next/next/no-img-element */
+
 "use client";
+
 import type { UIMessage } from "ai";
 import copy from "copy-to-clipboard";
 import { toast } from "react-toastify";
-import { HiUser } from "react-icons/hi";
 import LoadingMessage from "./LoadingMessage";
 import CompanyLogo from "./companyLogos/CompanyLogo";
 import { MemoizedMarkdown } from "./MemoizedMarkdown";
+import { useState, useMemo, type JSX, useEffect, type MouseEvent } from "react";
 import {
-  FiChevronDown,
-  FiChevronUp,
-  FiPaperclip,
-  FiCopy,
-} from "react-icons/fi";
-import React, {
-  useMemo,
-  useState,
-  type JSX,
-  useEffect,
-  type MouseEvent,
-} from "react";
+  CopyIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  FilePlusIcon,
+  PersonIcon,
+} from "@radix-ui/react-icons";
 
 const Message = ({
   message,
   className,
   aiCompanyWebsite,
   isTheLastMessage,
-  waitingForFirstResp,
 }: {
   message: UIMessage;
   className?: string;
   aiCompanyWebsite: string;
   isTheLastMessage: boolean;
-  waitingForFirstResp?: boolean;
 }) => {
   const { role, content: text } = message;
   const isUser = role === "user";
@@ -57,7 +51,7 @@ const Message = ({
             className={className}
           />
         ) : (
-          <p className="p-3" dir="auto">
+          <p className="whitespace-pre-wrap" dir="auto">
             {content}
           </p>
         );
@@ -69,27 +63,23 @@ const Message = ({
               <Markdown
                 content={part.reasoning}
                 key={`reasoning-${index}`}
-                className="relative flex h-full flex-col"
-              />
+                className="relative h-full"
+              />,
             );
           } else if (part.type === "text" && part.text.trim().length) {
             renderedNonReasoning.push(
-              <Markdown
-                className="p-1"
-                content={part.text}
-                key={`text-${index}`}
-              />
+              <Markdown content={part.text} key={`text-${index}`} />,
             );
           } else if (part.type === "source" && part.source.url.trim().length) {
             renderedNonReasoning.push(
               <div key={`source-${index}`}>
                 <a
                   href={part.source.url}
-                  className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                  className="text-accent hover:underline"
                 >
                   {part.source.url}
                 </a>
-              </div>
+              </div>,
             );
           } else if (part.type === "file" && part.data.trim().length) {
             if (part.mimeType && part.mimeType.startsWith("image/")) {
@@ -110,30 +100,28 @@ const Message = ({
                       _part.url || `data:${part.mimeType};base64,${part.data}`
                     }
                     alt={_part.name || "attachment"}
-                    className="max-w-full h-auto my-2 rounded-lg shadow-md"
+                    className="max-w-full h-auto my-2 rounded-lg"
                   />
-                </a>
+                </a>,
               );
             } else {
               renderedNonReasoning.push(
                 <div
                   key={`file-${index}`}
-                  className="flex items-center gap-2 my-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg shadow-sm"
+                  className="flex items-center gap-2 my-2 rounded-md border border-border bg-muted/30 p-2"
                 >
-                  <FiPaperclip className="text-emerald-500 dark:text-emerald-400" />
+                  <FilePlusIcon className="h-4 w-4 flex-shrink-0" />
                   <a
                     href={part.data}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                    className="text-accent hover:underline text-sm"
                   >
                     دانلود فایل
                   </a>
-                </div>
+                </div>,
               );
             }
-          } else if (part.type === "tool-invocation") {
-            console.warn("Unexpected tool invocation");
           }
         });
 
@@ -158,27 +146,27 @@ const Message = ({
                   <img
                     src={attachment.url}
                     alt={attachment.name || "attachment"}
-                    className="max-w-full h-auto my-2 mx-auto rounded-lg border border-gray-100 dark:border-gray-700 shadow-md"
+                    className="max-w-full h-auto my-2 mx-auto rounded-lg"
                   />
-                </a>
+                </a>,
               );
             } else {
               renderedAttachments.push(
                 <div
                   key={`attachment-${index}`}
-                  className="flex items-center gap-2 my-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm"
+                  className="flex items-center gap-2 my-2 rounded-md border border-border bg-muted/30 p-2"
                 >
-                  <FiPaperclip className="text-emerald-500 dark:text-emerald-400" />
+                  <FilePlusIcon className="h-4 w-4 flex-shrink-0" />
                   <a
                     href={attachment.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     download={attachment.name || "download"}
-                    className="text-emerald-600 dark:text-emerald-400 hover:underline"
+                    className="text-accent hover:underline text-sm"
                   >
                     {attachment.name || "دانلود فایل"}
                   </a>
-                </div>
+                </div>,
               );
             }
           });
@@ -190,7 +178,7 @@ const Message = ({
 
   // Control the visibility of reasoning parts based on non-reasoning parts
   const [showReasoning, setShowReasoning] = useState(
-    !renderedNonReasoning.length
+    !renderedNonReasoning.length,
   );
 
   useEffect(() => {
@@ -203,26 +191,27 @@ const Message = ({
   const handleCopy = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     let textToCopy = "";
+
     if (renderedReasoning.length && showReasoning) {
       textToCopy = renderedReasoning
         .map((el) => {
-          // Assuming Markdown components have a "content" prop
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return (el.props as any).content;
         })
         .join("\n");
     }
+
     if (renderedNonReasoning.length) {
       textToCopy +=
         "\n\n" +
         renderedNonReasoning
           .map((el) => {
-            // Assuming Markdown components have a "content" prop
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return (el.props as any).content;
           })
           .join("\n");
     }
+
     try {
       copy(textToCopy.trim());
       toast.success("پیام در کلیپ‌بورد کپی شد.", {
@@ -236,97 +225,101 @@ const Message = ({
 
   if (
     isTheLastMessage &&
-    (waitingForFirstResp ||
-      (!renderedReasoning.length && !renderedNonReasoning.length))
+    !renderedReasoning.length &&
+    !renderedNonReasoning.length
   ) {
     return <LoadingMessage aiCompanyWebsite={aiCompanyWebsite} />;
   }
 
   return (
     <div
-      className={`py-6 ${isUser ? "" : "bg-gray-50 dark:bg-gray-700/30"} px-4 ${
-        !isTheLastMessage ? "border-b border-gray-100 dark:border-gray-700" : ""
-      } transition-colors duration-200`}
+      className={`group px-1 pt-4 text-[0.925rem] ${!isTheLastMessage && "border-b border-border/40"} ${className || ""}`}
     >
-      <div className="flex gap-4 max-w-3xl mx-auto">
-        <div className="flex-shrink-0">
+      <div className="flex gap-4">
+        {/* Avatar */}
+        <div className="flex-none">
           <div
-            className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md
-            ${
-              isUser
-                ? "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
-                : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600"
-            }`}
+            className={`w-9 h-9 rounded-full flex items-center justify-center border ${isUser ? "border-border bg-muted/50" : "border-accent/50 bg-accent/40"}`}
           >
             {isUser ? (
-              <HiUser className="w-5 h-5" />
+              <PersonIcon className="h-5 w-5" />
             ) : (
               <CompanyLogo
-                className="w-7 h-7"
                 companyWebsite={aiCompanyWebsite}
+                className="h-5 w-5"
               />
             )}
           </div>
         </div>
 
-        <div className="flex-grow">
-          {/* Action Block: Copy and Toggle */}
-          {!isUser && (
-            <div className="flex justify-end mb-2">
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCopy}
-                  className="p-1.5 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 hover:border-emerald-200 dark:hover:border-emerald-700 transition-colors shadow-sm"
-                  aria-label="Copy message"
-                >
-                  <FiCopy size={16} />
-                </button>
-
-                {renderedReasoning.length > 0 && (
-                  <button
-                    className="flex items-center gap-1 px-2 py-1 text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 bg-white dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 hover:border-emerald-200 dark:hover:border-emerald-700 transition-colors shadow-sm"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setShowReasoning((prev) => !prev);
-                    }}
-                  >
-                    {showReasoning ? (
-                      <FiChevronUp size={16} />
-                    ) : (
-                      <FiChevronDown size={16} />
-                    )}
-                    <span className="text-sm">
-                      {showReasoning ? "پنهان" : "نمایش"} استدلال
-                    </span>
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Message Content */}
+        {/* Message content */}
+        <div className="grid grid-rows-[auto,1fr,auto] gap-2 h-full min-w-0 w-full">
+          {/* First (Toolbar) */}
           <div
-            className={`prose dark:prose-invert max-w-none ${
-              isUser
-                ? "text-gray-800 dark:text-gray-200"
-                : "text-gray-700 dark:text-gray-200"
-            }`}
+            className="ltr w-full flex items-center gap-2 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity"
+            style={{ height: "2dvh" }}
           >
+            {!isUser && renderedReasoning.length > 0 ? (
+              <button
+                className="inline-flex items-center text-xs gap-1 py-1 px-2 rounded bg-muted hover:bg-muted/70 transition-colors"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowReasoning((prev) => !prev);
+                }}
+              >
+                {showReasoning ? (
+                  <ChevronDownIcon className="h-3 w-3" />
+                ) : (
+                  <ChevronUpIcon className="h-3 w-3" />
+                )}
+                <span>{showReasoning ? "پنهان" : "نمایش"} استدلال</span>
+              </button>
+            ) : (
+              <div className="inline-flex items-center"></div>
+            )}
+
+            <button
+              onClick={handleCopy}
+              className="inline-flex items-center text-xs gap-1 py-1 px-2 rounded bg-muted hover:bg-muted/70 transition-colors"
+            >
+              <CopyIcon className="h-3 w-3" />
+              <span>کپی</span>
+            </button>
+          </div>
+
+          {/* Middle (Content) */}
+          <div className="mt-2 overflow-x-auto overflow-y-hidden">
+            {/* Reasoning section */}
             {showReasoning && renderedReasoning.length > 0 && (
-              <div className="bg-white dark:bg-gray-800 p-4 border-r-4 border-emerald-500 dark:border-emerald-400 rounded-r-md rounded-l my-3 shadow-md">
-                {renderedReasoning}
+              <div className="mb-3 relative bg-muted/30 border-r-2 border-accent/30 pr-4 pl-3 py-3 rounded-md text-sm">
+                <div className="prose max-w-none prose-sm">
+                  {renderedReasoning}
+                </div>
               </div>
             )}
 
-            <div>
+            {/* Main content */}
+            <div
+              className={`prose max-w-none ${isUser ? "prose-sm" : "prose-base"} space-y-4`}
+            >
               {renderedNonReasoning.length > 0
                 ? renderedNonReasoning
-                : text?.length > 0 && <p dir="auto">{text}</p>}
+                : text?.length > 0 && (
+                    <p className="whitespace-pre-wrap" dir="auto">
+                      {text}
+                    </p>
+                  )}
             </div>
 
+            {/* Attachments */}
             {renderedAttachments && renderedAttachments.length > 0 && (
-              <div className="mt-4 space-y-2">{renderedAttachments}</div>
+              <div className="mt-3 space-y-2">{renderedAttachments}</div>
             )}
+          </div>
+
+          {/* Third (Empty/Spacer) */}
+          <div style={{ height: "2dvh" }}>
+            {/* This div will always match the height of the first div */}
           </div>
         </div>
       </div>
