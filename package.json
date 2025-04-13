@@ -4,10 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "lint": "next lint",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "dev:webpack": "next dev",
+    "dev": "next dev --turbopack",
     "post-pull": "rm -Rf .next && pnpm i && npx prisma generate && npx prisma generate --sql && next build",
     "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start"
   },
