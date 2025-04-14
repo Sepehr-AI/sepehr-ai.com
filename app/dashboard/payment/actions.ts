@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use server";
 
 import { error } from "@/lib/log";
@@ -8,12 +10,16 @@ import getExchangeRate from "@/lib/exchange";
 import type { MiddlewareUserData } from "@/middleware";
 
 const SEPEHR_AI_IPG_ADDR: string =
-  process.env.SEPEHR_AI_IPG_ADDR || "10.8.0.1:4040";
+  process.env.SEPEHR_AI_IPG_ADDR || "localhost:4040";
 
 interface SepehrAiIpgPayload {
   amount: number;
   payload: string;
   invoiceId: string;
+}
+
+function isString(obj: any): boolean {
+  return Object.prototype.toString.call(obj) === "[object String]";
 }
 
 export async function chargeAccountAction(formData: FormData): Promise<void> {
@@ -71,24 +77,32 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
     payload: `پلن ${planId} برای کاربر ${user.id}`,
   };
 
+  let data: any = undefined;
+  // Redirect back to the home page on failure.
+  let redirectUrl: string = "/dashboard/payment";
   try {
-    const response = await fetch(`http://${SEPEHR_AI_IPG_ADDR}/api/charge`, {
+    const response = await fetch(`http://${SEPEHR_AI_IPG_ADDR}/charge`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(paymentPayload),
     });
-    const data = await response.json();
+    data = await response.json();
 
-    if (data.status === "ok" && data.paymentURL) {
-      return redirect(data.paymentURL);
+    if (
+      data.status === "ok" &&
+      data.paymentURL &&
+      isString(data.paymentURL) &&
+      data.paymentURL.length
+    ) {
+      redirectUrl = data.paymentURL;
     } else {
-      error("sepehrAiIpgInitilizationFailed.", { error: data });
-      return redirect("/dashboard/payment");
+      throw new Error("sepehrAiIpgInitilizationFailed");
     }
   } catch (e) {
-    error("UnableToConnectToSepehrAiIpgServer.", { error: e });
-    return redirect("/dashboard/payment");
+    error("UnableToConnectToSepehrAiIpgServer", { error: e, data });
   }
+
+  return redirect(redirectUrl);
 }
