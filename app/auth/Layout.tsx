@@ -1,27 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
-import { toast } from "react-toastify";
-import { type FormEvent, useActionState, useEffect, useState } from "react";
-import ValidatedInput from "@/components/ValidatedInput";
 import Link from "next/link";
-import {
-  checkMobileFormSchema,
-  loginFormSchema,
-  registerFormSchema,
-} from "./validationSchema";
+import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import Icon from "@/components/landing/Icon";
-import { useTheme } from "@/components/ThemeProvider";
 import * as Form from "@radix-ui/react-form";
+import { useTheme } from "@/components/ThemeProvider";
 import * as Separator from "@radix-ui/react-separator";
+import ValidatedInput from "@/components/ValidatedInput";
+import { type FormEvent, useActionState, useEffect, useState } from "react";
+import {
+  loginFormSchema,
+  registerFormSchema,
+  checkMobileFormSchema,
+} from "./validationSchema";
 import {
   MobileIcon,
   PersonIcon,
-  EnvelopeClosedIcon,
-  LockClosedIcon,
   ArrowLeftIcon,
+  LockClosedIcon,
   ChevronRightIcon,
+  EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
 
 export default function AuthLayout({

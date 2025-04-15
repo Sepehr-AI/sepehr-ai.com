@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
+import dayjs from "dayjs";
 import { SignJWT } from "jose";
 import prisma from "@/lib/prisma";
+import utc from "dayjs/plugin/utc";
 import { randomInt } from "node:crypto";
 import type { User } from "@/prisma/client";
+import timezone from "dayjs/plugin/timezone";
 import { hash, verify } from "@node-rs/argon2";
 import { cookies, headers } from "next/headers";
 import { error, errorOnThrow } from "@/lib/log";
@@ -19,6 +22,10 @@ import {
   registerFormSchema,
 } from "./validationSchema";
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
+dayjs.tz.setDefault("Asia/Tehran");
+
 const JWT_SECRET = process.env.JWT_SECRET as string;
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
 const ARGON2_SECRET_BUF = Buffer.from(
@@ -32,7 +39,7 @@ const cookiesConfig: Partial<ResponseCookie> = {
         secure: true,
         sameSite: "strict",
         domain: "sepehr-ai.com",
-        expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // One month from now.
+        expires: dayjs().tz("Asia/Tehran").add(30, "day").toDate(),
       }
     : {}),
 };
@@ -139,8 +146,11 @@ export async function checkMobileAction(
 }
 
 async function setTokenCookie(user: User) {
-  const iat = Math.floor(Date.now() / 1000);
-  const exp = iat + 60 * 60 * 60 * 60;
+  const iat = dayjs().tz("Asia/Tehran").unix();
+  const exp = dayjs()
+    .tz("Asia/Tehran")
+    .add(60 * 60 * 60 * 60, "second")
+    .unix();
   const token = await errorOnThrow("settingTokenCookieInAuthLogin", () =>
     new SignJWT({
       id: user.id,
@@ -223,8 +233,9 @@ async function verifyOtp(
 
   if (!dbOpt) return { error: "کد تاییدی ارسال نشده!" };
   if (
-    new Date(dbOpt.createdAt).getTime() <
-    new Date(Date.now() - 3 * 60 * 1000).getTime()
+    dayjs(dbOpt.createdAt)
+      .tz("Asia/Tehran")
+      .isBefore(dayjs().tz("Asia/Tehran").subtract(3, "minute"))
   ) {
     return {
       error:

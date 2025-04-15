@@ -46,4 +46,6 @@ export const companyToWebsiteMap = {
   pygmalionai: "pygmalion.chat",
   mancer: "mancer.tech",
   gryphe: "huggingface.co/Gryphe",
+  eleutherai: "eleuther.ai",
+  alfredpros: "huggingface.co/AlfredPros",
 } as const;

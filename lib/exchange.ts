@@ -78,8 +78,8 @@ export default async function getExchangeRate(): Promise<number> {
     if (currency.unit && currency.unit === "تومان") {
       data = currency.price * 10;
     } else data = currency.price;
-    // 1000 tomas tolerance.
-    data += 10_000;
+    // 5000 tomas tolerance.
+    data += 50_000;
 
     last_price = data;
     cache.set(cacheKey, data);

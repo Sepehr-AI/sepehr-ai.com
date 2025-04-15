@@ -8,6 +8,6 @@ VALUES (
 ON CONFLICT ("userId")
 DO UPDATE SET
   "code" = $2,
-  "createdAt" = NOW() AT TIME ZONE 'UTC'
-WHERE "Otp"."createdAt" < ((NOW() AT TIME ZONE 'UTC') - INTERVAL '2 minute')
+  "createdAt" = NOW()
+WHERE "Otp"."createdAt" < (NOW() - INTERVAL '2 minute')
 RETURNING "code";
