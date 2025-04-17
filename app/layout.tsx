@@ -1,6 +1,7 @@
+import Head from "next/head";
 import type { Metadata } from "next";
-import localFont from "next/font/local";
 import type { ReactNode } from "react";
+import localFont from "next/font/local";
 import { ToastContainer } from "react-toastify";
 import ThemeProvider from "@/components/ThemeProvider";
 
@@ -72,8 +73,54 @@ const vazir = localFont({
 // });
 
 export const metadata: Metadata = {
-  title: "سپهر AI",
-  description: "تجربه نوین مدل های هوش مصنوعی با سپهر AI",
+  title: "سپهر AI | تجربه نوین هوش مصنوعی",
+  description:
+    "دسترسی سریع و امن به بیش از ۲۴۰ مدل هوش مصنوعی پیشرفته برای تولید محتوا، برنامه‌نویسی، بازاریابی و تحلیل داده در پلتفرم یکپارچه سپهر AI.",
+  keywords: [
+    // Farsi
+    "هوش مصنوعی",
+    "پلتفرم هوش مصنوعی",
+    "مدل‌های هوش مصنوعی",
+    "مدل‌های GPT",
+    "تولید محتوا هوش مصنوعی",
+    "برنامه‌نویسی با AI",
+    "بازاریابی هوش مصنوعی",
+    "تحلیل داده با AI",
+    "دستیار هوش مصنوعی",
+    "AI ابری",
+    "بهترین پلتفرم هوش مصنوعی فارسی",
+    "دسترسی به مدل‌های GPT رایگان",
+    "آموزش تولید محتوا با هوش مصنوعی",
+    "ابزار ترجمه هوش مصنوعی فارسی",
+    "تولید عکس با هوش مصنوعی",
+    "قیمت‌گذاری مدل‌های AI",
+    "مقایسه پلن‌های هوش مصنوعی",
+    "راه‌اندازی کسب‌وکار با AI",
+    "API هوش مصنوعی برای توسعه‌دهندگان",
+    "امنیت داده‌ها در AI",
+
+    // English
+    "Artificial Intelligence",
+    "Machine Learning",
+    "Deep Learning",
+    "Natural Language Processing",
+    "AI Platform",
+    "AI Models",
+    "Generative AI",
+    "AI Content Generation",
+    "AI Marketing Tools",
+    "AI Data Analytics",
+    "Best AI content generator tools",
+    "AI SEO optimization techniques",
+    "Conversational AI chatbots",
+    "Cloud AI services comparison",
+    "AI-powered translation API",
+    "AI code debugging assistant",
+    "Privacy-aware AI platform",
+    "Scalable AI inference models",
+    "Real-time AI analytics dashboard",
+    "Enterprise AI solutions",
+  ],
 };
 
 export default function RootLayout({
@@ -83,10 +130,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fa-IR" dir="rtl">
-      {/* <Head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Head> */}
+      <Head>
+        <meta name="robots" content="nofollow" />
+        <meta name="google" content="notranslate" key="notranslate" />
+        <meta name="google" content="nositelinkssearchbox" key="sitelinks" />
+      </Head>
       <body className={vazir.variable}>
         <ToastContainer toastClassName="font-vazir-force text-center" />
         <ThemeProvider>{children}</ThemeProvider>

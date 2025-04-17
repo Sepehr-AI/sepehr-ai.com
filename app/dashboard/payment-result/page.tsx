@@ -13,7 +13,7 @@ import {
   FaExclamationCircle,
 } from "react-icons/fa";
 
-const telegramSupportId = "@devraymondsh";
+const TELEGRAM_SUPPORT_ID = process.env.TELEGRAM_SUPPORT_ID || "example";
 
 export default function PaymentResultPage() {
   const params = useSearchParams();
@@ -110,12 +110,9 @@ export default function PaymentResultPage() {
 
           <div className="pt-4 border-t border-border space-x-reverse space-x-2">
             <span className="ltr text-right">پشتیبانی تلگرام:</span>
-            <a
-              target="_blank"
-              href={`https://t.me/${telegramSupportId.replace("@", "")}`}
-            >
+            <a target="_blank" href={`https://t.me/${TELEGRAM_SUPPORT_ID}`}>
               <button className="ltr text-left bg-accent hover:bg-accent/90 text-white py-2 px-4 rounded-lg transition-colors text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/50">
-                <span>{telegramSupportId}</span>
+                <span>@{TELEGRAM_SUPPORT_ID}</span>
               </button>
             </a>
           </div>

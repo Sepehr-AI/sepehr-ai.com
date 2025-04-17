@@ -126,7 +126,7 @@ export default function SiteFooter() {
 
         <div className="flex flex-col md:flex-row items-center justify-center text-center">
           <p className="text-sm text-foreground/60 text-center">
-            &copy; ۱۴۰۳ سپهر AI. تمامی حقوق محفوظ است.
+            &copy; ۱۴۰۴ سپهر AI. تمامی حقوق محفوظ است.
           </p>
         </div>
       </div>
