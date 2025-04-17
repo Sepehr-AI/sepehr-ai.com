@@ -6,7 +6,10 @@ import { unstable_cache } from "next/cache";
 import type { WebPlan } from "@/prisma/client";
 import { numberToReadableFarsi, roundWebPlan } from "./cost";
 
-export type webPlansForUsers = ((Pick<WebPlan, "id" | "name" | "credits"> &
+export type webPlansForUsers = ((Pick<
+  WebPlan,
+  "id" | "name" | "credits" | "maxConcurrentUsers"
+> &
   Partial<WebPlan>) & { displayPrice: string; price: number })[];
 
 export const getWebPlans: () => Promise<webPlansForUsers> = unstable_cache(
@@ -15,7 +18,13 @@ export const getWebPlans: () => Promise<webPlansForUsers> = unstable_cache(
     return (
       (
         await prisma.webPlan.findMany({
-          select: { id: true, name: true, credits: true, usdAmount: true },
+          select: {
+            id: true,
+            name: true,
+            credits: true,
+            usdAmount: true,
+            maxConcurrentUsers: true,
+          },
           orderBy: {
             id: "desc",
           },

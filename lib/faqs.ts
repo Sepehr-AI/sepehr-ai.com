@@ -8,6 +8,7 @@ export type FaqsForLandingPage = (Pick<Faq, "title" | "description"> &
 export const getFaqs: () => Promise<FaqsForLandingPage> = unstable_cache(
   () =>
     prisma.faq.findMany({
+      orderBy: { id: "asc" },
       select: {
         title: true,
         description: true,

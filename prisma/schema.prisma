@@ -24,7 +24,7 @@ model User {
   webBalance      Float           @default(0)
   apiBalance      Float           @default(0)
   referralBalance Float           @default(0)
-  createdAt       DateTime        @default(now())  @db.Timestamptz(3)
+  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
 }
 
 model Referral {
@@ -33,7 +33,7 @@ model Referral {
   userId    Int
   newUser   User     @relation(fields: [newUserId], references: [id], name: "ReferredUser")
   newUserId Int      @unique()
-  createdAt DateTime @default(now())  @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model Transaction {
@@ -54,7 +54,7 @@ model Transaction {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int
   usdAmount Int
-  createdAt DateTime @default(now())  @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model ApiLlmRequest {
@@ -66,7 +66,7 @@ model ApiLlmRequest {
   cost             Float
   llmModel         LlmModel @relation(fields: [llmModelId], references: [id])
   llmModelId       Int
-  createdAt        DateTime @default(now())  @db.Timestamptz(3)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model WebLlmRequest {
@@ -78,7 +78,7 @@ model WebLlmRequest {
   cost             Float
   llmModel         LlmModel @relation(fields: [llmModelId], references: [id])
   llmModelId       Int
-  createdAt        DateTime @default(now())  @db.Timestamptz(3)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
 }
 
 enum TiktokenEncoding {
@@ -104,16 +104,17 @@ model LlmModel {
   llmRequests           ApiLlmRequest[]
   WebLLMRequests        WebLlmRequest[]
   estimatedEncodingBase TiktokenEncoding
-  createdAt             DateTime         @default(now())  @db.Timestamptz(3)
+  createdAt             DateTime         @default(now()) @db.Timestamptz(3)
 }
 
 model WebPlan {
-  id        Int      @id @default(autoincrement())
-  name      String
-  credits   Int
-  usdAmount Int
-  updatedAt DateTime @default(now())  @db.Timestamptz(3)
-  createdAt DateTime @default(now())  @db.Timestamptz(3)
+  id                 Int      @id @default(autoincrement())
+  name               String
+  credits            Int
+  usdAmount          Int
+  maxConcurrentUsers Int      @default(1)
+  updatedAt          DateTime @default(now()) @db.Timestamptz(3)
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model Otp {
@@ -121,12 +122,12 @@ model Otp {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int      @unique
   code      String
-  createdAt DateTime @default(now())  @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model Faq {
   id          Int      @id @default(autoincrement())
   title       String
   description String
-  createdAt   DateTime @default(now())  @db.Timestamptz(3)
+  createdAt   DateTime @default(now()) @db.Timestamptz(3)
 }

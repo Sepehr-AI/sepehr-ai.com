@@ -143,7 +143,7 @@ export default function PricingSection({
                           </li>
                           <li className="flex items-start gap-2">
                             <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
-                            <span>امکان ذخیره و مدیریت چت‌ها</span>
+                            <span>ذخیره و مدیریت چت‌ها</span>
                           </li>
                           <li className="flex items-start gap-2">
                             <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
@@ -156,7 +156,7 @@ export default function PricingSection({
                           <li className="flex items-start gap-2">
                             <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
                             <span>
-                              پشتیبانی فنی {index > 0 ? "اختصاصی" : "استاندارد"}
+                              دسترسی همزمان {plan.maxConcurrentUsers} کاربر
                             </span>
                           </li>
                         </ul>
