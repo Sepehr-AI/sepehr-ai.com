@@ -2,18 +2,13 @@
 
 "use client";
 
-import type { Message } from "ai";
 import { decodeJwt } from "jose";
+import type { Message } from "ai";
 import {
   listenOnEvent,
   dispatchEvent,
   type EventHandler,
 } from "./eventTransfer";
-import {
-  type AiMessage,
-  type TextUIPart,
-  sdkMessageToAiMessage,
-} from "./vercel-ai";
 
 export interface Chat {
   engineCode: string;
@@ -28,7 +23,7 @@ export interface DbChat {
 
 export interface ChatSession {
   engineCode: string;
-  messages: AiMessage[];
+  messages: Message[];
   aiCompanyWebsite: string;
 }
 
@@ -117,37 +112,36 @@ export const updateChat = async (
   uuid: string,
   engineCode: string,
   aiCompanyWebsite: string,
-  _messages: Message[],
+  messages: Message[],
 ): Promise<void> =>
   await putData("sessions", uuid, {
+    messages,
     engineCode,
     aiCompanyWebsite,
-    messages: _messages.map((m) => sdkMessageToAiMessage(m)),
   } as ChatSession);
 
 export const createChat = async (
   uuid: string,
   engineCode: string,
   aiCompanyWebsite: string,
-  _messages: Message[],
+  messages: Message[],
 ): Promise<string> => {
   if (
-    !_messages ||
-    !_messages[0] ||
-    !_messages[0].parts ||
-    !_messages[0].parts[0] ||
-    !(_messages[0].parts[0] as TextUIPart | undefined)
+    !messages ||
+    !messages[0] ||
+    !messages[0].parts ||
+    !messages[0].parts[0] ||
+    !(messages[0].parts[0] as { text: string } | undefined)
   ) {
-    console.error("Invalid messages.", _messages);
+    console.error("Invalid messages.", messages);
     throw new Error(
       "Invalid messages passed to createChat. Check the console for more information.",
     );
   }
 
-  const messages = _messages.map((m) => sdkMessageToAiMessage(m));
   let firstMessageText: string;
-  if ((messages[0].parts[0] as TextUIPart).text) {
-    firstMessageText = (messages[0].parts[0] as TextUIPart).text;
+  if ((messages[0].parts[0] as { text: string }).text) {
+    firstMessageText = (messages[0].parts[0] as { text: string }).text;
   } else {
     const _firstMessageText = messages[0].parts.find(
       (p) => p.type === "text",

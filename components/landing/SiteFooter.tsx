@@ -8,7 +8,7 @@ export default function SiteFooter() {
   return (
     <footer className="bg-card border-t border-border pt-16 pb-8">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12 justify-center items-center">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12 justify-center justify-items-center">
           <div>
             <Enamad />
           </div>
@@ -74,7 +74,7 @@ export default function SiteFooter() {
             </ul>
           </div>
 
-          <div>
+          <div className="content-center">
             <div className="flex items-center justify-center gap-4">
               <a
                 href="#"

@@ -6,13 +6,10 @@ import { unstable_cache } from "next/cache";
 import type { WebPlan } from "@/prisma/client";
 import { numberToReadableFarsi, roundWebPlan } from "./cost";
 
-export type webPlansForUsers = ((Pick<
-  WebPlan,
-  "id" | "name" | "credits" | "maxConcurrentUsers"
-> &
+export type WebPlansForUsers = ((Pick<WebPlan, "id" | "name" | "usdCredits"> &
   Partial<WebPlan>) & { displayPrice: string; price: number })[];
 
-export const getWebPlans: () => Promise<webPlansForUsers> = unstable_cache(
+export const getWebPlans: () => Promise<WebPlansForUsers> = unstable_cache(
   async () => {
     const exchangeRate = await getExchangeRate();
     return (
@@ -21,16 +18,15 @@ export const getWebPlans: () => Promise<webPlansForUsers> = unstable_cache(
           select: {
             id: true,
             name: true,
-            credits: true,
-            usdAmount: true,
-            maxConcurrentUsers: true,
+            usdPrice: true,
+            usdCredits: true,
           },
           orderBy: {
             id: "desc",
           },
         })
-      ).map((p: WebPlan) => {
-        const price = roundWebPlan(p.usdAmount * exchangeRate);
+      ).map((p) => {
+        const price = roundWebPlan(p.usdPrice * exchangeRate);
         return {
           ...p,
           price,

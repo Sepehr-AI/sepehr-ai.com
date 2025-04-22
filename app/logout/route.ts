@@ -1,10 +1,7 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
+import { handleServerLogout } from "./lib";
 
-export async function POST(request: Request) {
-  (await cookies()).delete("token");
-
-  return NextResponse.redirect(new URL("/", request.url));
+export async function GET() {
+  return handleServerLogout();
 }

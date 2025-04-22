@@ -1,12 +1,7 @@
-import type { LlmModel } from "@/prisma/client";
-
-export function roundWebPlanTokensAmount(tokens: number): number {
-  return Math.ceil(tokens / 10_000) * 10_000;
-}
-
 export function roundWebPlan(amount: number) {
   return Math.ceil(amount / 100_000) * 100_000;
 }
+
 function toPersianDigits(input: number) {
   const englishDigits = "0123456789";
   const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
@@ -55,13 +50,11 @@ export function roundAiModelCost(cost: number): number {
   return +(Math.ceil((cost + "e+2") as unknown as number) + "e-2");
 }
 
-export function calcWebCostCost(
-  inTokens: number,
-  outTokens: number,
-  model: LlmModel,
-): number {
-  return roundWebCost(
-    (model.costPerMilInToken * 2 * Math.floor(inTokens)) / 1_000_000 +
-      (model.costPerMilOutToken * 2 * Math.floor(outTokens)) / 1_000_000,
-  );
+export function usdToCredit(usd: number): number {
+  return Math.floor(usd * 1.75 * 1000);
+}
+
+export function creditToUsd(credit: number): number {
+  // *1000 and /1000 for 3 digit decimal accuracy.
+  return Math.floor((credit / 1.75 / 1000) * 1000) / 1000;
 }

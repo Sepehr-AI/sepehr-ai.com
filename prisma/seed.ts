@@ -8,12 +8,13 @@ import { generateText } from "ai";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { roundAiModelCost } from "@/lib/cost";
-import type { TiktokenEncoding } from "js-tiktoken";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const DISABLED_MODELS = ["openai/o1-pro"];
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -45,19 +46,6 @@ const farsiDescriptionSchema = z.string().refine(
   },
   { message: "Farsi description must be between 100 and 200 words." },
 );
-
-function estimateTiktokenEncoding(contextLength: number): TiktokenEncoding {
-  if (contextLength < 10000) {
-    return "gpt2";
-  }
-  if (contextLength < 100000) {
-    return "p50k_base";
-  }
-  if (contextLength < 200000) {
-    return "cl100k_base";
-  }
-  return "o200k_base";
-}
 
 const USE_TO_COMPARE_PLANS: string[] = [
   "openai/o3-mini",
@@ -99,7 +87,6 @@ async function fetchFarsiDescription(
       const resp = await generateText({
         prompt,
         model: openrouter("openai/o3-mini-high"),
-        // model: openrouter("deepseek/deepseek-r1:free"),
       });
       const parsRes = await farsiDescriptionSchema.safeParseAsync(resp.text);
       if (!parsRes.success) {
@@ -129,8 +116,6 @@ async function main() {
       where: { email: "mail@mahdi-sharifi.ir" },
       update: {},
       create: {
-        webBalance: 100,
-        apiBalance: 100,
         name: "مهدی شریفی",
         mobile: "09150872550",
         email: "mail@mahdi-sharifi.ir",
@@ -140,7 +125,7 @@ async function main() {
       where: { id: 11 },
       update: {},
       create: {
-        title: "توکن چیست و تقریبا چطور محاسبه میشه؟",
+        title: "توکن چیست و تقریبا چطور محاسبه می‌شود؟",
         description:
           "توکن واحدی است که برای اندازه‌گیری حجم ورودی و خروجی در مدل‌های زبانی به‌کار می‌رود و معمولاً معادل حدود ۴ کاراکتر یا بخش‌هایی از یک کلمه است. در زبان فارسی هر کلمه ساده معمولاً بین ۱ تا ۲ توکن مصرف می‌کند و کلمات مرکب یا دارای پسوند ممکن است تا ۳ توکن بشوند. به‌طور متوسط می‌توان هر کلمه فارسی را حدود ۱.۵ توکن در نظر گرفت.",
       },
@@ -205,10 +190,9 @@ async function main() {
       update: {},
       create: {
         id: 1,
-        name: "ابتدایی",
-        credits: 6000,
-        usdAmount: 10,
-        maxConcurrentUsers: 1,
+        name: "برنزی",
+        usdPrice: 13,
+        usdCredits: 7,
       },
     }),
     prisma.webPlan.upsert({
@@ -216,10 +200,9 @@ async function main() {
       update: {},
       create: {
         id: 2,
-        name: "متوسط",
-        credits: 8000,
-        usdAmount: 15,
-        maxConcurrentUsers: 2,
+        name: "نقره‌ای",
+        usdPrice: 35,
+        usdCredits: 20,
       },
     }),
     prisma.webPlan.upsert({
@@ -227,10 +210,9 @@ async function main() {
       update: {},
       create: {
         id: 3,
-        name: "حرفه‌ای",
-        credits: 10000,
-        usdAmount: 20,
-        maxConcurrentUsers: 3,
+        name: "طلایی",
+        usdPrice: 70,
+        usdCredits: 40,
       },
     }),
   ]);
@@ -274,11 +256,12 @@ async function main() {
       code: m.id,
       name: m.name,
       companyWebsite,
+      contextLength: m.context_length,
       description: descriptionsMap[m.id],
+      disabled: DISABLED_MODELS.includes(m.id),
       inputModalities: m.architecture.input_modalities,
       outputModalities: m.architecture.output_modalities,
       useToComparePlans: USE_TO_COMPARE_PLANS.includes(m.id),
-      estimatedEncodingBase: estimateTiktokenEncoding(m.context_length),
       costPerMilInToken: roundAiModelCost(m.pricing.prompt * 1_000_000),
       costPerMilOutToken: roundAiModelCost(m.pricing.completion * 1_000_000),
     };

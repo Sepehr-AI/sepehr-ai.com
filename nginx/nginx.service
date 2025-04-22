@@ -1,0 +1,18 @@
+# Located at /etc/systemd/system/nginx.service.
+
+[Unit]
+Wants=network-online.target
+Description=The NGINX HTTP and reverse proxy server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=forking
+PrivateTmp=true
+ExecStart=/usr/sbin/nginx
+PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t
+ExecStop=/bin/kill -s QUIT $MAINPID
+ExecReload=/usr/sbin/nginx -s reload
+
+[Install]
+WantedBy=multi-user.target

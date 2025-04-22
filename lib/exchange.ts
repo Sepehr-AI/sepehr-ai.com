@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
 import { z } from "zod";
@@ -39,7 +38,7 @@ export default async function getExchangeRate(): Promise<number> {
   let data: number | null | undefined = cache.get(cacheKey);
 
   if (!data) {
-    let json: any;
+    let json: unknown;
     let response: Response;
     try {
       response = await fetch(

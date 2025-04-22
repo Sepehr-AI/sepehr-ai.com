@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import getExchangeRate from "@/lib/exchange";
 import type { MiddlewareUserData } from "@/middleware";
 import {
-  ipgFetch,
+  sepehrFetch,
   chargeApiResSchema,
   chargeApiPayloadSchema,
 } from "@/sepehr-ai-ipg/src/lib";
@@ -152,33 +152,28 @@ async function onFetchFailure() {
   }
 }
 
-export async function chargeAccountAction(formData: FormData): Promise<void> {
-  const headersList = await headers();
-  const planId = Number(formData.get("planId"));
-  const user: MiddlewareUserData = {
-    webBalance: 0,
-    id: Number(headersList.get("userId")),
-    email: headersList.get("userEmail") as string,
-    mobile: headersList.get("usermobile") as string,
-  };
-
-  if (isNaN(planId) || isNaN(user.id) || !user.email || !user.mobile) {
-    console.error("Unexpected input:", { user });
-    return redirect("/dashboard/payment");
-  }
-
+export async function setupPaymentGate({
+  user,
+  planId,
+}: {
+  planId: number;
+  user: MiddlewareUserData;
+}): Promise<void> {
   const exchangeRate = await getExchangeRate();
 
-  let usdAmount: number;
   let price: number;
+  let usdPrice: number;
+  let usdCredits: number;
   try {
     const webPlan = await prisma.webPlan.findUnique({
       where: { id: planId },
-      select: { usdAmount: true },
+      select: { usdPrice: true, usdCredits: true },
     });
     if (!webPlan) throw new Error("PlanNotFound");
-    usdAmount = webPlan.usdAmount;
-    price = usdAmount * exchangeRate;
+
+    usdPrice = webPlan.usdPrice;
+    usdCredits = webPlan.usdCredits;
+    price = usdPrice * exchangeRate;
   } catch (e) {
     error("DatabaseOrExchangeErrorForPayment:", {
       user,
@@ -193,7 +188,8 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
 
   const transaction = await prisma.transaction.create({
     data: {
-      usdAmount,
+      usdPrice,
+      usdCredits,
       exchangeRate,
       amount: price,
       user: { connect: { id: user.id } },
@@ -211,7 +207,7 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
   // Redirect back to the home page on failure.
   let redirectUrl: string = "/dashboard/payment";
   try {
-    const res = await ipgFetch(
+    const res = await sepehrFetch(
       (obj: any, msg: string) => error(msg, obj),
       `http://${SEPEHR_AI_IPG_ADDR}/charge`,
       {
@@ -229,4 +225,21 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
   }
 
   return redirect(redirectUrl);
+}
+
+export async function chargeAccountAction(formData: FormData): Promise<void> {
+  const headersList = await headers();
+  const planId = Number(formData.get("planId"));
+  const user: MiddlewareUserData = {
+    id: Number(headersList.get("userId")),
+    email: headersList.get("userEmail") as string,
+    mobile: headersList.get("usermobile") as string,
+  };
+
+  if (isNaN(planId) || isNaN(user.id) || !user.email || !user.mobile) {
+    console.error("Unexpected input:", { user });
+    return redirect("/dashboard/payment");
+  }
+
+  return setupPaymentGate({ planId, user });
 }

@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import type { Model } from "@/lib/models";
 import * as Tabs from "@radix-ui/react-tabs";
 import { CheckIcon } from "@radix-ui/react-icons";
-import type { webPlansForUsers } from "@/lib/plans";
-import { roundWebPlanTokensAmount } from "@/lib/cost";
+import type { WebPlansForUsers } from "@/lib/plans";
+import { usdToCredit } from "@/lib/cost";
+import type { LlmModelPricingDto } from "@/lib/models";
 
 export default function PricingSection({
   plans,
   modelsForComparison,
 }: {
-  plans: webPlansForUsers;
-  modelsForComparison: Model[];
+  plans: WebPlansForUsers;
+  modelsForComparison: LlmModelPricingDto[];
 }) {
   return (
     <section id="pricing" className="py-20">
@@ -70,7 +70,7 @@ export default function PricingSection({
                   <div className="border-t border-border pt-6">
                     <div className="mb-4 text-center">
                       <p className="text-lg font-semibold">
-                        {plan.credits.toLocaleString()} اعتبار
+                        {usdToCredit(plan.usdCredits).toLocaleString()} اعتبار
                       </p>
                     </div>
 
@@ -96,14 +96,15 @@ export default function PricingSection({
                       >
                         <ul className="space-y-3 text-sm">
                           {modelsForComparison.map((model, idx) => {
-                            const inputTokens = roundWebPlanTokensAmount(
-                              (plan.credits / model.creditCostPerMilInToken) *
-                                1_000_000,
+                            const inputTokens = Math.floor(
+                              (usdToCredit(plan.usdCredits) /
+                                model.creditCostPerMilInToken) *
+                                1e6,
                             );
-
-                            const outputTokens = roundWebPlanTokensAmount(
-                              (plan.credits / model.creditCostPerMilOutToken) *
-                                1_000_000,
+                            const outputTokens = Math.floor(
+                              (usdToCredit(plan.usdCredits) /
+                                model.creditCostPerMilOutToken) *
+                                1e6,
                             );
 
                             return (
@@ -152,12 +153,6 @@ export default function PricingSection({
                           <li className="flex items-start gap-2">
                             <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
                             <span>آپلود و تحلیل فایل‌ها</span>
-                          </li>
-                          <li className="flex items-start gap-2">
-                            <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
-                            <span>
-                              دسترسی همزمان {plan.maxConcurrentUsers} کاربر
-                            </span>
                           </li>
                         </ul>
                       </Tabs.Content>

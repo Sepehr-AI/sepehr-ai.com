@@ -1,9 +1,8 @@
-// Navbar.tsx - Redesigned version
 "use client";
+
 import Link from "next/link";
-import { handleLogout } from "@/lib/logout";
+import { usePathname } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "../components/ThemeProvider";
 import * as Separator from "@radix-ui/react-separator";
 import { type DbChat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
@@ -50,7 +49,6 @@ const NavContent = ({
   onLinkClick: () => void;
   currentChatId?: string;
 }) => {
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [search, setSearch] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -195,13 +193,12 @@ const NavContent = ({
           <span>تنظیمات</span>
         </SidebarLink>
 
-        <button
-          onClick={() => handleLogout(router)}
-          className="w-full px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 hover:bg-black/15 dark:hover:bg-muted/60 hover:text-destructive"
-        >
-          <ExitIcon />
-          <span>خروج از حساب کاربری</span>
-        </button>
+        <a href="/logout">
+          <button className="w-full px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 hover:bg-black/15 dark:hover:bg-muted/60 hover:text-destructive">
+            <ExitIcon />
+            <span>خروج از حساب کاربری</span>
+          </button>
+        </a>
       </div>
     </div>
   );

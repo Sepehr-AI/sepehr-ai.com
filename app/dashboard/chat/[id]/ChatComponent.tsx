@@ -3,7 +3,6 @@
 import Chat from "@/components/Chat";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
-import { aiMessageToSdkMessage } from "@/lib/vercel-ai";
 import { type ChatSession, getChat } from "@/lib/chatDB";
 import React, { useEffect, useState, useRef, use } from "react";
 
@@ -55,10 +54,8 @@ export default function ChatComponent({
       models={[]}
       uuid={chatId as string}
       engineCode={chatInitialSession.engineCode}
+      initialMessages={chatInitialSession?.messages}
       aiCompanyWebsite={chatInitialSession.aiCompanyWebsite}
-      initialMessages={chatInitialSession?.messages.map((m) =>
-        aiMessageToSdkMessage(m),
-      )}
     />
   );
 }

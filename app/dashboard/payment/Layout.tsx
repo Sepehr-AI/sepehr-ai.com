@@ -1,20 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
 import { toast } from "react-toastify";
-import { useEffect, useState } from "react";
 import { CiDollar } from "react-icons/ci";
-import { roundWebCost } from "@/lib/cost";
+import { useEffect, useState } from "react";
 import { chargeAccountAction } from "./actions";
-import type { webPlansForUsers } from "@/lib/plans";
-
-function mapReverse(array: any[], fn: (el: any, idx: number) => any) {
-  return array.reduceRight(function (result, el, idx) {
-    result.push(fn(el, array.length - 1 - idx));
-    return result;
-  }, []);
-}
+import type { WebPlansForUsers } from "@/lib/plans";
+import { roundWebCost, usdToCredit } from "@/lib/cost";
 
 export default function PaymentLayout({
   plans,
@@ -22,7 +13,7 @@ export default function PaymentLayout({
   balanceInsufficient,
 }: {
   webBalance: number;
-  plans: webPlansForUsers;
+  plans: WebPlansForUsers;
   balanceInsufficient: boolean;
 }) {
   const [selectedPlanId, setSelectedPlanId] = useState<number>(0);
@@ -56,7 +47,7 @@ export default function PaymentLayout({
           <div className="space-y-5">
             <h2 className="text-lg font-medium">انتخاب طرح شارژ</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {mapReverse(plans, (plan, index) => (
+              {plans.map((plan, index) => (
                 <div
                   key={plan.id}
                   className={`flex flex-col p-4 rounded-lg cursor-pointer transition-all ${
@@ -68,7 +59,9 @@ export default function PaymentLayout({
                 >
                   <p className="text-center mb-2 font-medium">{plan.name}</p>
                   <p className="text-xl text-center font-semibold mt-auto">
-                    <span>{plan.credits + " "}</span>
+                    <span>
+                      {usdToCredit(plan.usdCredits).toLocaleString() + " "}
+                    </span>
                     <span>اعتبار</span>
                   </p>
                 </div>

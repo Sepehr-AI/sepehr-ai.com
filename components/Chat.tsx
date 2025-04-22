@@ -1,10 +1,10 @@
 "use client";
 
 import { useRef } from "react";
+import type { Message } from "ai";
 import dynamic from "next/dynamic";
-import type { Model } from "@/lib/models";
 import { useRouter } from "next/navigation";
-import type { Message as SdkMessage } from "@ai-sdk/react";
+import type { LlmModelPricingDto } from "@/lib/models";
 
 const ChatBody = dynamic(() => import("./ChatBody"), { ssr: false });
 const NewChatBody = dynamic(() => import("./NewChatBody"), { ssr: false });
@@ -17,10 +17,10 @@ export default function Chat({
   aiCompanyWebsite: _aiCompanyWebsite,
 }: {
   uuid?: string;
-  models: Model[];
   engineCode?: string;
   aiCompanyWebsite?: string;
-  initialMessages?: SdkMessage[];
+  initialMessages?: Message[];
+  models: LlmModelPricingDto[];
 }) {
   const router = useRouter();
   const engineCode = _engineCode || models[0].code;

@@ -6,14 +6,15 @@ import { SignJWT } from "jose";
 import prisma from "@/lib/prisma";
 import utc from "dayjs/plugin/utc";
 import { randomInt } from "node:crypto";
-import type { User } from "@/prisma/client";
+import { redirect } from "next/navigation";
 import timezone from "dayjs/plugin/timezone";
 import { hash, verify } from "@node-rs/argon2";
 import { cookies, headers } from "next/headers";
 import { error, errorOnThrow } from "@/lib/log";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
 import { findOrCreateOtp } from "@/prisma/client/sql";
-import { redirect } from "next/navigation";
+import type { MiddlewareUserData } from "@/middleware";
+import { setupPaymentGate } from "../dashboard/payment/actions";
 import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { PrismaClientKnownRequestError } from "@/prisma/client/runtime/library";
 import {
@@ -65,14 +66,20 @@ function redirectWithParams(
   return redirect(`${path}?${searchParams.toString()}`);
 }
 
-async function redirectToDashboard(selectedPlan?: number) {
-  return redirectWithParams("/dashboard", { selectedPlan });
+async function redirectToDashboard(user: MiddlewareUserData, planId?: number) {
+  if (!planId) return redirect("/dashboard");
+
+  return setupPaymentGate({ planId, user });
 }
 
 async function getClientIp() {
   const headersList = await headers();
 
-  return headersList.get("x-client-ip") || "unknown";
+  return (
+    headersList.get("cf-connecting-ip") ||
+    headersList.get("x-forwarded-for") ||
+    "unknown"
+  );
 }
 async function redirectTo429(untilNextReq: number) {
   return redirectWithParams("/auth/429", { untilNextReq });
@@ -145,7 +152,11 @@ export async function checkMobileAction(
   return authResp(undefined, userExists, mobile, user.id);
 }
 
-async function setTokenCookie(user: User) {
+async function setTokenCookie(user: {
+  id: number;
+  name: string;
+  mobile: string;
+}) {
   const iat = dayjs().tz("Asia/Tehran").unix();
   const exp = dayjs()
     .tz("Asia/Tehran")
@@ -307,14 +318,14 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
   userId = Number(userId);
   const user = await errorOnThrow("findingUserInAuthLogin", () =>
     prisma.user.findUnique({
-      select: { id: true, mobile: true, name: true },
+      select: { id: true, mobile: true, name: true, email: true },
       where: { id: userId },
     }),
   );
   if (!user) return authErr("کاربر پیدا نشد!");
 
   await setTokenCookie(user);
-  return redirectToDashboard(selectedPlan);
+  return redirectToDashboard(user, selectedPlan);
 }
 
 export async function registerAction(
@@ -334,9 +345,9 @@ export async function registerAction(
     Object.fromEntries(formData),
   );
   email = validationResult.data?.email;
-  const otp = formData.get("otp")?.toString();
-  const mobile = formData.get("mobile")?.toString();
-  const fullName = formData.get("fullName")?.toString();
+  const otp = formData.get("otp")?.toString() as string;
+  const mobile = formData.get("mobile")?.toString() as string;
+  const fullName = formData.get("fullName")?.toString() as string;
   const userId: string | number | undefined = formData
     .get("userId")
     ?.toString();
@@ -391,7 +402,7 @@ export async function registerAction(
   }
 
   await setTokenCookie(user);
-  return redirectToDashboard(selectedPlan);
+  return redirectToDashboard(user, selectedPlan);
 }
 
 export async function isUserAuth(): Promise<boolean> {

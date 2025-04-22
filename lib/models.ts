@@ -1,10 +1,8 @@
 import prisma from "@/lib/prisma";
 import NodeCache from "node-cache";
+import { usdToCredit } from "./cost";
 import type { LlmModel } from "@/prisma/client";
-import { TiktokenEncoding } from "@/prisma/client";
 import { revalidateTag, unstable_cache } from "next/cache";
-
-export { TiktokenEncoding };
 
 export interface Model {
   id: number;
@@ -14,23 +12,36 @@ export interface Model {
   companyWebsite: string;
   creditCostPerMilInToken: number;
   creditCostPerMilOutToken: number;
-  estimatedEncodingBase: TiktokenEncoding;
 }
 
-const getModels = async (): Promise<LlmModel[]> => {
+export type LlmModelDto = Pick<
+  LlmModel,
+  | "id"
+  | "code"
+  | "name"
+  | "description"
+  | "contextLength"
+  | "companyWebsite"
+  | "useToComparePlans"
+  | "costPerMilInToken"
+  | "costPerMilOutToken"
+>;
+
+const getModels = async (): Promise<LlmModelDto[]> => {
   return (
     (await prisma.llmModel.findMany({
       orderBy: { id: "asc" },
+      where: { disabled: false },
       select: {
         id: true,
         code: true,
         name: true,
         description: true,
+        contextLength: true,
         companyWebsite: true,
         useToComparePlans: true,
         costPerMilInToken: true,
         costPerMilOutToken: true,
-        estimatedEncodingBase: true,
       },
     })) || []
   );
@@ -38,61 +49,68 @@ const getModels = async (): Promise<LlmModel[]> => {
 
 const cache = new NodeCache({ stdTTL: 60 * 60 });
 
-export const getModelsMap: () => Promise<Map<string, LlmModel>> = async () => {
+export const getModelsMap: () => Promise<
+  Map<string, LlmModelDto>
+> = async () => {
   const cached = cache.get("modelsMap");
-  if (cached) return cached as Map<string, LlmModel>;
+  if (cached) return cached as Map<string, LlmModelDto>;
 
-  const map = new Map<string, LlmModel>();
+  const map = new Map<string, LlmModelDto>();
   (await getModels()).forEach((m) => map.set(m.code, m));
   cache.set("modelsMap", map);
   try {
     revalidateTag("modelsForWeb");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (e) {}
+  } catch {}
 
   return map;
 };
 
-export const getModelsForWeb: () => Promise<Model[]> = unstable_cache(
-  async () => {
-    const cached = cache.get("modelsForWeb");
-    if (cached) return cached as Model[];
+export type LlmModelPricingDto = Pick<
+  LlmModel,
+  "code" | "name" | "description" | "companyWebsite"
+> & { creditCostPerMilInToken: number; creditCostPerMilOutToken: number };
 
-    const modelsForWeb = (await getModels()).map(
-      ({
-        code,
-        name,
-        description,
-        costPerMilInToken,
-        costPerMilOutToken,
-        companyWebsite,
-      }) => {
-        const creditCostPerMilInToken = costPerMilInToken * 2 * 1000;
-        const creditCostPerMilOutToken = costPerMilOutToken * 2 * 1000;
+export const getModelsForWeb: () => Promise<LlmModelPricingDto[]> =
+  unstable_cache(
+    async () => {
+      const cached = cache.get("modelsForWeb");
+      if (cached) return cached as LlmModelPricingDto[];
 
-        return {
+      const modelsForWeb = (await getModels()).map(
+        ({
           code,
           name,
           description,
+          costPerMilInToken,
+          costPerMilOutToken,
           companyWebsite,
-          creditCostPerMilInToken,
-          creditCostPerMilOutToken,
-        } as Model;
-      },
-    );
-    cache.set("modelsForWeb", modelsForWeb);
+        }) => {
+          const creditCostPerMilInToken = usdToCredit(costPerMilInToken);
+          const creditCostPerMilOutToken = usdToCredit(costPerMilOutToken);
 
-    return modelsForWeb;
-  },
-  ["modelsForWeb"],
-  { revalidate: 60 * 60 },
-);
+          return {
+            code,
+            name,
+            description,
+            companyWebsite,
+            creditCostPerMilInToken,
+            creditCostPerMilOutToken,
+          } as LlmModelPricingDto;
+        },
+      );
+      cache.set("modelsForWeb", modelsForWeb);
 
-export const getModelsForPlanComparison: () => Promise<Model[]> =
+      return modelsForWeb;
+    },
+    ["modelsForWeb"],
+    { revalidate: 60 * 60 },
+  );
+
+export const getModelsForPlanComparison: () => Promise<LlmModelPricingDto[]> =
   unstable_cache(
     async () => {
       const cached = cache.get("modelsForPlanComparison");
-      if (cached) return cached as Model[];
+      if (cached) return cached as LlmModelPricingDto[];
 
       const modelsForWeb = (await getModels()).reduce((acc, model) => {
         // Only push models if useToComparePlans is true
@@ -112,10 +130,10 @@ export const getModelsForPlanComparison: () => Promise<Model[]> =
             description,
             creditCostPerMilInToken,
             creditCostPerMilOutToken,
-          } as Model);
+          } as LlmModelPricingDto);
         }
         return acc;
-      }, [] as Model[]);
+      }, [] as LlmModelPricingDto[]);
 
       cache.set("modelsForPlanComparison", modelsForWeb);
 

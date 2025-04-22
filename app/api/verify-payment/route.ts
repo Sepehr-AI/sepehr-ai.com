@@ -81,7 +81,7 @@ export async function POST(
   const invoiceid = Number(_invoiceid);
   let dbAmount: number | undefined = undefined;
   try {
-    await prisma.$transaction(async (tx: any) => {
+    await prisma.$transaction(async (tx) => {
       const findTransactionRes = await tx.$queryRawTyped(
         findTransactionForUpdate(invoiceid),
       );

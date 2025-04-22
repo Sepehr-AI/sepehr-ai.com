@@ -1,7 +1,7 @@
 "use client";
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "react-toastify";
-import type { Model } from "@/lib/models";
+import type { LlmModelPricingDto } from "@/lib/models";
 import { createChat } from "@/lib/chatDB";
 import NewMessageBox from "./NewMessageBox";
 import { type Attachment, generateId } from "ai";
@@ -20,8 +20,8 @@ export default function NewChatBody({
   models,
   textAreaRef,
 }: {
-  models: Model[];
   router: AppRouterInstance;
+  models: LlmModelPricingDto[];
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuidv7());
@@ -153,7 +153,7 @@ export default function NewChatBody({
                     </div>
                   </div>
 
-                  <div className="max-h-60 p-1 scrollbar-width-thin">
+                  <div className="max-h-60 p-1 overflow-y-auto scrollbar-width-thin">
                     {filteredModels.length > 0 ? (
                       filteredModels.map((model) => (
                         <button

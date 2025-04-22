@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
+
 import Message from "./Message";
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "react-toastify";
 import { updateChat } from "@/lib/chatDB";
-import { handleLogout } from "@/lib/logout";
 import NewMessageBox from "./NewMessageBox";
 import LoadingMessage from "./LoadingMessage";
 import CompanyLogo from "./companyLogos/CompanyLogo";
@@ -11,13 +13,6 @@ import { useAttachments } from "@/hooks/useAttachments";
 import { readFileAsDataURL } from "@/hooks/useAttachments";
 import { type Message as SdkMessage, useChat } from "@ai-sdk/react";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import {
-  unexpectedErrorMsg,
-  UnauthorizedReason,
-  balanceNotEnoughMsg,
-  invalidMessagesErrorMsg,
-  maxContextReachedErrorMsg,
-} from "@/lib/chatErrors";
 import {
   useRef,
   useState,
@@ -27,6 +22,11 @@ import {
   type SyntheticEvent,
 } from "react";
 
+const NEXT_PUBLIC_BASE_URL =
+  process.env.NODE_ENV === "development"
+    ? ""
+    : process.env.NEXT_PUBLIC_BASE_URL || "";
+
 const clientErrors = {
   internetIssue: {
     text: "خطا در برقراری ارتباط با سرور. لطفا اینترنت خود را چک کنید.",
@@ -35,38 +35,27 @@ const clientErrors = {
 };
 
 const backendErrorToClientError = (
-  e: string,
+  { status }: { status: number },
   router: AppRouterInstance,
 ): string => {
-  let errormsg: string;
-  switch (e) {
-    case balanceNotEnoughMsg:
+  switch (status) {
+    case 402:
       router.push("/dashboard/payment?balanceInsufficient=true");
+      return "اعتبار ناکافی!";
+    case 403:
+      router.push("/logout");
       return "";
-    case UnauthorizedReason.UNAUTH:
-    case UnauthorizedReason.JWT_NOT_VALID:
-    case UnauthorizedReason.USER_NOT_FOUND:
-    case UnauthorizedReason.COOKIE_NOT_SET:
-      handleLogout(router);
-      return "";
-    case unexpectedErrorMsg:
-      errormsg = "خطای داخلی! در صورت تداوم با پشتیبانی ارتباط بگیرید.";
-      break;
-    case maxContextReachedErrorMsg:
-      errormsg =
-        "حداکثر توکن مجاز برای این مدل! چت جدیدی ایجاد کنید یا پیام خود را کوتاه‌تر کنید یا اگر فایلی آپلود کردید حجم آن را بکاهید.";
-      break;
-    case invalidMessagesErrorMsg:
-      errormsg =
-        "فرمت اشتباه پیام ها. در صورت تداوم با پشتیبانی ارتباط بگیرید.";
-      break;
+    case 500:
+      return "خطای داخلی! در صورت تداوم با پشتیبانی ارتباط بگیرید.";
+    case 413:
+      return "حداکثر توکن مجاز برای این مدل! چت جدیدی ایجاد کنید یا پیام خود را کوتاه‌تر کنید یا اگر فایلی آپلود کردید حجم آن را بکاهید.";
+    case 400:
+      return "فرمت اشتباه پیام ها. در صورت تداوم با پشتیبانی ارتباط بگیرید.";
+    case 416:
+      return "اعتبار شما برای دریافت یک خروجی کامل از این مدل کافی نیست! اعتبار خود را افزایش دهید یا از مدل دیگری استفاده کنید.";
     default:
-      errormsg =
-        "خطا در برقراری ارتباط با سرور. لطفا ارتباط اینترنت خود را بررسی کنید.";
-      break;
+      return "خطا در برقراری ارتباط با سرور. لطفا ارتباط اینترنت خود را بررسی کنید.";
   }
-
-  return errormsg;
 };
 
 export default function ChatBody({
@@ -113,10 +102,12 @@ export default function ChatBody({
     stop,
   } = useChat({
     experimental_throttle: 75,
-    api: "/api/chat/" + engineCode,
     initialMessages: initialMessages || undefined,
+    api: `${NEXT_PUBLIC_BASE_URL}/api/chat/${engineCode}`,
     onError: (e) => {
-      setCustomError(backendErrorToClientError(e.message.trim(), router));
+      setCustomError(
+        backendErrorToClientError(JSON.parse(e.message.trim()) as any, router),
+      );
       stop();
     },
     onFinish: (newMessage, { finishReason }) => {
@@ -214,9 +205,9 @@ export default function ChatBody({
     if (error || customError || status === "error") {
       let errormsg: string = "";
       try {
-        const parsed = JSON.parse(error?.message || "null");
-        if (parsed && parsed.error && parsed.error.trim().length) {
-          errormsg = backendErrorToClientError(parsed.error.trim(), router);
+        const parsed = JSON.parse(error?.message || "null") as any;
+        if (parsed && parsed.status) {
+          errormsg = backendErrorToClientError(parsed, router);
         } else {
           errormsg = customError || clientErrors.internetIssue.text;
         }
@@ -278,7 +269,9 @@ export default function ChatBody({
           {messages.map((message, index) => {
             const isTheLastMessage = index === messages.length - 1;
 
-            return status !== "submitted" || !isTheLastMessage ? (
+            return status !== "submitted" ||
+              !isTheLastMessage ||
+              messages.length !== 1 ? (
               <Message
                 key={message.id || index}
                 {...{

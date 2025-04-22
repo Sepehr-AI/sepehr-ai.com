@@ -10,21 +10,18 @@ datasource db {
 }
 
 model User {
-  id              Int             @id @default(autoincrement())
-  email           String?         @unique
-  name            String
-  mobile          String          @unique
-  referralCode    String?
-  otp             Otp[]
-  referredBy      Referral[]      @relation("ReferredUser")
-  referrals       Referral[]      @relation("UserReferrals")
-  transactions    Transaction[]
-  webLlmRequests  WebLlmRequest[]
-  apiLlmRequests  ApiLlmRequest[]
-  webBalance      Float           @default(0)
-  apiBalance      Float           @default(0)
-  referralBalance Float           @default(0)
-  createdAt       DateTime        @default(now()) @db.Timestamptz(3)
+  id               Int               @id @default(autoincrement())
+  email            String?           @unique
+  name             String
+  mobile           String            @unique
+  referralCode     String?
+  otp              Otp?
+  OpenrouterApiKey OpenrouterApiKey?
+  referredBy       Referral[]        @relation("ReferredUser")
+  referrals        Referral[]        @relation("UserReferrals")
+  transactions     Transaction[]
+  referralBalance  Float             @default(0)
+  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
 }
 
 model Referral {
@@ -37,9 +34,10 @@ model Referral {
 }
 
 model Transaction {
-  id           Int  @id @default(autoincrement())
-  amount       Int
-  exchangeRate Int?
+  id                 Int     @id @default(autoincrement())
+  amount             Int
+  exchangeRate       Int?
+  creditsTransferred Boolean @default(false)
 
   // Sepehrpay
   respCode       Int?
@@ -51,70 +49,36 @@ model Transaction {
   message        String?
   returnId       String?
 
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  usdAmount Int
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-}
-
-model ApiLlmRequest {
-  id               Int      @id @default(autoincrement())
-  user             User     @relation(fields: [userId], references: [id])
-  userId           Int
-  inputTokensUsed  Int
-  outputTokensUsed Int
-  cost             Float
-  llmModel         LlmModel @relation(fields: [llmModelId], references: [id])
-  llmModelId       Int
-  createdAt        DateTime @default(now()) @db.Timestamptz(3)
-}
-
-model WebLlmRequest {
-  id               Int      @id @default(autoincrement())
-  user             User     @relation(fields: [userId], references: [id])
-  userId           Int
-  inputTokensUsed  Int
-  outputTokensUsed Int
-  cost             Float
-  llmModel         LlmModel @relation(fields: [llmModelId], references: [id])
-  llmModelId       Int
-  createdAt        DateTime @default(now()) @db.Timestamptz(3)
-}
-
-enum TiktokenEncoding {
-  gpt2
-  r50k_base
-  p50k_base
-  p50k_edit
-  cl100k_base
-  o200k_base
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  usdCredits Int
+  usdPrice   Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model LlmModel {
-  id                    Int              @id @default(autoincrement())
-  code                  String           @unique()
-  name                  String
-  description           String
-  companyWebsite        String
-  costPerMilInToken     Float
-  costPerMilOutToken    Float
-  useToComparePlans     Boolean          @default(false)
-  inputModalities       String[]         @default(["text"])
-  outputModalities      String[]         @default(["text"])
-  llmRequests           ApiLlmRequest[]
-  WebLLMRequests        WebLlmRequest[]
-  estimatedEncodingBase TiktokenEncoding
-  createdAt             DateTime         @default(now()) @db.Timestamptz(3)
+  id                 Int      @id @default(autoincrement())
+  code               String   @unique()
+  name               String
+  description        String
+  companyWebsite     String
+  costPerMilInToken  Float
+  costPerMilOutToken Float
+  useToComparePlans  Boolean  @default(false)
+  inputModalities    String[] @default(["text"])
+  outputModalities   String[] @default(["text"])
+  contextLength      Int
+  disabled           Boolean  @default(false)
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model WebPlan {
-  id                 Int      @id @default(autoincrement())
-  name               String
-  credits            Int
-  usdAmount          Int
-  maxConcurrentUsers Int      @default(1)
-  updatedAt          DateTime @default(now()) @db.Timestamptz(3)
-  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  id         Int      @id @default(autoincrement())
+  name       String
+  usdPrice   Int
+  usdCredits Int
+  updatedAt  DateTime @default(now()) @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model Otp {
@@ -122,6 +86,17 @@ model Otp {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int      @unique
   code      String
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model OpenrouterApiKey {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int      @unique
+  limit     Int
+  metadata  Bytes
+  hash      String
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 

@@ -45,9 +45,9 @@ export default function AuthLayout({
   exists?: string;
   fullName?: string;
   selectedPlan?: number;
-  login: (_prev: any, formData: FormData) => Promise<never>;
-  register: (_prev: any, formData: FormData) => Promise<never>;
-  checkMobile: (_prev: any, formData: FormData) => Promise<never>;
+  login: (_prev: any, formData: FormData) => Promise<any>;
+  register: (_prev: any, formData: FormData) => Promise<any>;
+  checkMobile: (_prev: any, formData: FormData) => Promise<any>;
 }) {
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);

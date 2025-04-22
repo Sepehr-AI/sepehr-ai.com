@@ -1,45 +1,46 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { z } from "zod";
-import prisma from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextResponse } from "next/server";
-import { calcWebCostCost } from "@/lib/cost";
 import { getModelsMap } from "@/lib/models";
+import { decrypt } from "@/lib/openrouterApiKey";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { getEncoding, type TiktokenEncoding } from "js-tiktoken";
 import {
   streamText,
   type CoreMessage,
   coreMessageSchema,
   TypeValidationError,
-  JSONParseError,
 } from "ai";
-import {
-  genUnauthorizedRes,
-  UnauthorizedReason,
-  genModelNotFoundRes,
-  genBalanceNotEnoughRes,
-  geninvalidJsonBodyRes,
-  genUnexpectedErrorRes,
-  genInvalidMessagesErrorRes,
-  genMaxContextReachedErrorRes,
-  maxContextReachedErrorMsg,
-  invalidMessagesErrorMsg,
-  unexpectedErrorMsg,
-} from "@/lib/chatErrors";
+
+class ModelError extends Error {}
+class ContextError extends Error {}
+class PaymentError extends Error {}
+class MessagesError extends Error {}
+class ValidationError extends Error {}
+class UnexpectedError extends Error {}
+class AuthorizationError extends Error {}
+class NotEnoughCreditsError extends Error {}
+const tryOrErr = async <T extends Error>(
+  f: () => Promise<unknown>,
+  ErrorConstructor: new () => T,
+) => {
+  try {
+    await f();
+  } catch {
+    throw new ErrorConstructor();
+  }
+};
 
 const USE_ACTUAL_SELECTED_MODEL: boolean =
   (process.env.USE_ACTUAL_SELECTED_MODEL || "").toLowerCase() === "true";
-
-console.log({
-  USE_ACTUAL_SELECTED_MODEL,
-});
-
-const openrouter = createOpenRouter({
-  apiKey: process.env.OPENROUTER_API_KEY,
-});
+const AES_ENCRYPTION_MASTERKEY: Buffer = Buffer.from(
+  process.env.AES_ENCRYPTION_MASTERKEY || "",
+  "hex",
+);
 
 const RequestSchema = z.object({
-  messages: z.array(coreMessageSchema),
+  messages: z.array(coreMessageSchema).nonempty(),
 });
 
 const defaultAiSystemPrompt: CoreMessage = {
@@ -48,142 +49,81 @@ const defaultAiSystemPrompt: CoreMessage = {
     "Farsi is default but be flexible based on how the user communicates.",
 };
 
+function errorToStatus(e: any): number {
+  if (typeof e !== "object" || typeof e.constructor !== "function") return 500;
+
+  switch (e.constructor) {
+    case ModelError:
+      return 404;
+    case ContextError:
+      return 413;
+    case PaymentError:
+      return 402;
+    case MessagesError:
+      return 400;
+    case ValidationError:
+      return 422;
+    case UnexpectedError:
+      return 500;
+    case AuthorizationError:
+      return 403;
+    case NotEnoughCreditsError:
+      return 416;
+    default:
+      return 500;
+  }
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ provider: string; engine: string }> },
 ) {
-  let provider, engine;
   try {
-    const gottenParams = await params;
-    engine = gottenParams.engine;
-    provider = gottenParams.provider;
-  } catch {
-    return genModelNotFoundRes();
-  }
+    const userId = Number(req.headers.get("userId") || "abc");
+    if (isNaN(userId)) throw new AuthorizationError();
 
-  let userId: number, webBalance: number;
-  try {
-    const userIdMayBeNan = Number(req.headers.get("userId") || "abc");
-    const webBalanceMayBeNan = Number(
-      req.headers.get("userWebBalance") || "abc",
-    );
-    if (isNaN(userIdMayBeNan) || isNaN(webBalanceMayBeNan)) {
-      throw new Error("Unauthorized");
-    }
+    let apiKey!: string;
+    await tryOrErr(async () => {
+      const res = await prisma.openrouterApiKey.findUnique({
+        where: { userId },
+        select: { metadata: true },
+      });
+      if (!res || !res.metadata.length) throw new PaymentError();
 
-    userId = userIdMayBeNan;
-    webBalance = webBalanceMayBeNan;
-  } catch {
-    return genUnauthorizedRes(UnauthorizedReason.UNAUTH);
-  }
-  if (!webBalance) return genBalanceNotEnoughRes();
+      apiKey = decrypt(res.metadata, AES_ENCRYPTION_MASTERKEY);
+    }, PaymentError);
+    const openrouter = createOpenRouter({
+      apiKey,
+      extraBody: {
+        usage: { include: true },
+        reasoning: { include: true },
+      },
+    });
 
-  let json;
-  let parsed;
-  try {
-    json = await req.json();
-    parsed = RequestSchema.safeParse(json);
-    if (!parsed.success) throw new Error("InvalidJson");
-  } catch (e: unknown) {
-    if ((e as { message: string }).message === "InvalidJson") {
-      return NextResponse.json(
-        { error: parsed?.error?.format() },
-        { status: 400 },
-      );
-    }
+    let json!: z.infer<typeof RequestSchema>, engine, provider;
+    await tryOrErr(async () => {
+      ({ engine, provider } = await params);
 
-    return geninvalidJsonBodyRes();
-  }
+      json = await req.json();
+      const parsed = await RequestSchema.safeParseAsync(json);
+      if (!parsed.success) throw new ValidationError();
+    }, ValidationError);
+    const messages: CoreMessage[] = [defaultAiSystemPrompt, ...json.messages];
 
-  const { messages: _messages } = json;
-  if (!_messages?.length) return NextResponse.json({}, { status: 204 });
-  let messages: CoreMessage[] = [defaultAiSystemPrompt, ..._messages];
-  for (let i = 0; i <= 2_000_000; i++) {
-    messages = [defaultAiSystemPrompt, ..._messages];
-  }
+    const modelCode: string = `${provider}/${engine}`;
+    await tryOrErr(async () => {
+      const model = (await getModelsMap()).get(modelCode);
+      if (!model) throw new Error("ModelNotFound");
+    }, ModelError);
 
-  let model;
-  const code: string = `${provider}/${engine}`;
-  try {
-    model = (await getModelsMap()).get(code);
-    if (!model) throw new Error("ModelNotFound");
-  } catch {
-    return genModelNotFoundRes();
-  }
-
-  try {
-    const enc = getEncoding(
-      `${model.estimatedEncodingBase.toLocaleLowerCase()}` as TiktokenEncoding,
-    );
-    const inTokenEstCount = enc.encode(
-      messages.map((m) => m.content).join(" "),
-    ).length;
-
-    if (calcWebCostCost(inTokenEstCount, 1000, model) > webBalance) {
-      throw new Error("BalanceInsufficient");
-    }
-  } catch (e: unknown) {
-    if ((e as { message: string }).message !== "BalanceInsufficient") {
-      error("WebChatTikTokenUnexpectedError", { error: e });
-    }
-
-    return genBalanceNotEnoughRes();
-  }
-
-  try {
     const s = streamText({
       messages,
-      // With the current implemention of Vercel AI SDK there's no way to calculate user token usage if cancelled.
-      // Instead we're continuing it and charging the user with.
-      // abortSignal: req.signal,
-      // experimental_transform: smoothStream({chunking: 'word'}),
+      abortSignal: req.signal,
+      onError: (e) => error("WebChatStreamingError", { error: e }),
       model: openrouter(
-        USE_ACTUAL_SELECTED_MODEL ? code : "deepseek/deepseek-r1:free",
+        USE_ACTUAL_SELECTED_MODEL ? modelCode : "deepseek/deepseek-r1:free",
         // "deepseek/deepseek-r1:free"
       ),
-      onError: (e) => error("WebChatStreamingError", { error: e }),
-      onFinish: async ({ usage }) => {
-        if (!usage) return;
-
-        const promptTokens = !isNaN(Number(usage.promptTokens || "abc"))
-          ? Number(usage.promptTokens)
-          : 0;
-        const completionTokens = !isNaN(Number(usage.completionTokens || "abc"))
-          ? Number(usage.completionTokens)
-          : 0;
-        if (promptTokens === 0 && completionTokens === 0) return;
-        if (promptTokens < 0 || completionTokens < 0) {
-          return error("WebChatUsageUpdateError", {
-            usage,
-            promptTokens,
-            completionTokens,
-            error: "Negative token usage!",
-          });
-        }
-
-        const cost = calcWebCostCost(promptTokens, completionTokens, model);
-        const newWebLlmRequest = {
-          data: {
-            cost,
-            userId,
-            llmModelId: model.id,
-            inputTokensUsed: promptTokens,
-            outputTokensUsed: completionTokens,
-          },
-        };
-
-        try {
-          await Promise.all([
-            prisma.webLlmRequest.create(newWebLlmRequest),
-            prisma.user.update({
-              where: { id: userId },
-              data: { webBalance: { increment: -cost } },
-            }),
-          ]);
-        } catch (e) {
-          error("WebChatUsageUpdateError", { error: e, newWebLlmRequest });
-        }
-      },
     });
 
     s.consumeStream();
@@ -192,42 +132,33 @@ export async function POST(
       sendUsage: false,
       sendReasoning: true,
       getErrorMessage: (e) => {
-        if (e == null) return unexpectedErrorMsg;
+        const errorAsStatusCode = () => {
+          if (e && TypeValidationError.isInstance(e)) {
+            if (e.message.toLowerCase().includes("maximum context length is")) {
+              return 413;
+            }
+            if (e.message.toLowerCase().includes("can only afford")) {
+              return 416;
+            }
 
-        if (TypeValidationError.isInstance(e)) {
-          if (e.message.toLowerCase().includes("maximum context length is")) {
-            return maxContextReachedErrorMsg;
+            return 400;
           }
 
-          return invalidMessagesErrorMsg;
-        }
+          return 500;
+        };
 
-        return unexpectedErrorMsg;
+        return JSON.stringify({ status: errorAsStatusCode() });
       },
     });
-  } catch (e) {
-    if (TypeValidationError.isInstance(e)) {
-      if (e.message.toLowerCase().includes("maximum context length is")) {
-        return genMaxContextReachedErrorRes();
-      }
-
-      return genInvalidMessagesErrorRes(e.message);
-    } else if (JSONParseError.isInstance(e)) {
-      error("WebChatUnexpectedParseError", { error: e });
-    } else {
-      error("WebChatUnexpectedError", { error: e });
-    }
-
-    return genUnexpectedErrorRes(e);
+  } catch (e: any) {
+    const status = errorToStatus(e);
+    return NextResponse.json({ status }, { status });
   }
 }
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: "1mb",
-    },
     responseLimit: "20mb",
   },
-  maxDuration: 120,
+  maxDuration: 300,
 };

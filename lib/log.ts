@@ -1,29 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-const msgToString = (msg: any): string => {
+const msgToString = (msg: unknown): unknown => {
   if (typeof msg === "string" || msg instanceof String) return msg as string;
   try {
     return JSON.stringify(msg);
   } catch (error) {
     console.error("Failed to log:", { msg, error });
   }
+
   return msg;
 };
 
 // TODO: Store these in the database.
-export const info = (context: string, _msg: any) => {
+export const info = (context: string, _msg: unknown) => {
   const msg = msgToString(_msg);
   if (!msg) return;
 
   console.log("Log info:", { context, _msg });
 };
-export const warn = (context: string, _msg: any) => {
+export const warn = (context: string, _msg: unknown) => {
   const msg = msgToString(_msg);
   if (!msg) return;
 
   console.log("Log warn:", { context, _msg });
 };
-export const error = (context: string, _msg: any) => {
+export const error = (context: string, _msg: unknown) => {
   const msg = msgToString(_msg);
   if (!msg) return;
 
