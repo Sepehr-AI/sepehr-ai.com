@@ -18,6 +18,7 @@ export async function handleServerLogout() {
 
   return NextResponse.redirect(destination, {
     headers: {
+      "Clear-Site-Data": `"cache", "cookies"`,
       // Next.js accepts this directive to clear its own client fetch cache.
       "Cache-Control": "no-store",
     },
