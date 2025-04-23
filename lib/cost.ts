@@ -1,5 +1,5 @@
 export function roundWebPlan(amount: number) {
-  return Math.ceil(amount / 100_000) * 100_000;
+  return Math.ceil(amount / 1e6) * 1e6;
 }
 
 function toPersianDigits(input: number) {

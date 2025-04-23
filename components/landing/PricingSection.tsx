@@ -51,8 +51,8 @@ export default function PricingSection({
                   </p>
 
                   <div className="mb-6 text-center">
-                    <span className="text-3xl font-bold text-center">
-                      {plan.displayPrice.toLocaleString()}
+                    <span className="text-2xl font-bold text-center">
+                      {plan.displayPrice.toLocaleString()} تومان
                     </span>
                   </div>
 
