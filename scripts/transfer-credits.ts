@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import readline from "readline";
 import prisma from "@/lib/prisma";
 import utc from "dayjs/plugin/utc";
+import { usdToCredit } from "@/lib/cost";
 import timezone from "dayjs/plugin/timezone";
 import { decrypt, encrypt } from "@/lib/openrouterApiKey";
 import { sepehrFetchWithLogger } from "@/sepehr-ai-ipg/src/lib";
@@ -14,10 +15,11 @@ const sepehrFetch = sepehrFetchWithLogger((obj, msg) =>
   console.error(msg, obj),
 );
 
-const OPENROUTER_PROVISIONING_API_KEY =
-  process.env.OPENROUTER_PROVISIONING_API_KEY || "";
+const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
+const OPENROUTER_PROVISIONING_API_KEY = process.env
+  .OPENROUTER_PROVISIONING_API_KEY as string;
 const AES_ENCRYPTION_MASTERKEY: Buffer = Buffer.from(
-  process.env.AES_ENCRYPTION_MASTERKEY || "",
+  process.env.AES_ENCRYPTION_MASTERKEY as string,
   "hex",
 );
 
@@ -100,11 +102,6 @@ async function main() {
   await Promise.all(
     transactions.map(async (t) => {
       await prisma.$transaction(async (tx) => {
-        await tx.transaction.update({
-          where: { id: t.id },
-          data: { creditsTransferred: true },
-        });
-
         const existing = await tx.openrouterApiKey.findUnique({
           where: { userId: t.userId },
           select: { id: true, hash: true, limit: true, metadata: true },
@@ -186,6 +183,32 @@ async function main() {
             },
           });
         }
+
+        await tx.transaction.update({
+          where: { id: t.id },
+          data: { creditsTransferred: true },
+        });
+      });
+      const user = await prisma.user.findUnique({
+        where: { id: t.userId },
+        select: { mobile: true },
+      });
+      if (!user) throw new Error("Unexpected user not found database error.");
+
+      await sepehrFetch("https://api.sms.ir/v1/send/verify", {
+        headers: {
+          "x-api-key": SMS_IR_API_KEY,
+        },
+        body: {
+          mobile: user.mobile,
+          templateId: 857554,
+          parameters: [
+            {
+              name: "Credits",
+              value: usdToCredit(t.usdCredits),
+            },
+          ],
+        },
       });
       console.log(`Processed transaction ${t.id}`);
     }),
