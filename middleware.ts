@@ -43,7 +43,7 @@ export async function middleware(req: NextRequest) {
     try {
       user = await authenticate(req);
     } catch {
-      return handleServerLogout();
+      return handleServerLogout(req);
     }
   } else if (pathname.startsWith("/api/chat")) {
     try {

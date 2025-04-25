@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: Replace dynamicMotion with CSS animation.
+
 import CompanyLogo from "./companyLogos/CompanyLogo";
 import { useTheme } from "../components/ThemeProvider";
 import { MotionDiv, MotionSpan } from "./dynamicMotion";

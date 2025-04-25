@@ -1,5 +1,7 @@
 "use client";
 
+// TODO: Replace dynamicMotion with CSS animation.
+
 import Icon from "./landing/Icon";
 import { MotionDiv } from "./dynamicMotion";
 import { useTheme } from "../components/ThemeProvider";

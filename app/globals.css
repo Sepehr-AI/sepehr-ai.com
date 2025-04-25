@@ -268,3 +268,92 @@ body:has(.hide-the-main) main {
 math {
   font-size: 1.2rem;
 }
+
+@keyframes heroAnimationFrames {
+  from {
+    transform: translateY(-20);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.hero-animation {
+  animation: heroAnimationFrames 0.5s ease;
+}
+
+@keyframes faqAnimationFrames {
+  from {
+    transform: translateY(30);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.faq-animation {
+  animation: faqAnimationFrames 2s ease;
+}
+
+@keyframes modelShowcaseAnimationFrames {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+.model-showcase-animation {
+  animation: modelShowcaseAnimationFrames 1s ease;
+}
+
+@keyframes callToActionAnimationFrames {
+  from {
+    opacity: 0;
+    scale: 0.95;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.call-to-action-animation {
+  animation: callToActionAnimationFrames 2s ease;
+}
+
+@keyframes featuresAnimationFrames {
+  from {
+    opacity: 0;
+    transform: translateY(20);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.features-animation {
+  animation: featuresAnimationFrames 0.5s ease attr(data-variant s) 1 normal
+    forwards;
+}
+
+@keyframes authAnimationFrames {
+  from {
+    opacity: 0;
+    transform: translateY(20);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.auth-animation {
+  animation: authAnimationFrames 0.5s ease;
+}

@@ -1,15 +1,18 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function handleServerLogout() {
+export async function handleServerLogout(req: NextRequest) {
   revalidatePath("/", "layout");
 
-  let destination = "/";
-  if (process.env.NODE_ENV === "production") {
-    destination = process.env.NEXT_PUBLIC_BASE_URL || "/";
+  let destination = new URL("/", req.url);
+  if (
+    process.env.NODE_ENV === "production" &&
+    process.env.NEXT_PUBLIC_BASE_URL
+  ) {
+    destination = new URL(process.env.NEXT_PUBLIC_BASE_URL);
   }
 
   // Clear the session cookie explicitly. Generally this can be done by just

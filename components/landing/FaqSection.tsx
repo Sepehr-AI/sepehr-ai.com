@@ -1,11 +1,15 @@
-import { MotionDiv } from "../dynamicMotion";
+"use client";
+
 import type { FaqsForLandingPage } from "@/lib/faqs";
+import { useInView } from "react-intersection-observer";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
 
 export default function FaqSection({ faqs }: { faqs: FaqsForLandingPage }) {
+  const { ref, inView } = useInView({});
+
   return (
-    <section id="faq" className="py-20 bg-muted/30">
+    <section id="faq" className="py-20 bg-muted/30" ref={ref}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-bold mb-4">سوالات متداول</h2>
@@ -14,13 +18,7 @@ export default function FaqSection({ faqs }: { faqs: FaqsForLandingPage }) {
           </p>
         </div>
 
-        <MotionDiv
-          viewport={{ once: true }}
-          className="max-w-3xl mx-auto"
-          transition={{ duration: 0.5 }}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-        >
+        <div className={`max-w-3xl mx-auto` + (inView ? " faq-animation" : "")}>
           <Accordion.Root type="multiple" className="space-y-4">
             {faqs.map((faq, index) => (
               <Accordion.Item
@@ -40,7 +38,7 @@ export default function FaqSection({ faqs }: { faqs: FaqsForLandingPage }) {
               </Accordion.Item>
             ))}
           </Accordion.Root>
-        </MotionDiv>
+        </div>
       </div>
     </section>
   );

@@ -1,4 +1,6 @@
-import { MotionDiv } from "../dynamicMotion";
+"use client";
+
+import { useInView } from "react-intersection-observer";
 import {
   PersonIcon,
   MixerHorizontalIcon,
@@ -24,6 +26,8 @@ const steps = [
 ];
 
 export default function HowItWorks() {
+  const { ref, inView } = useInView({});
+
   return (
     <section id="how-it-works" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -34,15 +38,15 @@ export default function HowItWorks() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto"
+          ref={ref}
+        >
           {steps.map((step, index) => (
-            <MotionDiv
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.2 }}
-              viewport={{ once: true }}
-              className="relative"
+              data-variant={index * 0.2}
+              className={"opacity-0" + (inView ? " features-animation" : "")}
             >
               <div className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow text-center h-full">
                 <div className="absolute -top-3 -right-3 w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold">
@@ -56,7 +60,7 @@ export default function HowItWorks() {
                 <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
                 <p className="text-foreground/70">{step.description}</p>
               </div>
-            </MotionDiv>
+            </div>
           ))}
         </div>
       </div>

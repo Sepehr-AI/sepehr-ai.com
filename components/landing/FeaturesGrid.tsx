@@ -1,4 +1,6 @@
-import { MotionDiv } from "../dynamicMotion";
+"use client";
+
+import { useInView } from "react-intersection-observer";
 import {
   RocketIcon,
   LightningBoltIcon,
@@ -43,6 +45,8 @@ const features = [
 ];
 
 export default function FeaturesGrid() {
+  const { ref, inView } = useInView({});
+
   return (
     <section id="features" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -54,15 +58,18 @@ export default function FeaturesGrid() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 mx-auto md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div
+          className="grid grid-cols-1 mx-auto md:grid-cols-2 lg:grid-cols-3 gap-8"
+          ref={ref}
+        >
           {features.map((feature, index) => (
-            <MotionDiv
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow"
+              data-variant={index * 0.2}
+              className={
+                "bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow opacity-0" +
+                (inView ? " features-animation" : "")
+              }
             >
               <div className="w-full flex justify-center">
                 <div className="bg-accent/10 p-3 rounded-full w-fit mb-4">
@@ -75,7 +82,7 @@ export default function FeaturesGrid() {
               <p className="text-foreground/70 text-center">
                 {feature.description}
               </p>
-            </MotionDiv>
+            </div>
           ))}
         </div>
       </div>

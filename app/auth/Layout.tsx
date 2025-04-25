@@ -7,7 +7,6 @@ import { toast } from "react-toastify";
 import Icon from "@/components/landing/Icon";
 import * as Form from "@radix-ui/react-form";
 import { useTheme } from "@/components/ThemeProvider";
-import { MotionDiv } from "@/components/dynamicMotion";
 import * as Separator from "@radix-ui/react-separator";
 import ValidatedInput from "@/components/ValidatedInput";
 import { type FormEvent, useActionState, useEffect, useState } from "react";
@@ -93,13 +92,7 @@ export default function AuthLayout({
       className="min-h-screen w-full bg-background flex justify-center items-center p-4 md:p-8"
       dir="rtl"
     >
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
-      <MotionDiv
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
-      >
+      <div className="w-full max-w-md relative z-10 auth-animation">
         <div className="mb-8 flex justify-center">
           <Icon
             fill={theme === "dark" ? "#fff" : "#000"}
@@ -114,7 +107,7 @@ export default function AuthLayout({
         <div className="mt-4 text-center text-sm text-foreground/60">
           <p>سپهر AI - دنیای هوش مصنوعی در دستان شما</p>
         </div>
-      </MotionDiv>
+      </div>
     </div>
   );
 

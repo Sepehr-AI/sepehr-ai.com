@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MotionDiv } from "../dynamicMotion";
 import * as Tabs from "@radix-ui/react-tabs";
+import { useInView } from "react-intersection-observer";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 
 const modelCategories = [
@@ -73,6 +73,7 @@ export default function ModelShowcase({
 }: {
   numberOfWebPlans: number;
 }) {
+  const { ref, inView } = useInView({});
   const [activeTab, setActiveTab] = useState(modelCategories[0].id);
 
   return (
@@ -117,10 +118,9 @@ export default function ModelShowcase({
               value={category.id}
               className="focus:outline-none"
             >
-              <MotionDiv
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.4 }}
+              <div
+                ref={ref}
+                className={inView ? "model-showcase-animation" : ""}
               >
                 <div className="bg-card p-8 rounded-xl border border-border text-right rtl">
                   <h3 className="text-2xl font-bold mb-4">{category.title}</h3>
@@ -142,7 +142,7 @@ export default function ModelShowcase({
                     و ده ها مدل دیگر از این دسته ...
                   </p>
                 </div>
-              </MotionDiv>
+              </div>
             </Tabs.Content>
           ))}
         </Tabs.Root>
