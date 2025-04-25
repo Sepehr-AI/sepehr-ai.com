@@ -1,7 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { MotionDiv } from "../dynamicMotion";
 import * as Separator from "@radix-ui/react-separator";
 
 export default function HeroSection({
@@ -14,7 +12,7 @@ export default function HeroSection({
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
@@ -59,7 +57,7 @@ export default function HeroSection({
             <span>Llama 3</span>
             <span>+ {numberOfWebPlans} مدل دیگر</span>
           </div>
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   );

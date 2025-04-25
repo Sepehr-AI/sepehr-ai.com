@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { MotionDiv } from "../dynamicMotion";
 import * as Tabs from "@radix-ui/react-tabs";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
 
@@ -117,7 +117,7 @@ export default function ModelShowcase({
               value={category.id}
               className="focus:outline-none"
             >
-              <motion.div
+              <MotionDiv
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
@@ -142,7 +142,7 @@ export default function ModelShowcase({
                     و ده ها مدل دیگر از این دسته ...
                   </p>
                 </div>
-              </motion.div>
+              </MotionDiv>
             </Tabs.Content>
           ))}
         </Tabs.Root>

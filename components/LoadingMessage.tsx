@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
 import CompanyLogo from "./companyLogos/CompanyLogo";
 import { useTheme } from "../components/ThemeProvider";
+import { MotionDiv, MotionSpan } from "./dynamicMotion";
 
 export default function LoadingMessage({
   aiCompanyWebsite,
@@ -30,7 +30,7 @@ export default function LoadingMessage({
           `}
           >
             {/* Pulsing ring animation */}
-            <motion.div
+            <MotionDiv
               className={`
                 absolute inset-0 rounded-full
                 ${isDark ? "bg-accent/20" : "bg-accent/10"}
@@ -60,13 +60,13 @@ export default function LoadingMessage({
           <div className="flex-1">
             <div className="flex flex-col gap-2">
               {/* Status text */}
-              <motion.div
+              <MotionDiv
                 className={`text-xs ${isDark ? "text-foreground/70" : "text-foreground/60"}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <motion.span
+                <MotionSpan
                   className="text-center"
                   animate={{
                     opacity: [0, 1, 0],
@@ -78,17 +78,17 @@ export default function LoadingMessage({
                   }}
                 >
                   در حال تولید پاسخ ...
-                </motion.span>
-              </motion.div>
+                </MotionSpan>
+              </MotionDiv>
 
               {hasAttachments && (
-                <motion.div
+                <MotionDiv
                   className={`text-xs ${isDark ? "text-foreground/70" : "text-foreground/60"}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <motion.span
+                  <MotionSpan
                     className="text-center"
                     animate={{
                       opacity: [0, 1, 0],
@@ -100,12 +100,12 @@ export default function LoadingMessage({
                     }}
                   >
                     (پردازش طولانی‌تر به دلیل آپلود فایل)
-                  </motion.span>
-                </motion.div>
+                  </MotionSpan>
+                </MotionDiv>
               )}
 
               {/* Progress bar */}
-              <motion.div
+              <MotionDiv
                 className={`
                 h-0.5 mt-1 w-32 overflow-hidden rounded-full
                 ${isDark ? "bg-muted/20" : "bg-muted/40"}
@@ -114,7 +114,7 @@ export default function LoadingMessage({
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.8, duration: 0.5 }}
               >
-                <motion.div
+                <MotionDiv
                   className={`h-full rounded-full ${isDark ? "bg-accent/50" : "bg-accent/60"}`}
                   initial={{ width: "0%" }}
                   animate={{
@@ -126,7 +126,7 @@ export default function LoadingMessage({
                     ease: "easeInOut",
                   }}
                 />
-              </motion.div>
+              </MotionDiv>
             </div>
           </div>
         </div>

@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { MotionDiv } from "../dynamicMotion";
 import {
   PersonIcon,
   MixerHorizontalIcon,
@@ -38,7 +36,7 @@ export default function HowItWorks() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {steps.map((step, index) => (
-            <motion.div
+            <MotionDiv
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -58,13 +56,7 @@ export default function HowItWorks() {
                 <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
                 <p className="text-foreground/70">{step.description}</p>
               </div>
-
-              {/* {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 left-[-20px] right-[-20px] h-[2px] bg-border">
-                  <div className="absolute top-[-6px] left-1/2 transform -translate-x-1/2 w-3 h-3 rotate-45 border-t-2 border-r-2 border-border"></div>
-                </div>
-              )} */}
-            </motion.div>
+            </MotionDiv>
           ))}
         </div>
       </div>

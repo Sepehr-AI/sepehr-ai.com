@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { MotionDiv } from "../dynamicMotion";
 import type { FaqsForLandingPage } from "@/lib/faqs";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
@@ -16,12 +14,12 @@ export default function FaqSection({ faqs }: { faqs: FaqsForLandingPage }) {
           </p>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+        <MotionDiv
           viewport={{ once: true }}
           className="max-w-3xl mx-auto"
+          transition={{ duration: 0.5 }}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
         >
           <Accordion.Root type="multiple" className="space-y-4">
             {faqs.map((faq, index) => (
@@ -42,7 +40,7 @@ export default function FaqSection({ faqs }: { faqs: FaqsForLandingPage }) {
               </Accordion.Item>
             ))}
           </Accordion.Root>
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   );

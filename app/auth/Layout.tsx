@@ -4,10 +4,10 @@
 
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { motion } from "framer-motion";
 import Icon from "@/components/landing/Icon";
 import * as Form from "@radix-ui/react-form";
 import { useTheme } from "@/components/ThemeProvider";
+import { MotionDiv } from "@/components/dynamicMotion";
 import * as Separator from "@radix-ui/react-separator";
 import ValidatedInput from "@/components/ValidatedInput";
 import { type FormEvent, useActionState, useEffect, useState } from "react";
@@ -94,7 +94,7 @@ export default function AuthLayout({
       dir="rtl"
     >
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
-      <motion.div
+      <MotionDiv
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -114,7 +114,7 @@ export default function AuthLayout({
         <div className="mt-4 text-center text-sm text-foreground/60">
           <p>سپهر AI - دنیای هوش مصنوعی در دستان شما</p>
         </div>
-      </motion.div>
+      </MotionDiv>
     </div>
   );
 

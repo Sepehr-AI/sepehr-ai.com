@@ -1,7 +1,7 @@
 "use client";
 
 import Icon from "./landing/Icon";
-import { motion } from "framer-motion";
+import { MotionDiv } from "./dynamicMotion";
 import { useTheme } from "../components/ThemeProvider";
 
 export default function Loading() {
@@ -13,7 +13,7 @@ export default function Loading() {
       <div className="flex-none flex items-center justify-center bg-background">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
 
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
@@ -39,17 +39,17 @@ export default function Loading() {
 
           {/* Animated dots */}
           <div className="flex space-x-2 mt-2">
-            <motion.div
+            <MotionDiv
               className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-accent/80" : "bg-accent"}`}
               animate={{ scale: [0.6, 1, 0.6] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0 }}
             />
-            <motion.div
+            <MotionDiv
               className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-accent/80" : "bg-accent"}`}
               animate={{ scale: [0.6, 1, 0.6] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.2 }}
             />
-            <motion.div
+            <MotionDiv
               className={`w-3 h-3 rounded-full ${theme === "dark" ? "bg-accent/80" : "bg-accent"}`}
               animate={{ scale: [0.6, 1, 0.6] }}
               transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
@@ -60,7 +60,7 @@ export default function Loading() {
           <div
             className={`w-72 h-1 rounded-full overflow-hidden ${theme === "dark" ? "bg-muted/30" : "bg-muted"}`}
           >
-            <motion.div
+            <MotionDiv
               className="h-full bg-accent"
               initial={{ width: "0%" }}
               animate={{
@@ -74,7 +74,7 @@ export default function Loading() {
               }}
             />
           </div>
-        </motion.div>
+        </MotionDiv>
       </div>
       <div className="flex-auto"></div>
     </div>

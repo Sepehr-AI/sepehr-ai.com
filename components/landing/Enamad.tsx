@@ -1,3 +1,5 @@
+"use client";
+
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -6,7 +8,10 @@ export default function Enamad() {
   return process.env.NODE_ENV === "production" ? (
     <a target="_blank" referrerPolicy="origin">
       <img
+        width={125}
+        height={136}
         alt="enamad"
+        loading="lazy"
         referrerPolicy="origin"
         src="https://trustseal.enamad.ir/logo.aspx?id=593304&Code=iBVvanLu9LP3vHi1re7rpmxqplW0S7mq"
         style={{ cursor: "pointer" }}

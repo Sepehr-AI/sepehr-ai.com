@@ -1,6 +1,4 @@
-"use client";
-
-import { motion } from "framer-motion";
+import { MotionDiv } from "../dynamicMotion";
 import {
   RocketIcon,
   LightningBoltIcon,
@@ -58,7 +56,7 @@ export default function FeaturesGrid() {
 
         <div className="grid grid-cols-1 mx-auto md:grid-cols-2 lg:grid-cols-3 gap-8">
           {features.map((feature, index) => (
-            <motion.div
+            <MotionDiv
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -77,7 +75,7 @@ export default function FeaturesGrid() {
               <p className="text-foreground/70 text-center">
                 {feature.description}
               </p>
-            </motion.div>
+            </MotionDiv>
           ))}
         </div>
       </div>
