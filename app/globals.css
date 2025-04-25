@@ -128,6 +128,18 @@
   .animate-accordion-up {
     animation: accordion-up 0.2s ease-out;
   }
+
+  .hero-heading {
+    @apply text-4xl md:text-6xl font-bold tracking-tight mb-6;
+  }
+
+  /* Gradient only on the span + GPU acceleration */
+  .hero-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-600;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
 }
 
 body {

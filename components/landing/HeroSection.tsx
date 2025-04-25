@@ -18,11 +18,8 @@ export default function HeroSection({
           transition={{ duration: 0.5 }}
           className="max-w-4xl mx-auto text-center"
         >
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-600">
-              دنیای هوش مصنوعی
-            </span>{" "}
-            در دستان شما
+          <h1 className="hero-heading">
+            <span className="hero-gradient">دنیای هوش مصنوعی</span> در دستان شما
           </h1>
 
           <p className="text-lg md:text-xl mb-8 text-foreground/80 mx-auto max-w-2xl">
