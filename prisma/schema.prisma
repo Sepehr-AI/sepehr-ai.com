@@ -106,3 +106,17 @@ model Faq {
   description String
   createdAt   DateTime @default(now()) @db.Timestamptz(3)
 }
+
+enum ErrorType {
+  INFO
+  WARN
+  ERROR
+}
+
+model Error {
+  id        Int       @id @default(autoincrement())
+  data      Json
+  context   String
+  type      ErrorType
+  createdAt DateTime  @default(now()) @db.Timestamptz(3)
+}

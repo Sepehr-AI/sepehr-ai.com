@@ -1,32 +1,36 @@
-const msgToString = (msg: unknown): unknown => {
-  if (typeof msg === "string" || msg instanceof String) return msg as string;
-  try {
-    return JSON.stringify(msg);
-  } catch (error) {
-    console.error("Failed to log:", { msg, error });
-  }
+import prisma from "./prisma";
+import type { ErrorType } from "@/prisma/client";
+import type { JsonObject } from "@/prisma/client/runtime/library";
 
-  return msg;
+const storeIntoDB = (type: ErrorType, context: string, msg: unknown) =>
+  prisma.error
+    .create({
+      data: {
+        type,
+        context,
+        data: msg as JsonObject,
+      },
+    })
+    .catch((e) =>
+      console.error("Failed to create error for logging into the database.", {
+        error: e,
+      }),
+    );
+
+export const info = (context: string, msg: unknown): void => {
+  if (process.env.NODE_ENV === "production") {
+    storeIntoDB("INFO", context, msg);
+  } else console.log(context, msg);
 };
-
-// TODO: Store these in the database.
-export const info = (context: string, _msg: unknown) => {
-  const msg = msgToString(_msg);
-  if (!msg) return;
-
-  console.log("Log info:", { context, _msg });
+export const warn = (context: string, msg: unknown): void => {
+  if (process.env.NODE_ENV === "production") {
+    storeIntoDB("WARN", context, msg);
+  } else console.warn(context, msg);
 };
-export const warn = (context: string, _msg: unknown) => {
-  const msg = msgToString(_msg);
-  if (!msg) return;
-
-  console.log("Log warn:", { context, _msg });
-};
-export const error = (context: string, _msg: unknown) => {
-  const msg = msgToString(_msg);
-  if (!msg) return;
-
-  console.log("Log error:", { context, _msg });
+export const error = (context: string, msg: unknown): void => {
+  if (process.env.NODE_ENV === "production") {
+    storeIntoDB("ERROR", context, msg);
+  } else console.error(context, msg);
 };
 
 export const errorOnThrow = async <Type>(

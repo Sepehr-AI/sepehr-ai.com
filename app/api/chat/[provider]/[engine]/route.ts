@@ -2,25 +2,36 @@
 
 import { z } from "zod";
 import { error } from "@/lib/log";
+import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getModelsMap } from "@/lib/models";
 import { decrypt } from "@/lib/openrouterApiKey";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import {
-  streamText,
-  type CoreMessage,
-  coreMessageSchema,
-  TypeValidationError,
-} from "ai";
+import { streamText, type CoreMessage, coreMessageSchema } from "ai";
 
-class ModelError extends Error {}
-class ContextError extends Error {}
-class PaymentError extends Error {}
-class MessagesError extends Error {}
+// 408
+class TimeoutError extends Error {}
+// 416
+class MaxTokensError extends Error {}
+// 429
+class RateLimitError extends Error {}
+// 400
 class ValidationError extends Error {}
+// 500
 class UnexpectedError extends Error {}
+// 404
+class ModelNotFoundError extends Error {}
+// 403
 class AuthorizationError extends Error {}
-class NotEnoughCreditsError extends Error {}
+// 413
+class MaxContextLengthError extends Error {}
+// 402
+class InsufficientFundsError extends Error {}
+// 401
+class InvalidCredentialsError extends Error {}
+// 403, 502, 503
+class NoAvailableProviderError extends Error {}
+
 const tryOrErr = async <T extends Error>(
   f: () => Promise<unknown>,
   ErrorConstructor: new () => T,
@@ -28,7 +39,10 @@ const tryOrErr = async <T extends Error>(
   try {
     await f();
   } catch {
-    throw new ErrorConstructor();
+    const e = new ErrorConstructor();
+    // @ts-expect-error attach for debugging
+    e.cause = origErr;
+    throw e;
   }
 };
 
@@ -53,22 +67,28 @@ function errorToStatus(e: any): number {
   if (typeof e !== "object" || typeof e.constructor !== "function") return 500;
 
   switch (e.constructor) {
-    case ModelError:
-      return 404;
-    case ContextError:
-      return 413;
-    case PaymentError:
-      return 402;
-    case MessagesError:
-      return 400;
+    case TimeoutError:
+      return 408;
+    case MaxTokensError:
+      return 416;
+    case RateLimitError:
+      return 429;
     case ValidationError:
-      return 422;
+      return 400;
     case UnexpectedError:
       return 500;
+    case ModelNotFoundError:
+      return 404;
     case AuthorizationError:
       return 403;
-    case NotEnoughCreditsError:
-      return 416;
+    case MaxContextLengthError:
+      return 413;
+    case InsufficientFundsError:
+      return 402;
+    case InvalidCredentialsError:
+      return 401;
+    case NoAvailableProviderError:
+      return 503;
     default:
       return 500;
   }
@@ -88,17 +108,10 @@ export async function POST(
         where: { userId },
         select: { metadata: true },
       });
-      if (!res || !res.metadata.length) throw new PaymentError();
+      if (!res || !res.metadata.length) throw new InsufficientFundsError();
 
       apiKey = decrypt(res.metadata, AES_ENCRYPTION_MASTERKEY);
-    }, PaymentError);
-    const openrouter = createOpenRouter({
-      apiKey,
-      extraBody: {
-        usage: { include: true },
-        reasoning: { include: true },
-      },
-    });
+    }, InsufficientFundsError);
 
     let json!: z.infer<typeof RequestSchema>, engine, provider;
     await tryOrErr(async () => {
@@ -114,16 +127,18 @@ export async function POST(
     await tryOrErr(async () => {
       const model = (await getModelsMap()).get(modelCode);
       if (!model) throw new Error("ModelNotFound");
-    }, ModelError);
+    }, ModelNotFoundError);
 
     const s = streamText({
       messages,
       abortSignal: req.signal,
-      onError: (e) => error("WebChatStreamingError", { error: e }),
-      model: openrouter(
-        USE_ACTUAL_SELECTED_MODEL ? modelCode : "deepseek/deepseek-r1:free",
-        // "deepseek/deepseek-r1:free"
-      ),
+      model: createOpenRouter({
+        apiKey,
+        extraBody: {
+          usage: { include: true },
+          reasoning: { include: true },
+        },
+      })(USE_ACTUAL_SELECTED_MODEL ? modelCode : "deepseek/deepseek-r1:free"),
     });
 
     s.consumeStream();
@@ -131,17 +146,30 @@ export async function POST(
       status: 200,
       sendUsage: false,
       sendReasoning: true,
-      getErrorMessage: (e) => {
-        const errorAsStatusCode = () => {
-          if (e && TypeValidationError.isInstance(e)) {
-            if (e.message.toLowerCase().includes("maximum context length is")) {
-              return 413;
-            }
-            if (e.message.toLowerCase().includes("can only afford")) {
-              return 416;
+      getErrorMessage: (e: any) => {
+        const errorAsStatusCode = (): number => {
+          if (e.value?.error) {
+            const raw = e.value as {
+              error: {
+                message: string;
+                code: number;
+                metadata?: { provider_name: string | null };
+              };
+              user_id?: string;
+            };
+            if (process.env.NODE_ENV === "development") {
+              console.dir({ rawError: raw }, { depth: null });
             }
 
-            return 400;
+            if (raw.error.metadata?.provider_name) {
+              error("WebChatProviderError", { error: raw });
+            }
+
+            const msg = raw.error.message.toLowerCase();
+            if (msg.includes("can only afford")) return 416;
+            if (msg.includes("maximum context length is")) return 413;
+
+            return raw.error.code;
           }
 
           return 500;
