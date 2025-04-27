@@ -15,10 +15,6 @@ export default function CallToAction() {
     >
       <div className="container mx-auto px-4">
         <div
-          // initial={{ opacity: 0, scale: 0.95 }}
-          // whileInView={{ opacity: 1, scale: 1 }}
-          // transition={{ duration: 0.5 }}
-          // viewport={{ once: true }}
           className={
             "bg-card border border-border rounded-2xl p-8 md:p-12 max-w-4xl mx-auto text-center" +
             (inView ? " call-to-action-animation" : "")

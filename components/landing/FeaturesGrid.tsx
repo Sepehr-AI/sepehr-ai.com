@@ -65,11 +65,8 @@ export default function FeaturesGrid() {
           {features.map((feature, index) => (
             <div
               key={index}
-              data-variant={index * 0.2}
-              className={
-                "bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow opacity-0" +
-                (inView ? " features-animation" : "")
-              }
+              style={{ animationDelay: `${index * 0.2}s` }}
+              className={"feature-grid" + (inView ? " features-animated" : "")}
             >
               <div className="w-full flex justify-center">
                 <div className="bg-accent/10 p-3 rounded-full w-fit mb-4">

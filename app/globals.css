@@ -140,6 +140,10 @@
     backface-visibility: hidden;
     will-change: transform, opacity;
   }
+
+  .feature-grid {
+    @apply bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow opacity-0;
+  }
 }
 
 body {
@@ -271,7 +275,7 @@ math {
 
 @keyframes heroAnimationFrames {
   from {
-    transform: translateY(-20);
+    transform: translateY(-20px);
     opacity: 0;
   }
 
@@ -286,7 +290,7 @@ math {
 
 @keyframes faqAnimationFrames {
   from {
-    transform: translateY(30);
+    transform: translateY(30px);
     opacity: 0;
   }
 
@@ -327,26 +331,10 @@ math {
   animation: callToActionAnimationFrames 2s ease;
 }
 
-@keyframes featuresAnimationFrames {
-  from {
-    opacity: 0;
-    transform: translateY(20);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.features-animation {
-  animation: featuresAnimationFrames 0.5s ease attr(data-variant s) 1 normal
-    forwards;
-}
-
 @keyframes authAnimationFrames {
   from {
     opacity: 0;
-    transform: translateY(20);
+    transform: translateY(20px);
   }
 
   to {
@@ -356,4 +344,19 @@ math {
 }
 .auth-animation {
   animation: authAnimationFrames 0.5s ease;
+}
+
+@keyframes featuresAnimationFrames {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.features-animated {
+  animation: featuresAnimationFrames 0.5s ease forwards;
 }

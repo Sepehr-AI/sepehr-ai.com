@@ -45,8 +45,8 @@ export default function HowItWorks() {
           {steps.map((step, index) => (
             <div
               key={index}
-              data-variant={index * 0.2}
-              className={"opacity-0" + (inView ? " features-animation" : "")}
+              style={{ animationDelay: `${index * 0.2}s` }}
+              className={"opacity-0" + (inView ? " features-animated" : "")}
             >
               <div className="bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow text-center h-full">
                 <div className="absolute -top-3 -right-3 w-8 h-8 bg-accent rounded-full flex items-center justify-center text-white font-bold">
