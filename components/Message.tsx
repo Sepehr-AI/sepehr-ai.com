@@ -233,11 +233,45 @@ const Message = ({
 
   return (
     <div
-      className={`group px-1 pt-4 text-[0.925rem] ${!isTheLastMessage && "border-b border-border/40"} ${className || ""}`}
+      className={`group px-1 py-1 text-[0.925rem] ${!isTheLastMessage && "border-b border-border/40"} ${className || ""}`}
     >
-      <div className="flex gap-4">
-        {/* Avatar */}
-        <div className="flex-none">
+      {/* Message content */}
+      <div className="grid grid-rows-[auto,1fr,auto] gap-2 h-full min-w-0 w-full">
+        {/* First (Toolbar) */}
+        <div
+          className="ltr w-full flex items-center gap-2 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity"
+          style={{ height: "2dvh" }}
+        >
+          {!isUser && renderedReasoning.length > 0 ? (
+            <button
+              className="inline-flex items-center text-xs gap-1 py-1 px-2 rounded bg-muted hover:bg-muted/70 transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                setShowReasoning((prev) => !prev);
+              }}
+            >
+              {showReasoning ? (
+                <ChevronDownIcon className="h-3 w-3" />
+              ) : (
+                <ChevronUpIcon className="h-3 w-3" />
+              )}
+              <span>{showReasoning ? "پنهان" : "نمایش"} استدلال</span>
+            </button>
+          ) : (
+            <div className="inline-flex items-center"></div>
+          )}
+
+          <button
+            onClick={handleCopy}
+            className="inline-flex items-center text-xs gap-1 py-1 px-2 rounded bg-muted hover:bg-muted/70 transition-colors"
+          >
+            <CopyIcon className="h-3 w-3" />
+            <span>کپی</span>
+          </button>
+        </div>
+
+        {/* Middle (Content) */}
+        <div className="overflow-x-auto overflow-y-hidden flex flex-row gap-4">
           <div
             className={`w-9 h-9 rounded-full flex items-center justify-center border ${isUser ? "border-border bg-muted/50" : "border-accent/50 bg-accent/40"}`}
           >
@@ -250,45 +284,8 @@ const Message = ({
               />
             )}
           </div>
-        </div>
 
-        {/* Message content */}
-        <div className="grid grid-rows-[auto,1fr,auto] gap-2 h-full min-w-0 w-full">
-          {/* First (Toolbar) */}
-          <div
-            className="ltr w-full flex items-center gap-2 xl:opacity-0 xl:group-hover:opacity-100 transition-opacity"
-            style={{ height: "2dvh" }}
-          >
-            {!isUser && renderedReasoning.length > 0 ? (
-              <button
-                className="inline-flex items-center text-xs gap-1 py-1 px-2 rounded bg-muted hover:bg-muted/70 transition-colors"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowReasoning((prev) => !prev);
-                }}
-              >
-                {showReasoning ? (
-                  <ChevronDownIcon className="h-3 w-3" />
-                ) : (
-                  <ChevronUpIcon className="h-3 w-3" />
-                )}
-                <span>{showReasoning ? "پنهان" : "نمایش"} استدلال</span>
-              </button>
-            ) : (
-              <div className="inline-flex items-center"></div>
-            )}
-
-            <button
-              onClick={handleCopy}
-              className="inline-flex items-center text-xs gap-1 py-1 px-2 rounded bg-muted hover:bg-muted/70 transition-colors"
-            >
-              <CopyIcon className="h-3 w-3" />
-              <span>کپی</span>
-            </button>
-          </div>
-
-          {/* Middle (Content) */}
-          <div className="mt-2 overflow-x-auto overflow-y-hidden">
+          <div className="flex items-center">
             {/* Reasoning section */}
             {showReasoning && renderedReasoning.length > 0 && (
               <div className="mb-3 relative bg-muted/30 border-r-2 border-accent/30 pr-4 pl-3 py-3 rounded-md text-sm">
@@ -316,11 +313,11 @@ const Message = ({
               <div className="mt-3 space-y-2">{renderedAttachments}</div>
             )}
           </div>
+        </div>
 
-          {/* Third (Empty/Spacer) */}
-          <div style={{ height: "2dvh" }}>
-            {/* This div will always match the height of the first div */}
-          </div>
+        {/* Third (Empty/Spacer) */}
+        <div style={{ height: "2dvh" }}>
+          {/* This div will always match the height of the first div */}
         </div>
       </div>
     </div>

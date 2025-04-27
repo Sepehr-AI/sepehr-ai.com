@@ -267,10 +267,11 @@ export default function ChatBody({
           </div>
         </div>
       </div>
+
       {/* Messages container */}
       <div
         ref={messagesContainerRef}
-        className="container mx-auto flex-1 overflow-y-auto px-4 md:px-8 pt-4 bg-background scrollbar-width-thin"
+        className="container mx-auto flex-1 overflow-y-auto px-4 md:px-8 bg-background scrollbar-width-thin"
         onScroll={checkIfAtBottom}
       >
         <div className="max-w-3xl mx-auto">
