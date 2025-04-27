@@ -133,6 +133,31 @@ export default function RootLayout({
   return (
     <html lang="fa-IR" dir="rtl">
       <Head>
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link
+          rel="icon"
+          href="/favicon-32x32.png"
+          type="image/png"
+          sizes="32x32"
+        />
+        <link
+          rel="icon"
+          href="/favicon-16x16.png"
+          type="image/png"
+          sizes="16x16"
+        />
+        <meta
+          name="theme-color"
+          content="#FFFFFF"
+          media="(prefers-color-scheme: light)"
+        />
+        <meta
+          name="theme-color"
+          content="#111111"
+          media="(prefers-color-scheme: dark)"
+        />
+
         <meta name="robots" content="nofollow" />
         <meta name="google" content="notranslate" key="notranslate" />
         <meta name="google" content="nositelinkssearchbox" key="sitelinks" />
