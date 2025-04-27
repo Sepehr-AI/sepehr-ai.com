@@ -1,10 +1,11 @@
 User-agent: *
+Allow: /
+Disallow: /cdn-cgi/
+
+User-agent: *
 Disallow: /logout
 Disallow: /auth/*
 Disallow: /dashbord/*
- 
-User-agent: *
-Allow: /
 
 User-agent: Googlebot-Image
 Disallow: /
