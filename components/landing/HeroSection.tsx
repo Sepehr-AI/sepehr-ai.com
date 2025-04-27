@@ -14,7 +14,7 @@ export default function HeroSection({
             <span className="hero-gradient">دنیای هوش مصنوعی</span> در دستان شما
           </h1>
 
-          <p className="text-lg md:text-xl mb-8 text-foreground/80 mx-auto max-w-2xl">
+          <p className="hero-description">
             دسترسی به بیش از {numberOfWebPlans} مدل هوش مصنوعی پیشرفته برای
             محتوا، برنامه‌نویسی، بازاریابی و صدها کاربرد دیگر، همه در یک پلتفرم
             یکپارچه
