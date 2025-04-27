@@ -3,8 +3,10 @@ Allow: /
 Disallow: /cdn-cgi/
 
 User-agent: *
+Disallow: /auth
+Disallow: /auth?*
 Disallow: /logout
-Disallow: /auth/*
+Disallow: /_next/*
 Disallow: /dashbord/*
 
 User-agent: Googlebot-Image
