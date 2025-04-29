@@ -9,10 +9,13 @@ const mobileSchema = z
   .min(11, { message: "شماره موبایل باید 11 رقمی باشد!" })
   .max(11, { message: "شماره موبایل باید 11 رقمی باشد!" })
   .regex(/((0?9)|(\+?989))\d{9}/g, { message: "شماره موبایل نامعتبر است!" });
-const otpSchema = z.coerce
-  .number({ message: "کد تایید باید عدد باشد!" })
-  .min(100000, { message: "کد تایید 6 رقمی است!" })
-  .max(999999, { message: "کد تایید 6 رقمی است!" });
+const otpSchema = z.preprocess(
+  (v) => String(v).trim(),
+  z.coerce
+    .number({ message: "کد تایید باید عدد باشد!" })
+    .min(100000, { message: "کد تایید 6 رقمی است!" })
+    .max(999999, { message: "کد تایید 6 رقمی است!" }),
+);
 
 export const checkMobileFormSchema = z.object({
   mobile: mobileSchema,
