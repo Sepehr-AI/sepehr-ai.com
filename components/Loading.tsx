@@ -1,18 +1,17 @@
 "use client";
 
 // TODO: Replace dynamicMotion with CSS animation.
-
-import Icon from "./landing/Icon";
-import { MotionDiv } from "./dynamicMotion";
 import { useTheme } from "../components/ThemeProvider";
+import { MotionDiv } from "./dynamicMotion";
+import Icon from "./landing/Icon";
 
 export default function Loading() {
   const { theme } = useTheme();
 
   return (
-    <div className="fixed inset-0 flex flex-col h-full w-full">
+    <div className="fixed inset-0 flex flex-col h-full w-full backdrop-blur-xs">
       <div className="flex-auto"></div>
-      <div className="flex-none flex items-center justify-center bg-background">
+      <div className="flex-none flex items-center justify-center">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.03]"></div>
 
         <MotionDiv

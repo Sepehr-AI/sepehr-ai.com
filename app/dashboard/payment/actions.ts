@@ -2,22 +2,23 @@
 
 "use server";
 
+import net from "net";
+import path from "path";
 import type { z } from "zod";
+import fs from "fs/promises";
 import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
+import { spawn } from "child_process";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import getExchangeRate from "@/lib/exchange";
+import { roundWebPlan } from "@/lib/cost";
 import type { MiddlewareUserData } from "@/middleware";
 import {
   sepehrFetch,
   chargeApiResSchema,
   chargeApiPayloadSchema,
 } from "@/sepehr-ai-ipg/src/lib";
-import fs from "fs/promises";
-import path from "path";
-import { spawn } from "child_process";
-import net from "net";
 
 const PROJECT_ROOT = process.cwd();
 const SEPEHR_AI_IPG_ADDR: string =
@@ -173,7 +174,7 @@ export async function setupPaymentGate({
 
     usdPrice = webPlan.usdPrice;
     usdCredits = webPlan.usdCredits;
-    price = usdPrice * exchangeRate;
+    price = roundWebPlan(usdPrice * exchangeRate);
   } catch (e) {
     error("DatabaseOrExchangeErrorForPayment:", {
       user,
