@@ -233,7 +233,7 @@ const Message = ({
 
   return (
     <div
-      className={`group px-1 py-1 text-[0.925rem] ${!isTheLastMessage && "border-b border-border/40"} ${className || ""}`}
+      className={`group p-2 text-[0.925rem] ${!isTheLastMessage && "border-b border-border/40"} ${className || ""}`}
     >
       {/* Message content */}
       <div className="grid grid-rows-[auto,1fr,auto] gap-2 h-full min-w-0 w-full">
@@ -273,23 +273,23 @@ const Message = ({
         {/* Middle (Content) */}
         <div className="overflow-x-auto overflow-y-hidden flex flex-row gap-4">
           <div
-            className={`w-9 h-9 rounded-full flex items-center justify-center border ${isUser ? "border-border bg-muted/50" : "border-accent/50 bg-accent/40"}`}
+            className={`w-9 h-9 shrink-0 grow-0 rounded-full flex items-center justify-center border ${isUser ? "border-border bg-muted/50" : "border-accent/50 bg-accent/40"}`}
           >
             {isUser ? (
-              <PersonIcon className="h-5 w-5" />
+              <PersonIcon className="h-[70%] w-[auto]" />
             ) : (
               <CompanyLogo
                 companyWebsite={aiCompanyWebsite}
-                className="h-5 w-5"
+                className="h-[70%] w-[auto]"
               />
             )}
           </div>
 
-          <div className="flex items-center">
+          <div className="flex flex-col justify-center">
             {/* Reasoning section */}
             {showReasoning && renderedReasoning.length > 0 && (
-              <div className="mb-3 relative bg-muted/30 border-r-2 border-accent/30 pr-4 pl-3 py-3 rounded-md text-sm">
-                <div className="prose max-w-none prose-sm">
+              <div className="mb-3 bg-muted/30 border-r-2 border-accent/30 pr-4 pl-3 py-3 rounded-md text-sm">
+                <div className="rtl prose max-w-none prose-sm">
                   {renderedReasoning}
                 </div>
               </div>

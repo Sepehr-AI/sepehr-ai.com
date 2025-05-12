@@ -34,15 +34,15 @@ class NoAvailableProviderError extends Error {}
 
 const tryOrErr = async <T extends Error>(
   f: () => Promise<unknown>,
-  ErrorConstructor: new () => T,
+  ErrorConstructor: new (message?: string, options?: { cause?: unknown }) => T,
 ) => {
   try {
     await f();
-  } catch {
-    const e = new ErrorConstructor();
-    // @ts-expect-error attach for debugging
-    e.cause = origErr;
-    throw e;
+  } catch (orig: any) {
+    throw new ErrorConstructor(
+      ((orig as Error) || { message: undefined }).message,
+      { cause: orig },
+    );
   }
 };
 
@@ -90,6 +90,7 @@ function errorToStatus(e: any): number {
     case NoAvailableProviderError:
       return 503;
     default:
+      error("Invalid error to status", { error: e });
       return 500;
   }
 }
@@ -172,6 +173,7 @@ export async function POST(
             return raw.error.code;
           }
 
+          error("Invalid openrouter response", { error: e });
           return 500;
         };
 

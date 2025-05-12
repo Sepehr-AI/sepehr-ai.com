@@ -23,7 +23,7 @@ export default function LoadingMessage({
         <div className="flex-none">
           <div
             className={`
-            w-9 h-9 rounded-full flex items-center justify-center relative
+            w-9 h-9 shrink-0 grow-0 rounded-full flex items-center justify-center relative
             ${
               isDark
                 ? "border border-accent/30 bg-accent/10"
@@ -50,7 +50,7 @@ export default function LoadingMessage({
 
             <CompanyLogo
               companyWebsite={aiCompanyWebsite}
-              className="h-5 w-5 z-10"
+              className="h-[70%] w-[auto] z-10"
             />
           </div>
         </div>

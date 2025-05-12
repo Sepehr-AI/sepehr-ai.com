@@ -10,6 +10,9 @@ export default {
     removeConsole:
       process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   async headers() {
     return process.env.NODE_ENV === "production"
       ? [

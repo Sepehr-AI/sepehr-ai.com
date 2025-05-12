@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import Enamad from "./Enamad";
 import * as Separator from "@radix-ui/react-separator";

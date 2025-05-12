@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import * as Tabs from "@radix-ui/react-tabs";
 import { CheckIcon } from "@radix-ui/react-icons";

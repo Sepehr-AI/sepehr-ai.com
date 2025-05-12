@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import * as Separator from "@radix-ui/react-separator";
 
