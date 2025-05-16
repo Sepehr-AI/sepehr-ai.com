@@ -237,7 +237,7 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
     mobile: headersList.get("usermobile") as string,
   };
 
-  if (isNaN(planId) || isNaN(user.id) || !user.email || !user.mobile) {
+  if (isNaN(planId) || isNaN(user.id) || !user.mobile) {
     console.error("Unexpected input:", { user });
     return redirect("/dashboard/payment");
   }
