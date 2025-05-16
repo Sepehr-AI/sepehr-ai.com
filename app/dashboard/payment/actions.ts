@@ -10,9 +10,10 @@ import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
 import { spawn } from "child_process";
 import { headers } from "next/headers";
+import { roundWebPlan } from "@/lib/cost";
 import { redirect } from "next/navigation";
 import getExchangeRate from "@/lib/exchange";
-import { roundWebPlan } from "@/lib/cost";
+import { extractDiscountInfo } from "@/lib/discount";
 import type { MiddlewareUserData } from "@/middleware";
 import {
   sepehrFetch,
@@ -165,16 +166,33 @@ export async function setupPaymentGate({
   let price: number;
   let usdPrice: number;
   let usdCredits: number;
+  let discountPercentage: number | null = null;
   try {
     const webPlan = await prisma.webPlan.findUnique({
       where: { id: planId },
-      select: { usdPrice: true, usdCredits: true },
+      select: {
+        usdPrice: true,
+        usdCredits: true,
+        discountEndsOn: true,
+        discountPercentage: true,
+      },
     });
     if (!webPlan) throw new Error("PlanNotFound");
 
     usdPrice = webPlan.usdPrice;
     usdCredits = webPlan.usdCredits;
-    price = roundWebPlan(usdPrice * exchangeRate);
+
+    const { hasDiscount } = extractDiscountInfo({
+      ...webPlan,
+      discountedDisplayPrice: String(webPlan.usdPrice),
+    });
+    const originalPrice = roundWebPlan(usdPrice * exchangeRate);
+    price = !hasDiscount
+      ? originalPrice
+      : roundWebPlan(
+          originalPrice - (originalPrice * webPlan.discountPercentage!) / 100,
+        );
+    if (hasDiscount) discountPercentage = webPlan.discountPercentage;
   } catch (e) {
     error("DatabaseOrExchangeErrorForPayment:", {
       user,
@@ -193,6 +211,7 @@ export async function setupPaymentGate({
       usdCredits,
       exchangeRate,
       amount: price,
+      discountPercentage,
       user: { connect: { id: user.id } },
     },
   });

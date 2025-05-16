@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usdToCredit } from "@/lib/cost";
+import { useTheme } from "../ThemeProvider";
 import * as Tabs from "@radix-ui/react-tabs";
 import { CheckIcon } from "@radix-ui/react-icons";
 import type { WebPlansForUsers } from "@/lib/plans";
-import { usdToCredit } from "@/lib/cost";
+import { extractDiscountInfo } from "@/lib/discount";
 import type { LlmModelPricingDto } from "@/lib/models";
 
 export default function PricingSection({
@@ -14,6 +16,8 @@ export default function PricingSection({
   plans: WebPlansForUsers;
   modelsForComparison: LlmModelPricingDto[];
 }) {
+  const { theme } = useTheme();
+
   return (
     <section id="pricing" className="py-20">
       <div className="container mx-auto px-4">
@@ -25,55 +29,90 @@ export default function PricingSection({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan, index) => {
+            const { diffInFarsi, hasDiscount, discountPercent } =
+              extractDiscountInfo(plan);
+
             return (
               <div
                 key={index}
-                className={`bg-card rounded-xl border ${
-                  index === 1
-                    ? "border-accent relative shadow-lg"
-                    : "border-border"
-                }`}
+                {...(hasDiscount
+                  ? {
+                      "data-ribbon": discountPercent + "% OFF",
+                    }
+                  : {})}
+                className={
+                  `bg-card rounded-xl border shadow-gray-800 ${
+                    index === 1 ? "border-accent relative" : "border-border"
+                  }` +
+                  (hasDiscount ? " ribbon-container" : "") +
+                  (theme === "light" ? " shadow-lg" : " shadow-sm ")
+                }
               >
                 {index === 1 && (
-                  <div className="absolute -top-3 right-0 left-0 mx-auto w-fit px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full">
+                  <div className="absolute top-1 right-0 left-0 mx-auto w-fit px-3 py-1 bg-accent text-white text-xs font-semibold rounded-full">
                     پرطرفدار
                   </div>
                 )}
 
-                <div className="p-6">
+                <div className="p-12 flex flex-col h-full">
                   <h3 className="text-xl font-bold mb-2 text-center">
                     {plan.name}
                   </h3>
-                  <p className="text-foreground/70 text-sm mb-4 text-center">
+                  <p className="text-foreground/70 text-sm mb-6 text-center">
                     راهکاری ایده‌آل برای نیازهای شما
                   </p>
 
-                  <div className="mb-6 text-center">
-                    <span className="text-2xl font-bold text-center">
-                      {plan.displayPrice.toLocaleString()} تومان
-                    </span>
+                  <div className="h-full flex flex-col my-1">
+                    <div className="flex-auto"></div>
+
+                    {/* Price & Discount UI */}
+                    <div className="flex-none mb-6 text-center relative flex flex-col items-center">
+                      {hasDiscount && diffInFarsi && (
+                        <span className="inline-block mb-2 px-3 py-1 bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900 rounded-full text-xs font-semibold">
+                          تخفیف تا {diffInFarsi} دیگر معتبر است
+                        </span>
+                      )}
+
+                      <div className="flex flex-col items-center gap-2">
+                        {hasDiscount && (
+                          <span className="text-sm line-through text-foreground/50">
+                            {plan.displayPrice.toLocaleString()} تومان
+                          </span>
+                        )}
+                        <span className="my-3 text-2xl font-bold">
+                          {hasDiscount
+                            ? plan.discountedDisplayPrice
+                            : plan.displayPrice}{" "}
+                          تومان
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex-auto"></div>
+
+                    <Link
+                      href={`/auth?selectedPlan=${plan.id}`}
+                      className={`w-full flex flex-none justify-center items-center py-3 px-4 rounded-lg font-medium mt-auto ${
+                        index === 1
+                          ? "bg-accent text-white hover:bg-accent/90"
+                          : "bg-muted hover:bg-muted/40 border-2 border-accent"
+                      } transition-colors mb-6`}
+                    >
+                      انتخاب پلن {plan.name}
+                    </Link>
                   </div>
 
-                  <Link
-                    href={`/auth?selectedPlan=${plan.id}`}
-                    className={`w-full flex justify-center items-center py-3 px-4 rounded-lg font-medium ${
-                      index === 1
-                        ? "bg-accent text-white hover:bg-accent/90"
-                        : "bg-muted hover:bg-muted/80"
-                    } transition-colors mb-6`}
-                  >
-                    انتخاب پلن {plan.name}
-                  </Link>
-
-                  <div className="border-t border-border pt-6">
+                  <div className="border-t border-border pt-6 mt-auto">
+                    {/* Credits info */}
                     <div className="mb-4 text-center">
                       <p className="text-lg font-semibold">
                         {usdToCredit(plan.usdCredits).toLocaleString()} اعتبار
                       </p>
                     </div>
 
+                    {/* Tabs for comparison & features */}
                     <Tabs.Root defaultValue="model-comparison">
                       <Tabs.List className="rtl flex border-b border-border mb-4">
                         <Tabs.Trigger
@@ -147,7 +186,7 @@ export default function PricingSection({
                             <span>ذخیره و مدیریت چت‌ها</span>
                           </li>
                           <li className="flex items-start gap-2">
-                            <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
+                            <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flexibility-shrink-0" />
                             <span>ویژگی‌های پیشرفته برای کد و ریاضیات</span>
                           </li>
                           <li className="flex items-start gap-2">

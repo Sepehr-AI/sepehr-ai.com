@@ -40,24 +40,26 @@ export default async function PaymentPage({
     searchParams["balanceInsufficient"]?.toString().toLowerCase() === "true";
 
   let webBalance = 0;
-  const res = await prisma.openrouterApiKey.findUnique({
-    where: { userId },
-    select: { metadata: true },
-  });
-  if (res) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [{ data }, _, error] = await sepehrFetch(
-      "https://openrouter.ai/api/v1/key",
-      {
-        method: "GET",
-        schema: openrouterGetKeyResSchema,
-        headers: {
-          Authorization: `Bearer ${decrypt(res.metadata, AES_ENCRYPTION_MASTERKEY)}`,
+  if (process.env.NODE_ENV === "production") {
+    const res = await prisma.openrouterApiKey.findUnique({
+      where: { userId },
+      select: { metadata: true },
+    });
+    if (res) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const [{ data }, _, error] = await sepehrFetch(
+        "https://openrouter.ai/api/v1/key",
+        {
+          method: "GET",
+          schema: openrouterGetKeyResSchema,
+          headers: {
+            Authorization: `Bearer ${decrypt(res.metadata, AES_ENCRYPTION_MASTERKEY)}`,
+          },
         },
-      },
-    );
-    if (!error) {
-      webBalance = usdToCredit(data.limit - data.usage);
+      );
+      if (!error) {
+        webBalance = usdToCredit(data.limit - data.usage);
+      }
     }
   }
 

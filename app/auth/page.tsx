@@ -50,15 +50,15 @@ export default async function AuthPage(props: {
     ? Number(decodeURIComponent(_selectedPlan || "abc"))
     : undefined;
 
-  async function checkMobile(_prev: any, formData: FormData) {
+  async function _checkMobileAction(_prev: any, formData: FormData) {
     "use server";
     return checkMobileAction(formData, selectedPlan);
   }
-  async function login(_prev: any, formData: FormData) {
+  async function _loginAction(_prev: any, formData: FormData) {
     "use server";
     return loginAction(formData, selectedPlan);
   }
-  async function register(_prev: any, formData: FormData) {
+  async function _registerAction(_prev: any, formData: FormData) {
     "use server";
     return registerAction(formData, selectedPlan);
   }
@@ -68,13 +68,13 @@ export default async function AuthPage(props: {
       otp={otp}
       error={error}
       email={email}
-      login={login}
       exists={exists}
       mobile={mobile}
       userId={userId}
       fullName={fullName}
-      register={register}
-      checkMobile={checkMobile}
+      loginAction={_loginAction}
+      registerAction={_registerAction}
+      checkMobileAction={_checkMobileAction}
     />
   );
 }

@@ -7,6 +7,7 @@ import Loading from "@/components/Loading";
 import { useEffect, useState } from "react";
 import { chargeAccountAction } from "./actions";
 import type { WebPlansForUsers } from "@/lib/plans";
+import { extractDiscountInfo } from "@/lib/discount";
 import { roundWebCost, usdToCredit } from "@/lib/cost";
 
 function Form({
@@ -20,6 +21,10 @@ function Form({
   const [selectedPlanId, setSelectedPlanId] = useState<number>(0);
 
   if (pending) return <Loading />;
+
+  const { hasDiscount, discountPercent, diffInFarsi } = extractDiscountInfo(
+    plans[selectedPlanId],
+  );
 
   return (
     <div className="flex justify-center w-full h-full">
@@ -62,24 +67,51 @@ function Form({
           </div>
 
           <div className="mt-4 p-4 bg-background/50 border border-border rounded-lg">
-            <div className="space-y-1.5 text-sm flex">
-              <div className="flex items-center justify-between gap-4">
-                <span className="hidden md:block text-foreground/70">
-                  مبلغ قابل پرداخت:
-                </span>
-              </div>
-              <div className="flex flex-auto gap-2">
-                <div className="md:flex-auto"></div>
-                <button
-                  type="submit"
-                  className="flex-1/3 md:hidden w-full bg-accent hover:bg-accent/90 text-white py-3 px-6 rounded-lg transition-colors"
-                >
-                  پرداخت
-                </button>
-                <span className="content-center flex-none font-medium">
-                  <span>{plans[selectedPlanId].displayPrice} </span>
-                  <span className="text-foreground/70 mr-1">تومان</span>
-                </span>
+            <div className="space-y-1.5 text-sm flex flex-col">
+              {hasDiscount && (
+                <div className="space-y-1.5 text-sm flex flex-col md:flex-row items-center mb-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="px-3 py-2 bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900 rounded-full font-semibold">
+                      <span className="px-2 py-1 ml-2 bg-green-800 text-white rounded-full">
+                        %{discountPercent}
+                      </span>
+                      <span>تخفیف تا {diffInFarsi}:</span>
+                    </span>
+                  </div>
+                  <div className="flex flex-auto gap-2 items-center">
+                    <div className="flex-auto"></div>
+                    <span className="content-center flex-none font-medium line-through text-foreground/60">
+                      <span>{plans[selectedPlanId].displayPrice} </span>
+                      <span className="text-foreground/70 mr-1">تومان</span>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="hidden md:block text-foreground/70">
+                    مبلغ قابل پرداخت:
+                  </span>
+                </div>
+                <div className="flex flex-auto gap-2">
+                  <div className="md:flex-auto"></div>
+                  <button
+                    type="submit"
+                    className="flex-1/3 md:hidden w-full bg-accent hover:bg-accent/90 text-white py-3 px-6 rounded-lg transition-colors"
+                  >
+                    پرداخت
+                  </button>
+                  <div className="flex-auto"></div>
+                  <span className="content-center flex-none font-medium">
+                    <span>
+                      {plans[selectedPlanId].discountedDisplayPrice
+                        ? plans[selectedPlanId].discountedDisplayPrice
+                        : plans[selectedPlanId].displayPrice}{" "}
+                    </span>
+                    <span className="text-foreground/70 mr-1">تومان</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>

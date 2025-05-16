@@ -27,14 +27,14 @@ import {
 export default function AuthLayout({
   otp,
   error,
-  login,
   email,
   userId,
   mobile,
   exists,
   fullName,
-  register,
-  checkMobile,
+  loginAction,
+  registerAction,
+  checkMobileAction,
 }: {
   otp?: string;
   error?: string;
@@ -44,16 +44,20 @@ export default function AuthLayout({
   exists?: string;
   fullName?: string;
   selectedPlan?: number;
-  login: (_prev: any, formData: FormData) => Promise<any>;
-  register: (_prev: any, formData: FormData) => Promise<any>;
-  checkMobile: (_prev: any, formData: FormData) => Promise<any>;
+  loginAction: (_prev: any, formData: FormData) => Promise<any>;
+  registerAction: (_prev: any, formData: FormData) => Promise<any>;
+  checkMobileAction: (_prev: any, formData: FormData) => Promise<any>;
 }) {
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [_1, action, _2] = useActionState<any, FormData>(
-    !mobile ? checkMobile : exists === "true" ? login : register,
+    !mobile
+      ? checkMobileAction
+      : exists === "true"
+        ? loginAction
+        : registerAction,
     {},
   );
 
