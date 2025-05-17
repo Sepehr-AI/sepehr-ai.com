@@ -16,6 +16,7 @@ const sepehrFetch = sepehrFetchWithLogger((obj, msg) =>
 
 async function main() {
   // Fetch all users
+  // const allUsers = [{ name: "مهدی شریفی", mobile: "09150872550" }];
   const allUsers = await prisma.user.findMany({
     select: { name: true, mobile: true },
   });
@@ -54,10 +55,9 @@ async function main() {
             },
             body: {
               mobile: user.mobile,
-              templateId: 517166,
+              templateId: 292747,
               parameters: [
-                { name: "endsOn", value: "ساعت ۱۱ امشب" },
-                { name: "discountPercentage", value: "۱۰ درصد" },
+                { name: "name", value: user.name.split(" ")[0] || "کاربر" },
               ],
             },
           });
