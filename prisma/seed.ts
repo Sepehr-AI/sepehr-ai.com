@@ -114,7 +114,7 @@ async function fetchFarsiDescription(
 async function main() {
   await Promise.all([
     prisma.user.upsert({
-      where: { email: "mail@mahdi-sharifi.ir" },
+      where: { email: "mail@mahdi-sharifi.ir", mobile: "09150872550" },
       update: {},
       create: {
         name: "مهدی شریفی",
