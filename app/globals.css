@@ -3,32 +3,36 @@
 /* Define theme variables */
 @theme {
   /* Colors */
-  --color-background: oklch(1 0 0); /* light mode background */
-  --color-foreground: oklch(0.1 0.01 240); /* light mode text */
+  --color-card: oklch(0.95 0.005 240);
+  --color-popover: oklch(0.95 0.005 240);
 
-  --color-card: oklch(1 0 0);
-  --color-card-foreground: oklch(0.1 0.01 240);
+  /* --color-background: oklch(
+    0.95 0.005 240
+  ); slightly off-white but much darker than before */
+  /* --color-foreground: oklch(0.02 0.005 240); nearly black text */
+  --color-background: oklch(0.9 0 240);
+  --color-foreground: oklch(0 0 240);
 
-  --color-popover: oklch(1 0 0);
-  --color-popover-foreground: oklch(0.1 0.01 240);
+  --color-card-foreground: oklch(0.02 0.005 240);
+  --color-popover-foreground: oklch(0.02 0.005 240);
 
-  --color-primary: oklch(0.1 0.01 240);
-  --color-primary-foreground: oklch(0.98 0 0);
+  --color-primary: oklch(0 0 240); /* pure black for primary actions */
+  --color-primary-foreground: oklch(1 0 0); /* pure white text */
 
-  --color-secondary: oklch(0.96 0.01 240);
-  --color-secondary-foreground: oklch(0.1 0.01 240);
+  --color-secondary: oklch(0.15 0.02 240); /* deep grey secondary backgrounds */
+  --color-secondary-foreground: oklch(1 0 0);
 
-  --color-muted: oklch(0.96 0.01 240);
-  --color-muted-foreground: oklch(0.46 0.01 240);
+  --color-muted: oklch(0.8 0.01 240); /* obvious layer separation */
+  --color-muted-foreground: oklch(0.3 0.01 240); /* mid-grey text */
 
-  --color-accent: oklch(0.59 0.2 280); /* indigo in oklch */
-  --color-accent-foreground: oklch(0.98 0 0);
+  --color-accent: oklch(0.59 0.2 280);
+  --color-accent-foreground: oklch(1 0 0);
 
-  --color-destructive: oklch(0.65 0.22 25); /* red in oklch */
-  --color-destructive-foreground: oklch(0.98 0 0);
+  --color-destructive: oklch(0.65 0.22 25);
+  --color-destructive-foreground: oklch(1 0 0);
 
-  --color-border: oklch(0.9 0.01 240);
-  --color-input: oklch(0.9 0.01 240);
+  --color-border: oklch(0.85 0.01 240);
+  --color-input: oklch(0.85 0.01 240);
   --color-ring: oklch(0.59 0.2 280);
 
   /* Border radius */

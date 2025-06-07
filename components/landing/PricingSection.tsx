@@ -97,7 +97,7 @@ export default function PricingSection({
                       className={`w-full flex flex-none justify-center items-center py-3 px-4 rounded-lg font-medium mt-auto ${
                         index === 1
                           ? "bg-accent text-white hover:bg-accent/90"
-                          : "bg-muted hover:bg-muted/40 border-2 border-accent"
+                          : "hover:bg-muted/50 border-2 border-accent"
                       } transition-colors mb-6`}
                     >
                       انتخاب پلن {plan.name}
