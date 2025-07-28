@@ -16,6 +16,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const DISABLED_MODELS = ["openai/o1-pro"];
+const IGNORED_MODELS = ["openrouter/auto", "switchpoint/router"];
 
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
@@ -49,9 +50,9 @@ const farsiDescriptionSchema = z.string().refine(
 );
 
 const USE_TO_COMPARE_PLANS: string[] = [
-  "openai/o3-mini",
-  "openai/gpt-4o-mini",
-  "openai/gpt-4.5-preview",
+  "x-ai/grok-4",
+  "anthropic/claude-opus-4",
+  "openai/gpt-4",
 ];
 
 const DESC_JSON_FILE = path.resolve(__dirname, "./modelDescriptionSeed.json");
@@ -111,111 +112,85 @@ async function fetchFarsiDescription(
   throw new Error("Failed to fetch Farsi description after retries.");
 }
 
+// Helper to upsert any model with the same data for update & create.
+function upsertWithSameData<Model extends { upsert(args: any): Promise<any> }>(
+  model: Model,
+  where: object,
+  data: object,
+) {
+  return model.upsert({
+    where,
+    update: data,
+    create: data,
+  });
+}
+
 async function main() {
   await Promise.all([
-    prisma.user.upsert({
-      where: { email: "mail@mahdi-sharifi.ir", mobile: "09150872550" },
-      update: {},
-      create: {
+    // User
+    upsertWithSameData(
+      prisma.user,
+      { email: "mail@mahdi-sharifi.ir", mobile: "09150872550" },
+      {
         name: "مهدی شریفی",
         mobile: "09150872550",
         email: "mail@mahdi-sharifi.ir",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 11 },
-      update: {},
-      create: {
+    ),
+
+    // FAQs
+    ...[
+      {
+        id: 1,
         title: "توکن چیست و تقریبا چطور محاسبه می‌شود؟",
         description:
           "توکن واحدی است که برای اندازه‌گیری حجم ورودی و خروجی در مدل‌های زبانی به‌کار می‌رود و معمولاً معادل حدود ۴ کاراکتر یا بخش‌هایی از یک کلمه است. در زبان فارسی هر کلمه ساده معمولاً بین ۱ تا ۲ توکن مصرف می‌کند و کلمات مرکب یا دارای پسوند ممکن است تا ۳ توکن بشوند. به‌طور متوسط می‌توان هر کلمه فارسی را حدود ۱.۵ توکن در نظر گرفت.",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 1 },
-      update: {},
-      create: {
+      {
+        id: 2,
         title: "برای ثبت نام چی نیاز دارم؟",
         description:
           "برای ثبت‌نام در سپهر AI کافی است به صفحه اصلی مراجعه کرده و روی دکمه «شروع» کلیک کنید. سپس شماره تلفن خود را وارد نمایید. پس از ارسال کد تأیید توسط پیامک، با وارد کردن آن کد، حساب شما فعال شده و می‌توانید به‌سرعت از خدمات و مدل‌های هوش مصنوعی بهره‌مند شوید.",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 2 },
-      update: {},
-      create: {
+      {
+        id: 3,
         title: "مدل زبانی به اینترنت دسترسی داره؟",
         description:
           "بله. برخی از مدل‌های پیشرفته مانند Gemini و Claude 3 قابلیت مرور وب و جستجوی اینترنتی دارند و می‌توانند پاسخ‌های خود را با داده‌های به‌روز پشتیبانی کنند. اما بسیاری از مدل‌های دیگر مانند Llama 3 فاقد دسترسی مستقیم به اینترنت هستند و به‌ صورت آفلاین و با داده‌های از پیش آموزش‌دیده شده، به شما خدمت می‌کنند.",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 3 },
-      update: {},
-      create: {
+      {
+        id: 4,
         title: "چه مدل‌هایی در سپهر AI در دسترس است؟",
         description:
           "سپهر AI دسترسی به بیش از ۲۵۰ مدل متنوع هوش مصنوعی را فراهم می‌کند. از جمله مدل‌های برجسته: GPT-4.5 (پیش‌نمایش)، Grok 3، Claude 3، Gemini، Llama 3 و Liquid LFM 7B. این مدل‌ها در حوزه‌های تولید محتوا، برنامه‌نویسی، بازاریابی، ترجمه و تحلیل داده قابل استفاده بوده و به‌صورت یکپارچه در یک پلتفرم واحد دردسترس هستند.",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 7 },
-      update: {},
-      create: {
+      {
+        id: 5,
         title: "داده‌ها و سوابق چت‌های من چگونه ذخیره و محافظت می‌شوند؟",
         description:
           "سپهر AI متعهد به حریم خصوصی شما است و سوابق چت‌های شما را صرفاً در حافظه مرورگر ذخیره می‌کند. هیچ داده‌ای به‌سرورهای خارجی یا دیتابیس مرکزی منتقل نمی‌شود. این رویکرد امنیتی تضمین می‌کند که گفتگوها و اطلاعات شخصی شما خصوصی باقی می‌مانند و فقط از طریق دستگاه شما قابل دسترسی هستند.",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 8 },
-      update: {},
-      create: {
+      {
+        id: 6,
         title:
           "چگونه می‌توانم از مدل‌ها برای تولید محتوا و برنامه‌نویسی استفاده کنم؟",
         description:
           "برای تولید محتوا و توسعه نرم‌افزار، ابتدا مدل موردنظر را از فهرست انتخاب کنید و در قسمت ورودی (Prompt) درخواست خود را بنویسید. برای مثال می‌توانید دستور ایجاد مقاله، خلاصه‌سازی متن یا دیباگ کد را تایپ کرده و مدل فوراً پاسخ می‌دهد. رابط کاربری یکپارچه ابزارهای ترجمه، ویرایش و تحلیل داده را نیز در اختیار شما قرار می‌دهد.",
       },
-    }),
-    prisma.faq.upsert({
-      where: { id: 10 },
-      update: {},
-      create: {
+      {
+        id: 7,
         title: "چگونه با پشتیبانی ارتباط برقرار کنم؟",
         description:
           "برای ارتباط با تیم پشتیبانی سپهر AI، می‌توانید از طریق کانال تلگرام به شناسه @sepehr_ai_support پیام دهید. هم‌چنین در صورت نیاز به راهنمایی بیشتر، می‌توانید از طریق بخش «تماس با ما» در سایت اقدام کرده یا ایمیل خود را ثبت کنید تا کارشناسان ما در اسرع وقت پاسخگوی شما باشند.",
       },
-    }),
-    prisma.webPlan.upsert({
-      where: { id: 1 },
-      update: {},
-      create: {
-        id: 1,
-        name: "برنزی",
-        usdPrice: 13,
-        usdCredits: 7,
-      },
-    }),
-    prisma.webPlan.upsert({
-      where: { id: 2 },
-      update: {},
-      create: {
-        id: 2,
-        name: "نقره‌ای",
-        usdPrice: 35,
-        usdCredits: 20,
-      },
-    }),
-    prisma.webPlan.upsert({
-      where: { id: 3 },
-      update: {},
-      create: {
-        id: 3,
-        name: "طلایی",
-        usdPrice: 70,
-        usdCredits: 40,
-      },
-    }),
+    ].map((faq) => upsertWithSameData(prisma.faq, { id: faq.id }, faq)),
+
+    // webPlans
+    ...[
+      { id: 1, name: "برنزی", usdPrice: 3.5, usdCredits: 2 },
+      { id: 2, name: "نقره‌ای", usdPrice: 13, usdCredits: 7 },
+      { id: 3, name: "طلایی", usdPrice: 35, usdCredits: 20 },
+    ].map((plan) => upsertWithSameData(prisma.webPlan, { id: plan.id }, plan)),
   ]);
 
   const descriptionsMap = await loadDescriptions();
@@ -241,7 +216,7 @@ async function main() {
       m.pricing.completion === 0 ||
       m.pricing.prompt === 0 ||
       !m.architecture.input_modalities.includes("text") ||
-      m.id === "openrouter/auto"
+      IGNORED_MODELS.includes(m.id)
     ) {
       left -= 1;
       continue;

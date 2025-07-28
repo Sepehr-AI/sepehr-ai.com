@@ -28,7 +28,7 @@ export default function PaymentResultPage() {
         Object.fromEntries(params),
       );
       if (!parseRes.success) {
-        console.error("Invalid payment result payload:", parseRes.error.errors);
+        console.error("Invalid payment result payload:", parseRes.error.issues);
         redirect("/dashboard/payment");
       }
 

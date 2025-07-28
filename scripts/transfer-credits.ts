@@ -42,8 +42,9 @@ const openrouterUpdateKeyResSchema = z.object({
 
 async function main() {
   // Parse command-line flags
-  const argv = process.argv.slice(2);
+  const argv = process.argv.slice(3);
   const includeOlder = argv.includes("--all");
+  const printKey = argv.includes("--print-key");
 
   // Determine yesterday's window in Asia/Tehran timezone
   const tehranNow = dayjs().tz("Asia/Tehran");
@@ -136,6 +137,10 @@ async function main() {
           const key =
             data.key || decrypt(existing.metadata, AES_ENCRYPTION_MASTERKEY);
 
+          if (printKey) {
+            console.log({ key, name: t.user.name, mobile: t.user.mobile });
+          }
+
           await tx.openrouterApiKey.update({
             where: { userId: t.userId },
             data: {
@@ -172,6 +177,10 @@ async function main() {
           if (data.disabled) {
             console.error({ data });
             throw new Error("Openrouter created an API key that's disabed!");
+          }
+
+          if (printKey) {
+            console.log({ key, name: t.user.name, mobile: t.user.mobile });
           }
 
           await tx.openrouterApiKey.create({
@@ -229,3 +238,4 @@ main()
 // Usage:
 //   pnpm run transfer-credits [--all]
 //   --all  Include transactions from yesterday and earlier (Tehran time)
+//   --print-key Prints the key

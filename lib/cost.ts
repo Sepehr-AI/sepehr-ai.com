@@ -1,5 +1,5 @@
 export function roundWebPlan(amount: number) {
-  return Math.ceil(amount / 1e6) * 1e6;
+  return Math.ceil(amount / 1e5) * 1e5;
 }
 
 function toPersianDigits(input: number) {
@@ -48,6 +48,15 @@ export function roundWebCost(cost: number): number {
 
 export function roundAiModelCost(cost: number): number {
   return +(Math.ceil((cost + "e+2") as unknown as number) + "e-2");
+}
+
+export function roundToUnit(cost: number, unit: number): number {
+  return Math.floor(cost / unit) * unit;
+}
+
+export function roundToDecimals(value: number, decimals: number): number {
+  const factor = Math.pow(10, decimals);
+  return Math.round(value * factor) / factor;
 }
 
 export function usdToCredit(usd: number): number {

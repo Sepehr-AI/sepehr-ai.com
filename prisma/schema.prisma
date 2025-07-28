@@ -52,7 +52,7 @@ model Transaction {
   user               User     @relation(fields: [userId], references: [id])
   userId             Int
   usdCredits         Int
-  usdPrice           Int
+  usdPrice           Float
   discountPercentage Int?
   createdAt          DateTime @default(now()) @db.Timestamptz(3)
 }
@@ -76,7 +76,7 @@ model LlmModel {
 model WebPlan {
   id                 Int       @id @default(autoincrement())
   name               String
-  usdPrice           Int
+  usdPrice           Float
   usdCredits         Int
   discountPercentage Int?
   discountEndsOn     DateTime? @db.Timestamptz(3)

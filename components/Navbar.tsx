@@ -86,10 +86,10 @@ const NavContent = ({
 
           <button
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex-1 p-1.5 rounded-md hover:bg-muted/80 transition-colors flex"
+            className="flex-1 p-1.5 rounded-md transition-colors flex"
           >
             <div className="flex-auto"></div>
-            <div className="flex-none">
+            <div className="flex-none p-1 rounded-md hover:bg-muted/80">
               {theme === "dark" ? <SunIcon /> : <MoonIcon />}
             </div>
           </button>

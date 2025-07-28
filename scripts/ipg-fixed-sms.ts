@@ -2,7 +2,7 @@ import readline from "readline";
 import prisma from "@/lib/prisma";
 import { sepehrFetchWithLogger } from "@/sepehr-ai-ipg/src/lib";
 
-const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY;
+const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY || "";
 if (!SMS_IR_API_KEY) {
   console.error(
     "Error: SMS_IR_API_KEY is not defined in environment variables.",
