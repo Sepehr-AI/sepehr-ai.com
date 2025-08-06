@@ -2,9 +2,61 @@
 
 // TODO: Replace dynamicMotion with CSS animation.
 
-import CompanyLogo from "./companyLogos/CompanyLogo";
-import { useTheme } from "../components/ThemeProvider";
-import { MotionDiv, MotionSpan } from "./dynamicMotion";
+import CompanyLogo from "../companyLogos/CompanyLogo";
+import { useTheme } from "../ThemeProvider";
+import { MotionDiv, MotionSpan } from "../dynamicMotion";
+
+export function GeneratingAnswer() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+
+  // pick the dot color based on theme
+  const dotBg = isDark ? "bg-accent/60" : "bg-accent/90";
+
+  return (
+    <div className="px-1 py-5 max-w-screen-md">
+      <div className="flex justify-center items-center space-x-2">
+        <span
+          className={`w-2 h-2 rounded-full ${dotBg}`}
+          style={{
+            animation: "loadingDot 1.4s infinite ease-in-out both",
+            animationDelay: "0s",
+          }}
+        />
+        <span
+          className={`w-2 h-2 rounded-full ${dotBg}`}
+          style={{
+            animation: "loadingDot 1.4s infinite ease-in-out both",
+            animationDelay: "0.2s",
+          }}
+        />
+        <span
+          className={`w-2 h-2 rounded-full ${dotBg}`}
+          style={{
+            animation: "loadingDot 1.4s infinite ease-in-out both",
+            animationDelay: "0.4s",
+          }}
+        />
+      </div>
+
+      {/* inject keyframes globally */}
+      <style jsx global>{`
+        @keyframes loadingDot {
+          0%,
+          80%,
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          40% {
+            transform: scale(1.5);
+            opacity: 0.7;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 export default function LoadingMessage({
   aiCompanyWebsite,

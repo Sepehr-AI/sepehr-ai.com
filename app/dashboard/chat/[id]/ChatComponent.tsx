@@ -1,12 +1,14 @@
 "use client";
 
-import Chat from "@/components/Chat";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/Loading";
 import { type ChatSession, getChat } from "@/lib/chatDB";
 import React, { useEffect, useState, useRef, use } from "react";
 
-export const dynamic = "force-static";
+const ChatBody = dynamic(() => import("@/components/Chat/ChatBody"), {
+  ssr: false,
+});
 
 export default function ChatComponent({
   params,
@@ -19,6 +21,7 @@ export default function ChatComponent({
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [showSpinner, setShowSpinner] = useState(true);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const [chatInitialSession, setChatInitialSession] =
     useState<ChatSession | null>(null);
 
@@ -50,12 +53,15 @@ export default function ChatComponent({
   }
 
   return (
-    <Chat
-      models={[]}
-      uuid={chatId as string}
-      engineCode={chatInitialSession.engineCode}
-      initialMessages={chatInitialSession?.messages}
-      aiCompanyWebsite={chatInitialSession.aiCompanyWebsite}
-    />
+    <div className="flex flex-col w-full h-full">
+      <ChatBody
+        router={router}
+        uuid={chatId as string}
+        textAreaRef={textAreaRef}
+        engineCode={chatInitialSession.engineCode}
+        initialMessages={chatInitialSession?.messages}
+        aiCompanyWebsite={chatInitialSession.aiCompanyWebsite}
+      />
+    </div>
   );
 }

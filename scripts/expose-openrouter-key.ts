@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
 import readline from "readline";
 import prisma from "@/lib/prisma";
 import { decrypt } from "@/lib/openrouterApiKey";
+
+dotenv.config();
 
 const AES_ENCRYPTION_MASTERKEY = Buffer.from(
   process.env.AES_ENCRYPTION_MASTERKEY as string,

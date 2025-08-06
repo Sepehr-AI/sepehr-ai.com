@@ -16,33 +16,34 @@ import {
   StopIcon,
   FilePlusIcon,
 } from "@radix-ui/react-icons";
+import type { UIMessage } from "ai";
 
 interface NewMessageBoxProps {
   input?: string;
   stop?: () => void;
-  isError?: boolean;
-  setCustomError?: Dispatch<SetStateAction<string | null>>;
+  setInput?: Dispatch<SetStateAction<string>>;
   textAreaRef: RefObject<HTMLTextAreaElement | null>;
+  setCustomError?: Dispatch<SetStateAction<string | null>>;
   status?: "submitted" | "streaming" | "ready" | "error";
   handleReload?: (e: MouseEvent<HTMLButtonElement>) => void;
   handleSubmit?: (e: SyntheticEvent<HTMLFormElement, SubmitEvent>) => void;
-  handleInputChange?: (
-    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLTextAreaElement>,
-  ) => void;
   handleFileChange?: (e: ChangeEvent<HTMLInputElement>) => void;
   selectedFileNames?: string[];
   fileInputRef?: RefObject<HTMLInputElement | null>;
+  lastMessageRole?: UIMessage["role"];
 }
 
 function ActionButton({
   icon: Icon,
   className = "",
+  type,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   icon: ElementType;
 }) {
   return (
     <button
+      type={type || "button"}
       className={`arial-sans-serif p-2 rounded-full outline-none hover:ring-2 hover:ring-accent/50 transition-colors ${className}`}
       {...props}
     >
@@ -55,14 +56,14 @@ export default function NewMessageBox({
   status = "ready",
   stop,
   input,
-  isError,
+  setInput,
   textAreaRef,
   handleSubmit,
   handleReload,
-  setCustomError,
-  handleInputChange,
-  handleFileChange,
   fileInputRef,
+  setCustomError,
+  lastMessageRole,
+  handleFileChange,
   selectedFileNames,
 }: NewMessageBoxProps) {
   // Auto-resize textarea whenever the input changes
@@ -88,14 +89,28 @@ export default function NewMessageBox({
           />
 
           {/* Action button (based on state) */}
-          {isError ? (
-            <ActionButton
-              onClick={handleReload}
-              icon={ReloadIcon}
-              className="text-white bg-accent hover:bg-accent/90"
-              aria-label="Reload"
-            />
-          ) : status !== "ready" ? (
+          {status === "ready" || status === "error" ? (
+            lastMessageRole === "user" && !input?.trim().length ? (
+              <ActionButton
+                onClick={handleReload}
+                icon={ReloadIcon}
+                className="text-white bg-accent hover:bg-accent/90"
+                aria-label="Reload"
+              />
+            ) : (
+              <ActionButton
+                type="submit"
+                icon={PaperPlaneIcon}
+                disabled={!input?.length}
+                className={`text-white ${
+                  input?.length
+                    ? "bg-accent hover:bg-accent/90"
+                    : "bg-accent/60 cursor-not-allowed"
+                }`}
+                aria-label="Send"
+              />
+            )
+          ) : (
             <ActionButton
               onClick={() => {
                 if (setCustomError) setCustomError(null);
@@ -105,23 +120,10 @@ export default function NewMessageBox({
               className="text-white bg-destructive hover:bg-destructive/90"
               aria-label="Stop"
             />
-          ) : (
-            <ActionButton
-              type="submit"
-              disabled={status !== "ready" || !input?.length}
-              icon={PaperPlaneIcon}
-              className={`text-white ${
-                status === "ready" && input?.length
-                  ? "bg-accent hover:bg-accent/90"
-                  : "bg-accent/60 cursor-not-allowed"
-              }`}
-              aria-label="Send"
-            />
           )}
 
           {/* Attachment button */}
           <ActionButton
-            type="button"
             onClick={() => fileInputRef?.current?.click()}
             icon={FilePlusIcon}
             className="hover:bg-muted/60"
@@ -137,7 +139,7 @@ export default function NewMessageBox({
             height: "24px",
             scrollbarWidth: "thin",
           }}
-          onChange={handleInputChange}
+          onChange={(e) => (setInput ? setInput(e.target.value) : undefined)}
           placeholder="پیامت رو تایپ کن ..."
           {...(input?.valueOf().length && { dir: "auto" })}
           className="w-full py-3 px-4 pl-4 pr-[90px] max-h-[40dvh] resize-none border-0 bg-transparent focus:outline-none focus:ring-0"

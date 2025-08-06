@@ -2,21 +2,18 @@
 
 import { z } from "zod";
 import prisma from "@/lib/prisma";
-import { error } from "@/lib/log";
 import PaymentLayout from "./Layout";
 import { headers } from "next/headers";
 import { usdToCredit } from "@/lib/cost";
 import { getWebPlans } from "@/lib/plans";
 import { redirect } from "next/navigation";
 import { decrypt } from "@/lib/openrouterApiKey";
-import { sepehrFetchWithLogger } from "@/sepehr-ai-ipg/src/lib";
+import { sepehrFetch } from "@/sepehr-ai-ipg/src/lib";
 
 const AES_ENCRYPTION_MASTERKEY: Buffer = Buffer.from(
   process.env.AES_ENCRYPTION_MASTERKEY || "",
   "hex",
 );
-
-const sepehrFetch = sepehrFetchWithLogger((obj, msg) => error(msg, obj));
 
 const openrouterGetKeyResSchema = z.object({
   data: z.object({

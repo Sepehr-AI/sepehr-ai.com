@@ -227,15 +227,12 @@ export async function setupPaymentGate({
   // Redirect back to the home page on failure.
   let redirectUrl: string = "/dashboard/payment";
   try {
-    const res = await sepehrFetch(
-      (obj: any, msg: string) => error(msg, obj),
-      `http://${SEPEHR_AI_IPG_ADDR}/charge`,
-      {
-        onFetchFailure,
-        body: paymentPayload,
-        schema: chargeApiResSchema,
-      },
-    );
+    const res = await sepehrFetch(`http://${SEPEHR_AI_IPG_ADDR}/charge`, {
+      onFetchFailure,
+      body: paymentPayload,
+      schema: chargeApiResSchema,
+      errorLogger: (obj: any, msg: string) => error(msg, obj),
+    });
     data = res[0];
     if (res[2]) throw new Error(res[2].error);
 

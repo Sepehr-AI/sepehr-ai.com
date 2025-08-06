@@ -122,7 +122,10 @@ export default function PricingSection({
                           این اعتبار چقدر ارزش داره؟
                         </h5>
                         <div className="my-1 w-full flex justify-center text-center">
-                          <PricingSectionDoodleArrow className="w-15 h-15" />
+                          <PricingSectionDoodleArrow
+                            className="w-15 h-15"
+                            fill={theme === "light" ? "#000" : "#fff"}
+                          />
                         </div>
                         <table className="w-full text-sm divide-y divide-border/50 rtl">
                           <thead>

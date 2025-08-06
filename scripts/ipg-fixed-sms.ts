@@ -1,6 +1,9 @@
+import dotenv from "dotenv";
 import readline from "readline";
 import prisma from "@/lib/prisma";
-import { sepehrFetchWithLogger } from "@/sepehr-ai-ipg/src/lib";
+import { sepehrFetch } from "@/sepehr-ai-ipg/src/lib";
+
+dotenv.config();
 
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY || "";
 if (!SMS_IR_API_KEY) {
@@ -9,10 +12,6 @@ if (!SMS_IR_API_KEY) {
   );
   process.exit(1);
 }
-
-const sepehrFetch = sepehrFetchWithLogger((obj, msg) =>
-  console.error(msg, obj),
-);
 
 async function main() {
   // Fetch all users

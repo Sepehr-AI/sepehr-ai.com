@@ -1,19 +1,21 @@
 "use client";
+
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "react-toastify";
 import type { LlmModelPricingDto } from "@/lib/models";
 import { createChat } from "@/lib/chatDB";
 import NewMessageBox from "./NewMessageBox";
-import { type Attachment, generateId } from "ai";
-import CompanyLogo from "./companyLogos/CompanyLogo";
+import { generateId } from "ai";
+import CompanyLogo from "../companyLogos/CompanyLogo";
 import { useState, useEffect, type SyntheticEvent, useRef } from "react";
-import { readFileAsDataURL, useAttachments } from "../hooks/useAttachments";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import {
   CaretSortIcon,
   CheckIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
+import { useAttachments } from "./hooks/useAttachments";
+import { roundToDecimals } from "@/lib/cost";
 
 export default function NewChatBody({
   router,
@@ -25,18 +27,18 @@ export default function NewChatBody({
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuidv7());
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState<string>("");
   const [selectedEngine, setSelectedEngine] = useState(models[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   const {
     fileInputRef,
-    attachments: thisAttachments,
     handleFileChange,
     selectedFileNames,
     error: fileError,
     clearAttachments,
+    attachmentsToUiMessageParts,
   } = useAttachments();
 
   useEffect(() => {
@@ -60,26 +62,19 @@ export default function NewChatBody({
     e.preventDefault();
     const val = textAreaRef.current?.value;
     if (!val?.trim()) return;
-    let attachments: Attachment[] = [];
-    if (thisAttachments) {
-      attachments = await Promise.all(
-        Array.from(thisAttachments).map(async (file) => ({
-          name: file.name,
-          contentType: file.type && file.type.length ? file.type : "text/plain",
-          url: await readFileAsDataURL(file),
-        })),
-      );
-    }
+
     createChat(chatUuid, selectedEngine.code, selectedEngine.companyWebsite, [
       {
-        content: "",
         role: "user",
         id: generateId(),
-        parts: [{ type: "text", text: val }],
-        experimental_attachments: attachments,
+        parts: [
+          { type: "text", text: val },
+          ...(await attachmentsToUiMessageParts()),
+        ],
       },
     ]);
     router.push(`/dashboard/chat/${chatUuid}`);
+
     clearAttachments();
   };
 
@@ -199,17 +194,23 @@ export default function NewChatBody({
                 </div>
                 <div className="space-y-1.5 text-sm">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-foreground/70">مصرف اعتبار:</span>
-                    <span className="font-medium">
-                      {selectedEngine.creditCostPerMilInToken.toLocaleString()}{" "}
-                      / میلیون توکن ورودی
+                    <span className="text-foreground/90">
+                      مصرف تقریبی{" "}
+                      {roundToDecimals(
+                        selectedEngine.creditCostPerMilInToken / 1000,
+                        1,
+                      )}{" "}
+                      اعتبار هر هزار کلمه ارسالی به مدل
                     </span>
                   </div>
                   <div className="flex items-center justify-between gap-4">
-                    <span className="text-foreground/70">مصرف اعتبار:</span>
-                    <span className="font-medium">
-                      {selectedEngine.creditCostPerMilOutToken.toLocaleString()}{" "}
-                      / میلیون توکن خروجی
+                    <span className="text-foreground/90">
+                      مصرف تقریبی{" "}
+                      {roundToDecimals(
+                        selectedEngine.creditCostPerMilOutToken / 1000,
+                        1,
+                      )}{" "}
+                      اعتبار هر هزار کلمه دریافتی از مدل
                     </span>
                   </div>
                 </div>
@@ -232,12 +233,12 @@ export default function NewChatBody({
           <NewMessageBox
             {...{
               input,
+              setInput,
               textAreaRef,
               fileInputRef,
               handleSubmit,
               handleFileChange,
               selectedFileNames,
-              handleInputChange: (e) => setInput(e.target.value),
             }}
           />
         </div>

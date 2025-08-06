@@ -7,7 +7,12 @@ import { NextResponse } from "next/server";
 import { getModelsMap } from "@/lib/models";
 import { decrypt } from "@/lib/openrouterApiKey";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { streamText, type CoreMessage, coreMessageSchema } from "ai";
+import {
+  streamText,
+  type UIMessage,
+  type ModelMessage,
+  convertToModelMessages,
+} from "ai";
 
 // 408
 class TimeoutError extends Error {}
@@ -31,6 +36,8 @@ class InsufficientFundsError extends Error {}
 class InvalidCredentialsError extends Error {}
 // 403, 502, 503
 class NoAvailableProviderError extends Error {}
+// 415
+class UnsupportedMediaTypeError extends Error {}
 
 const tryOrErr = async <T extends Error>(
   f: () => Promise<unknown>,
@@ -54,10 +61,10 @@ const AES_ENCRYPTION_MASTERKEY: Buffer = Buffer.from(
 );
 
 const RequestSchema = z.object({
-  messages: z.array(coreMessageSchema).nonempty(),
+  messages: z.array(z.any()).nonempty(),
 });
 
-const defaultAiSystemPrompt: CoreMessage = {
+const defaultAiSystemPrompt: ModelMessage = {
   role: "system",
   content:
     "Farsi is default but be flexible based on how the user communicates.",
@@ -89,11 +96,27 @@ function errorToStatus(e: any): number {
       return 401;
     case NoAvailableProviderError:
       return 503;
+    case UnsupportedMediaTypeError:
+      return 415;
     default:
       error("Invalid error to status", { error: e });
       return 500;
   }
 }
+
+const openrouterSdkErrorDataSchema = z.object({
+  data: z.object({
+    error: z.object({
+      code: z.number(),
+      message: z.string(),
+      metadata: z
+        .object({ provider_name: z.string().nullable().optional() })
+        .nullable()
+        .optional(),
+    }),
+    userId: z.string().nullable().optional(),
+  }),
+});
 
 export async function POST(
   req: Request,
@@ -122,7 +145,10 @@ export async function POST(
       const parsed = await RequestSchema.safeParseAsync(json);
       if (!parsed.success) throw new ValidationError();
     }, ValidationError);
-    const messages: CoreMessage[] = [defaultAiSystemPrompt, ...json.messages];
+    const messages: ModelMessage[] = [
+      defaultAiSystemPrompt,
+      ...convertToModelMessages(json.messages as UIMessage[]),
+    ];
 
     const modelCode: string = `${provider}/${engine}`;
     await tryOrErr(async () => {
@@ -137,44 +163,47 @@ export async function POST(
         apiKey,
         extraBody: {
           usage: { include: true },
-          reasoning: { include: true },
+          reasoningText: { include: true },
         },
       })(USE_ACTUAL_SELECTED_MODEL ? modelCode : "deepseek/deepseek-r1:free"),
     });
 
-    s.consumeStream();
-    return s.toDataStreamResponse({
+    // s.consumeStream();
+    return s.toUIMessageStreamResponse({
       status: 200,
-      sendUsage: false,
       sendReasoning: true,
-      getErrorMessage: (e: any) => {
+      onError: (_e: any) => {
+        const parsed = openrouterSdkErrorDataSchema.safeParse(_e);
+        if (!(_e instanceof Error) || !parsed.success) {
+          error("Vercel AI Core error is not an instance of Error", {
+            error: _e,
+            parseError: parsed.error,
+          });
+          return JSON.stringify({ status: 500 });
+        }
+        const rawError = parsed.data.data.error;
+        const { code, message: _message, metadata } = rawError;
+        const message = _message.toLocaleLowerCase();
+
         const errorAsStatusCode = (): number => {
-          if (e.value?.error) {
-            const raw = e.value as {
-              error: {
-                message: string;
-                code: number;
-                metadata?: { provider_name: string | null };
-              };
-              user_id?: string;
-            };
-            if (process.env.NODE_ENV === "development") {
-              console.dir({ rawError: raw }, { depth: null });
-            }
-
-            if (raw.error.metadata?.provider_name) {
-              error("WebChatProviderError", { error: raw });
-            }
-
-            const msg = raw.error.message.toLowerCase();
-            if (msg.includes("can only afford")) return 416;
-            if (msg.includes("maximum context length is")) return 413;
-
-            return raw.error.code;
+          if (process.env.NODE_ENV === "development") {
+            console.dir({ rawError }, { depth: null });
           }
 
-          error("Invalid openrouter response", { error: e });
-          return 500;
+          if (metadata?.provider_name) {
+            error("WebChatProviderError", { error: rawError });
+          }
+
+          if (message.includes("can only afford")) return 416;
+          if (message.includes("maximum context length is")) return 413;
+          if (
+            message.includes("no endpoints found that support") &&
+            message.includes("input")
+          ) {
+            return 415;
+          }
+
+          return code;
         };
 
         return JSON.stringify({ status: errorAsStatusCode() });

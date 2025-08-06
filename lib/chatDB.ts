@@ -3,7 +3,7 @@
 "use client";
 
 import { decodeJwt } from "jose";
-import type { Message } from "ai";
+import type { UIMessage } from "ai";
 import {
   listenOnEvent,
   dispatchEvent,
@@ -23,7 +23,7 @@ export interface DbChat {
 
 export interface ChatSession {
   engineCode: string;
-  messages: Message[];
+  messages: UIMessage[];
   aiCompanyWebsite: string;
 }
 
@@ -112,7 +112,7 @@ export const updateChat = async (
   uuid: string,
   engineCode: string,
   aiCompanyWebsite: string,
-  messages: Message[],
+  messages: UIMessage[],
 ): Promise<void> =>
   await putData("sessions", uuid, {
     messages,
@@ -124,7 +124,7 @@ export const createChat = async (
   uuid: string,
   engineCode: string,
   aiCompanyWebsite: string,
-  messages: Message[],
+  messages: UIMessage[],
 ): Promise<string> => {
   if (
     !messages ||

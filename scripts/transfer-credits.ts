@@ -1,19 +1,18 @@
 import { z } from "zod";
 import dayjs from "dayjs";
+import dotenv from "dotenv";
 import readline from "readline";
 import prisma from "@/lib/prisma";
 import utc from "dayjs/plugin/utc";
 import { usdToCredit } from "@/lib/cost";
 import timezone from "dayjs/plugin/timezone";
 import { decrypt, encrypt } from "@/lib/openrouterApiKey";
-import { sepehrFetchWithLogger } from "@/sepehr-ai-ipg/src/lib";
+import { sepehrFetch } from "@/sepehr-ai-ipg/src/lib";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-const sepehrFetch = sepehrFetchWithLogger((obj, msg) =>
-  console.error(msg, obj),
-);
+dotenv.config();
 
 const SMS_IR_API_KEY = process.env.SMS_IR_API_KEY as string;
 const OPENROUTER_PROVISIONING_API_KEY = process.env

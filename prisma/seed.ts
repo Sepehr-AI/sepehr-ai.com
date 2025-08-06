@@ -18,6 +18,23 @@ const __dirname = dirname(__filename);
 const DISABLED_MODELS = ["openai/o1-pro"];
 const IGNORED_MODELS = ["openrouter/auto", "switchpoint/router"];
 
+const AI_COMPANY_PRIORITY = [
+  { priority: 1, website: "openai.com" },
+  { priority: 2, website: "anthropic.com" },
+  { priority: 3, website: "perplexity.ai" },
+  { priority: 4, website: "gemini.google.com" },
+  { priority: 5, website: "x.ai" },
+  { priority: 6, website: "llama.com" },
+  { priority: 7, website: "openai.com" },
+  { priority: 8, website: "qwen.ai" },
+  { priority: 9, website: "mistral.ai" },
+  { priority: 10, website: "deepseek.com" },
+  { priority: 11, website: "microsoft.com" },
+  { priority: 12, website: "nvidia.com" },
+  { priority: 13, website: "amazon.com" },
+  { priority: 14, website: "z.ai" },
+];
+
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
@@ -240,6 +257,9 @@ async function main() {
       useToComparePlans: USE_TO_COMPARE_PLANS.includes(m.id),
       costPerMilInToken: roundAiModelCost(m.pricing.prompt * 1_000_000),
       costPerMilOutToken: roundAiModelCost(m.pricing.completion * 1_000_000),
+      priority:
+        AI_COMPANY_PRIORITY.find((m) => m.website === companyWebsite)
+          ?.priority || null,
     };
     const upsertData = {
       where: { code: m.id },

@@ -63,6 +63,7 @@ model LlmModel {
   name               String
   description        String
   companyWebsite     String
+  priority           Int?
   costPerMilInToken  Float
   costPerMilOutToken Float
   useToComparePlans  Boolean  @default(false)

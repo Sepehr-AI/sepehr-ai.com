@@ -1,5 +1,6 @@
 "use client";
 
+import type { UIDataTypes, UIMessagePart, UITools } from "ai";
 import { useRef, useState, useMemo, type ChangeEvent } from "react";
 
 const MAX_FILE_COUNT = 5;
@@ -16,8 +17,8 @@ export const readFileAsDataURL = (file: File): Promise<string> => {
 
 export const useAttachments = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [attachments, setAttachments] = useState<FileList | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<FileList | null>(null);
 
   const selectedFileNames = useMemo(() => {
     return attachments ? Array.from(attachments).map((file) => file.name) : [];
@@ -67,12 +68,29 @@ export const useAttachments = () => {
     }
   };
 
+  const attachmentsToUiMessageParts = async (): Promise<
+    UIMessagePart<UIDataTypes, UITools>[]
+  > =>
+    attachments
+      ? await Promise.all(
+          Array.from(attachments).map(async (file) => {
+            return {
+              type: "file" as const,
+              url: await readFileAsDataURL(file),
+              mediaType:
+                file.type && file.type.length ? file.type : "text/plain",
+            };
+          }),
+        )
+      : [];
+
   return {
     fileInputRef,
+    error,
     attachments,
     handleFileChange,
     selectedFileNames,
-    error,
     clearAttachments,
+    attachmentsToUiMessageParts,
   };
 };

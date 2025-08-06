@@ -10,7 +10,6 @@ export default function PricingSectionDoodleArrow(
       viewBox="0 0 91 91"
       version="1.1"
       xmlSpace="preserve"
-      fill="#000"
       {...props}
     >
       <g>

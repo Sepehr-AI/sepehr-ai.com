@@ -30,8 +30,11 @@ export type LlmModelDto = Pick<
 const getModels = async (): Promise<LlmModelDto[]> => {
   return (
     (await prisma.llmModel.findMany({
-      orderBy: { id: "asc" },
       where: { disabled: false },
+      orderBy: [
+        { priority: "asc" }, // Nulls will go last by default
+        { companyWebsite: "asc" },
+      ],
       select: {
         id: true,
         code: true,

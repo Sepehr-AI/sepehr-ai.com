@@ -1,9 +1,10 @@
 "use server";
 
-import Chat from "@/components/Chat";
 import { getModelsForWeb } from "@/lib/models";
+import { NewChatWrapper } from "./ChatComponent";
 
 export default async function DashboardPage() {
   const models = await getModelsForWeb();
-  return <Chat models={models} />;
+
+  return <NewChatWrapper models={models} />;
 }

@@ -4,7 +4,6 @@ export default {
   allowedDevOrigins: ["sepehr-ai.com"],
   experimental: {
     reactCompiler: true,
-    nodeMiddleware: true,
   },
   compiler: {
     removeConsole:
