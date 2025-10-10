@@ -3,13 +3,17 @@
 import dynamic from "next/dynamic";
 import React, { useRef } from "react";
 import { useRouter } from "next/navigation";
-import { type LlmModelPricingDto } from "@/lib/models";
+import { type LanguageModelPricingDto } from "@/lib/languageModels";
 
 const NewChatBody = dynamic(() => import("@/components/Chat/NewChatBody"), {
   ssr: false,
 });
 
-export function NewChatWrapper({ models }: { models: LlmModelPricingDto[] }) {
+export function NewChatWrapper({
+  models,
+}: {
+  models: LanguageModelPricingDto[];
+}) {
   const router = useRouter();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
 

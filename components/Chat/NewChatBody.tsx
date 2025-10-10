@@ -2,7 +2,7 @@
 
 import { v7 as uuidv7 } from "uuid";
 import { toast } from "react-toastify";
-import type { LlmModelPricingDto } from "@/lib/models";
+import type { LanguageModelPricingDto } from "@/lib/languageModels";
 import { createChat } from "@/lib/chatDB";
 import NewMessageBox from "./NewMessageBox";
 import { generateId } from "ai";
@@ -23,7 +23,7 @@ export default function NewChatBody({
   textAreaRef,
 }: {
   router: AppRouterInstance;
-  models: LlmModelPricingDto[];
+  models: LanguageModelPricingDto[];
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 }) {
   const [chatUuid] = useState(uuidv7());
@@ -197,7 +197,7 @@ export default function NewChatBody({
                     <span className="text-foreground/90">
                       مصرف تقریبی{" "}
                       {roundToDecimals(
-                        selectedEngine.creditCostPerMilInToken / 1000,
+                        selectedEngine.milInCreditCost / 1000,
                         1,
                       )}{" "}
                       اعتبار هر هزار کلمه ارسالی به مدل
@@ -207,7 +207,7 @@ export default function NewChatBody({
                     <span className="text-foreground/90">
                       مصرف تقریبی{" "}
                       {roundToDecimals(
-                        selectedEngine.creditCostPerMilOutToken / 1000,
+                        selectedEngine.milOutCreditCost / 1000,
                         1,
                       )}{" "}
                       اعتبار هر هزار کلمه دریافتی از مدل

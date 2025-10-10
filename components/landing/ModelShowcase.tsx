@@ -1,147 +1,96 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import * as Tabs from "@radix-ui/react-tabs";
-import { useInView } from "react-intersection-observer";
 import * as ScrollArea from "@radix-ui/react-scroll-area";
-
-const modelCategories = [
-  {
-    id: "marketing",
-    title: "مارکتینگ",
-    models: [
-      "Liquid: LFM 7B",
-      "OpenAI: o3 Mini",
-      "Google: Gemma 3 4B",
-      "Google: Gemini 2.0 Flash",
-      "Anthropic: Claude 3.7 Sonnet (self-moderated)",
-    ],
-    description: "مدل های دستیار مارکتینگ و بهینه‌سازی سئو",
-  },
-  {
-    id: "text",
-    title: "تولید محتوا",
-    models: [
-      "Microsoft: Phi 4",
-      "Meta: Llama 4 Scout",
-      "DeepSeek: DeepSeek V3 ",
-      "Google: Gemini 2.0 Flash",
-      "Google: Gemini 1.5 Flash",
-    ],
-    description: "نوشتن متن، ترجمه، خلاصه‌سازی و ویرایش با کیفیت بالا",
-  },
-  {
-    id: "code",
-    title: "برنامه‌نویسی",
-    models: [
-      "Quasar Alpha",
-      "DeepSeek: R1",
-      "OpenAI: GPT-4o-mini",
-      "Google: Gemini 2.5 Pro",
-      "Anthropic: Claude 3.7 Sonnet (thinking)",
-    ],
-    description: "مدل‌های تخصصی برای کمک به نوشتن، اشکال‌زدایی و توضیح کد",
-  },
-  {
-    id: "translation",
-    title: "ترجمه",
-    models: [
-      "Liquid: LFM 3B",
-      "Google: Gemini 1.5 Flash",
-      "DeepSeek: DeepSeek V3 0324",
-      "Google: Gemini 1.5 Flash 8B",
-      "Mistral: Mistral Small 3.1 24B",
-    ],
-    description: "مدل های قدرتمند ترجمه مقاله، کتاب، و سایر متون",
-  },
-  {
-    id: "research",
-    title: "پژوهش",
-    models: [
-      "WizardLM-2 7B",
-      "Qwen: QwQ 32B",
-      "OpenAI: GPT-4o",
-      "Mistral Large 2411",
-      "Meta: Llama 4 Maverick",
-    ],
-    description: "مدل های هوشمند پژوهش های پایان‌نامه، مقاله‌نویسی، و...",
-  },
-];
+import type { LanguageModelPricingDto } from "@/lib/languageModels";
+import type { ImageModelPricingDto } from "@/lib/imageModels";
+import type { VideoModelPricingDto } from "@/lib/videoModels";
+import { LightningBoltIcon, ImageIcon, VideoIcon } from "@radix-ui/react-icons";
 
 export default function ModelShowcase({
-  numberOfWebPlans,
+  languageModels,
+  imageModels,
+  videoModels,
 }: {
-  numberOfWebPlans: number;
+  languageModels: LanguageModelPricingDto[];
+  imageModels: ImageModelPricingDto[];
+  videoModels: VideoModelPricingDto[];
 }) {
-  const { ref, inView } = useInView({});
-  const [activeTab, setActiveTab] = useState(modelCategories[0].id);
+  const categories = useMemo(
+    () => [
+      {
+        id: "language",
+        title: "زبان",
+        icon: <LightningBoltIcon className="w-4 h-4" />,
+        description:
+          "تولید محتوا، ترجمه، خلاصه‌سازی، تحلیل متن و کدنویسی با مدل‌های روز دنیا.",
+        items: languageModels.map((m) => m.name),
+      },
+      {
+        id: "image",
+        title: "تصویر",
+        icon: <ImageIcon className="w-4 h-4" />,
+        description:
+          "ایده تا تصویر: لوگو، پوستر، آرت مفهومی، ادیت و اینپینتینگ — سریع و تمیز.",
+        items: imageModels.map((m) => m.name),
+      },
+      {
+        id: "video",
+        title: "ویدیو",
+        icon: <VideoIcon className="w-4 h-4" />,
+        description:
+          "ویدیوهای کوتاه، موشن‌های تبلیغاتی و کانسپت شات‌ها — تنها با متن یا تصویر مرجع.",
+        items: videoModels.map((m) => m.name),
+      },
+    ],
+    [languageModels, imageModels, videoModels],
+  );
+
+  const [active, setActive] = useState(categories[0].id);
 
   return (
     <section id="models" className="py-20">
-      <div className="max-w-3xl mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-600">
-              + {numberOfWebPlans} مدل هوش مصنوعی
-            </span>
-          </h2>
-          <p className="text-foreground/70 max-w-2xl mx-auto">
-            دسترسی به طیف گسترده‌ای از مدل‌های هوش مصنوعی برای تمامی نیازها، همه
-            در یک پلتفرم واحد
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl font-bold mb-3">همه مدل‌ها، یک تجربه</h2>
+          <p className="text-foreground/70">
+            سریع، یکپارچه و قابل اتکا — بدون سوئیچ بین ابزارهای مختلف
           </p>
         </div>
 
-        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+        <Tabs.Root value={active} onValueChange={setActive}>
           <ScrollArea.Root className="w-full" type="scroll">
-            <ScrollArea.Viewport className="w-full overflow-x-scroll">
-              <Tabs.List className="flex border-b border-border mb-8 rtl">
-                {modelCategories.map((category) => (
+            <ScrollArea.Viewport className="w-full overflow-x-auto">
+              <Tabs.List className="flex gap-2 border-b border-border mb-6 rtl">
+                {categories.map((cat) => (
                   <Tabs.Trigger
-                    key={category.id}
-                    value={category.id}
-                    className="px-5 py-3 flex-1 text-center text-sm font-medium border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:text-accent transition-colors"
+                    key={cat.id}
+                    value={cat.id}
+                    className="px-4 py-2 rounded-t-lg text-sm font-medium border-b-2 border-transparent data-[state=active]:border-accent data-[state=active]:text-accent transition-colors inline-flex items-center gap-2"
                   >
-                    {category.title}
+                    {cat.icon}
+                    {cat.title}
                   </Tabs.Trigger>
                 ))}
               </Tabs.List>
             </ScrollArea.Viewport>
-            <ScrollArea.Scrollbar
-              orientation="horizontal"
-              className="h-0.5 flex-none"
-            />
           </ScrollArea.Root>
 
-          {modelCategories.map((category) => (
-            <Tabs.Content
-              key={category.id}
-              value={category.id}
-              className="focus:outline-none"
-            >
-              <div
-                ref={ref}
-                className={inView ? "model-showcase-animation" : ""}
-              >
-                <div className="bg-card p-8 rounded-xl border border-border text-right rtl">
-                  <h3 className="text-2xl font-bold mb-4">{category.title}</h3>
-                  <p className="text-foreground/70 mb-6">
-                    {category.description}
-                  </p>
-                  <ul className="space-y-3 ltr">
-                    {category.models.map((model, index) => (
-                      <li
-                        key={index}
-                        className="flex items-center gap-2 ltr text-left"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-accent"></div>
-                        <span>{model}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-6 text-sm text-foreground/60 text-right">
-                    و ده ها مدل دیگر از این دسته ...
-                  </p>
-                </div>
+          {categories.map((cat) => (
+            <Tabs.Content key={cat.id} value={cat.id}>
+              <div className="bg-card border border-border rounded-2xl p-6">
+                <p className="mb-6 text-foreground/70 rtl">{cat.description}</p>
+                <ul className="flex flex-wrap gap-2 ltr">
+                  {cat.items.slice(0, 24).map((name, i) => (
+                    <li
+                      key={i}
+                      className="px-3 py-1.5 rounded-full bg-accent/25 text-sm hover:bg-accent/30 transition"
+                    >
+                      {name}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </Tabs.Content>
           ))}

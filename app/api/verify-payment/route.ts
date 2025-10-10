@@ -4,7 +4,7 @@ import type { z } from "zod";
 import prisma from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextRequest, NextResponse } from "next/server";
-import { findTransactionForUpdate } from "@/prisma/client/sql";
+import { findTransactionForUpdate } from "@/lib/prisma/sql";
 import {
   sepehrAiVerifyPaymentResSchema,
   sepehrAiVerifyPaymentPayloadSchema,

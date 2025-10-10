@@ -10,6 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 export interface MiddlewareUserData {
   id: number;
   mobile: string;
+  balance: number;
   email: string | null;
 }
 
@@ -29,7 +30,7 @@ async function authenticate(req: NextRequest): Promise<MiddlewareUserData> {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { email: true, mobile: true },
+    select: { email: true, mobile: true, balance: true },
   });
   if (!user) throw new Error("UserNotFound");
 
@@ -45,7 +46,7 @@ export async function middleware(req: NextRequest) {
     } catch {
       return handleServerLogout(req);
     }
-  } else if (pathname.startsWith("/api/chat")) {
+  } else if (pathname.startsWith("/api") && !pathname.startsWith("/api/verify-payment")) {
     try {
       user = await authenticate(req);
     } catch {
@@ -57,6 +58,7 @@ export async function middleware(req: NextRequest) {
   if (user) {
     headers.set("usermobile", user.mobile);
     headers.set("userEmail", user.email || "");
+    headers.set("userBalance", user.balance.toString());
     headers.set("userId", user.id.toString() as string);
   }
 

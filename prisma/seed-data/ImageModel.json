@@ -1,0 +1,114 @@
+[
+  {
+    "cost": 0.002,
+    "imageInput": "UNAVAILABLE",
+    "code": "google/imagen-4-fast",
+    "name": "Google Imagen 4 Fast",
+    "showCaseImage": "imagen-4-fast.jpg",
+    "defaultOptions": { "output_format": "jpg" },
+    "ratios": ["1:1", "9:16", "16:9", "3:4", "4:3"]
+  },
+  {
+    "cost": 0.12,
+    "code": "openai/dall-e-3",
+    "name": "Openai Dall-E 3",
+    "imageInput": "UNAVAILABLE",
+    "ratios": ["1:1", "3:2", "2:3"]
+  },
+  {
+    "cost": 0.03,
+    "imageInput": "MULTI",
+    "code": "bytedance/seedream-4",
+    "name": "Bytedance Seedream 4",
+    "defaultOptions": { "size": "4K" },
+    "showCaseImage": "seedream-4.jpg",
+    "ratios": ["X:Y", "1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3", "21:9"]
+  },
+  {
+    "cost": 0.025,
+    "name": "Qwen Image",
+    "imageInput": "SINGLE",
+    "code": "qwen/qwen-image",
+    "showCaseImage": "qwen-image.jpg",
+    "ratios": ["1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3"],
+    "defaultOptions": {
+      "output_format": "jpg",
+      "image_size": "optimize_for_quality",
+      "output_quality": 100
+    }
+  },
+  {
+    "cost": 3,
+    "imageInput": "UNAVAILABLE",
+    "code": "black-forest-labs/flux-schnell",
+    "name": "Black Forest Labs Flux Schnell",
+    "showCaseImage": "flux-schnell.jpg",
+    "defaultOptions": { "output_format": "jpg", "output_quality": 100 },
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9",
+      "3:4",
+      "4:3",
+      "3:2",
+      "2:3",
+      "5:4",
+      "4:5",
+      "21:9",
+      "9:21"
+    ]
+  },
+  {
+    "cost": 0.04,
+    "imageInput": "SINGLE",
+    "defaultOptions": { "output_format": "jpg" },
+    "showCaseImage": "stable-diffusion-3.5-large-turbo.jpg",
+    "code": "stability-ai/stable-diffusion-3.5-large-turbo",
+    "name": "Stability AI Stable Diffusion 3.5 Large Turbo",
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9",
+      "3:2",
+      "2:3",
+      "5:4",
+      "4:5",
+      "21:9",
+      "9:21"
+    ]
+  },
+  {
+    "cost": 0.065,
+    "imageInput": "SINGLE",
+    "defaultOptions": { "output_format": "jpg" },
+    "code": "stability-ai/stable-diffusion-3.5-large",
+    "name": "Stability AI Stable Diffusion 3.5 Large",
+    "ratios": [
+      "1:1",
+      "9:16",
+      "16:9",
+      "3:2",
+      "2:3",
+      "5:4",
+      "4:5",
+      "21:9",
+      "9:21"
+    ]
+  },
+  {
+    "cost": 0.06,
+    "imageInput": "UNAVAILABLE",
+    "code": "google/imagen-4-ultra",
+    "name": "Google Imagen 4 Ultra",
+    "defaultOptions": { "output_format": "jpg" },
+    "ratios": ["1:1", "9:16", "16:9", "3:4", "4:3"]
+  },
+  {
+    "ratios": [],
+    "cost": 0.039,
+    "imageInput": "UNAVAILABLE",
+    "code": "google/gemini-2.5-flash-image",
+    "name": "Google Gemini 2.5 Flash Image",
+    "defaultOptions": { "output_format": "jpg" }
+  }
+]

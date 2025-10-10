@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "react-toastify";
+import { usdToCredit } from "@/lib/cost";
 import { CiDollar } from "react-icons/ci";
 import { useFormStatus } from "react-dom";
 import Loading from "@/components/Loading";
@@ -8,7 +9,6 @@ import { useEffect, useState } from "react";
 import { chargeAccountAction } from "./actions";
 import type { WebPlansForUsers } from "@/lib/plans";
 import { extractDiscountInfo } from "@/lib/discount";
-import { roundWebCost, usdToCredit } from "@/lib/cost";
 
 function Form({
   plans,
@@ -36,7 +36,7 @@ function Form({
         <div className="mb-6 text-center">
           <h2 className="text-2xl font-semibold mb-3">میزان اعتبار شما</h2>
           <div className="flex items-center justify-center gap-1 text-3xl font-bold text-accent">
-            <span>{roundWebCost(webBalance)}</span>
+            <span>{webBalance}</span>
             <CiDollar className="h-6 w-6" />
           </div>
         </div>

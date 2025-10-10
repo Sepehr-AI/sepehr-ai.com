@@ -59,8 +59,8 @@ export function roundToDecimals(value: number, decimals: number): number {
   return Math.round(value * factor) / factor;
 }
 
-export function usdToCredit(usd: number): number {
-  return Math.floor(usd * 1.75 * 1000);
+export function usdToCredit(usd: number, ceil: boolean = false): number {
+  return !ceil ? Math.floor(usd * 1.75 * 1000) : Math.ceil(usd * 1.75 * 1000);
 }
 
 export function creditToUsd(credit: number): number {

@@ -8,8 +8,11 @@ import Qwen from "@/components/companyLogos/Qwen";
 import Mistral from "@/components/companyLogos/Mistral";
 import DeepSeek from "@/components/companyLogos/Deepseek";
 import WithColor from "@/components/companyLogos/WithColor";
-import { companyToWebsiteMap } from "./aiCompaniesForBackend";
+import Stability from "@/components/companyLogos/Stability";
+import Bytedance from "@/components/companyLogos/Bytedance";
 import Perplexity from "@/components/companyLogos/Perplexity";
+import { companyToWebsiteMap } from "./aiCompaniesForBackend";
+import BlackForestLabs from "@/components/companyLogos/BlackForestLabs";
 
 type CompanyWebsite =
   (typeof companyToWebsiteMap)[keyof typeof companyToWebsiteMap];
@@ -21,6 +24,9 @@ export const companyWebsiteToRiMap: Partial<
   "mistral.ai": Mistral,
   "openai.com": SiOpenai,
   "deepseek.com": DeepSeek,
+  "bfl.ai": BlackForestLabs,
+  "stability.ai": Stability,
+  "bytedance.com": Bytedance,
   "perplexity.ai": Perplexity,
   "x.ai": WithColor(FaXTwitter, "#231f1e"),
   "llama.com": WithColor(FaMeta, "#0080fb"),

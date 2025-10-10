@@ -1,0 +1,79 @@
+[
+  {
+    "cost": 1.2,
+    "image": true,
+    "durations": [8],
+    "ratios": ["9:16", "16:9"],
+    "code": "google/veo-3-fast",
+    "name": "Google Veo 3 Fast",
+    "defaultOptions": { "resolution": "1080p" }
+  },
+  {
+    "cost": 3.2,
+    "image": true,
+    "durations": [8],
+    "code": "google/veo-3",
+    "name": "Google Veo 3",
+    "ratios": ["9:16", "16:9"],
+    "defaultOptions": { "resolution": "1080p" },
+    "showCaseVideo": "veo3.mp4"
+  },
+  {
+    "cost": 0.85,
+    "image": true,
+    "durations": [5, 10],
+    "ratios": ["16:9", "9:16", "1:1"],
+    "name": "Kwaivgi Kling v2.5 Turbo Pro",
+    "code": "kwaivgi/kling-v2.5-turbo-pro",
+    "showCaseVideo": "kling-v2.5-turbo-pro.mp4"
+  },
+  {
+    "cost": 2.8,
+    "startImage": true,
+    "durations": [5, 10],
+    "ratios": ["16:9", "9:16", "1:1"],
+    "name": "Kwaivgi Kling v2.1 Master",
+    "code": "kwaivgi/kling-v2.1-master"
+  },
+  {
+    "cost": 1.5,
+    "image": true,
+    "lastFrameImage": true,
+    "name": "Bytedance Seedance 1 Pro",
+    "code": "bytedance/seedance-1-pro",
+    "showCaseVideo": "seedance-1-pro.mp4",
+    "durations": [5, 6, 7, 8, 9, 10, 11, 12],
+    "ratios": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"]
+  },
+  {
+    "cost": 0.75,
+    "image": true,
+    "lastFrameImage": true,
+    "name": "Bytedance Seedance 1 Lite",
+    "code": "bytedance/seedance-1-lite",
+    "durations": [5, 6, 7, 8, 9, 10, 11, 12],
+    "ratios": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"]
+  },
+  {
+    "cost": 1.6,
+    "image": true,
+    "durations": [5, 8],
+    "lastFrameImage": true,
+    "name": "Pixverse v5",
+    "code": "pixverse/pixverse-v5",
+    "ratios": ["16:9", "9:16", "1:1"],
+    "showCaseVideo": "pixverse-v5.mp4",
+    "defaultOptions": { "quality": "1080p" }
+  },
+  {
+    "cost": 0.48,
+    "ratios": [],
+    "durations": [6],
+    "lastFrameImage": true,
+    "firstFrameImage": true,
+    "code": "minimax/hailuo-02",
+    "name": "Minimax Hailuo 02",
+    "showCaseVideo": "hailuo-02.mp4",
+    "defaultOptions": { "resolution": "1080p" }
+  }
+]

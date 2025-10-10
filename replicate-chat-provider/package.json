@@ -1,0 +1,33 @@
+{
+  "name": "@your-scope/replicate-chat-provider",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format esm,cjs --clean",
+    "dev": "tsup src/index.ts --dts --format esm,cjs --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "ai": "5.0.56",
+    "@ai-sdk/provider": "2.0.0",
+    "@ai-sdk/provider-utils": "3.0.10",
+    "@ai-sdk/openai-compatible": "1.0.19"
+  },
+  "devDependencies": {
+    "tsup": "8.5.0",
+    "typescript": "5.9.2"
+  }
+}

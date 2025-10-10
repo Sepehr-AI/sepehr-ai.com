@@ -1,3 +1,4 @@
+// components/landing/PricingSection.tsx
 "use client";
 
 import Link from "next/link";
@@ -8,29 +9,40 @@ import {
   usdToCredit,
 } from "@/lib/cost";
 import { useTheme } from "../ThemeProvider";
-import { CheckIcon, QuestionMarkCircledIcon } from "@radix-ui/react-icons";
+import {
+  CheckIcon,
+  QuestionMarkCircledIcon,
+  ImageIcon,
+  VideoIcon,
+} from "@radix-ui/react-icons";
 import type { WebPlansForUsers } from "@/lib/plans";
 import { extractDiscountInfo } from "@/lib/discount";
-import type { LlmModelPricingDto } from "@/lib/models";
+import type { LanguageModelPricingDto } from "@/lib/languageModels";
+import type { ImageModelPricingDto } from "@/lib/imageModels";
+import type { VideoModelPricingDto } from "@/lib/videoModels";
 import PricingSectionDoodleArrow from "./PricingSectionDoodleArrow";
 
 export default function PricingSection({
   plans,
   modelsForComparison,
+  imageModelsForComparison,
+  videoModelsForComparison,
 }: {
   plans: WebPlansForUsers;
-  modelsForComparison: LlmModelPricingDto[];
+  modelsForComparison: LanguageModelPricingDto[];
+  imageModelsForComparison: ImageModelPricingDto[];
+  videoModelsForComparison: VideoModelPricingDto[];
 }) {
   const { theme } = useTheme();
 
   return (
     <section id="pricing" className="py-20">
       <div className="container mx-auto px-2">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold mb-4">پلن‌های قیمت‌گذاری</h2>
-          <p className="text-foreground/70 max-w-2xl mx-auto">
-            پلن مناسب خود را انتخاب کنید و به دنیای بی‌انتهای هوش مصنوعی وارد
-            شوید
+        <div className="text-center mb-14">
+          <h2 className="text-3xl font-bold mb-3">پلن‌های قیمت‌گذاری</h2>
+          <p className="text-foreground/70">
+            فقط اعتبار می‌خرید؛ هر زمان بخواهید بین مدل‌های زبان، تصویر و ویدیو
+            جابه‌جا شوید
           </p>
         </div>
 
@@ -38,6 +50,7 @@ export default function PricingSection({
           {plans.map((plan, index) => {
             const { diffInFarsi, hasDiscount, discountPercent } =
               extractDiscountInfo(plan);
+            const credits = usdToCredit(plan.usdCredits);
 
             return (
               <div
@@ -90,6 +103,9 @@ export default function PricingSection({
                             : plan.displayPrice}{" "}
                           تومان
                         </span>
+                        <span className="text-lg text-foreground/90 py-2 px-4 border-accent border-2 rounded-4xl">
+                          {credits.toLocaleString()} اعتبار
+                        </span>
                       </div>
                     </div>
 
@@ -108,134 +124,47 @@ export default function PricingSection({
                   </div>
 
                   <div className="border-t border-border pt-6 mt-auto">
-                    {/* Credits info */}
+                    {/* What you can do with this credit */}
                     <div className="mb-4 text-center">
-                      <p className="text-lg font-semibold">
-                        {usdToCredit(plan.usdCredits).toLocaleString()} اعتبار
-                      </p>
-                    </div>
+                      <h5 className="text-lg font-semibold">
+                        با این اعتبار چه کارهایی می‌شود کرد؟
+                      </h5>
 
-                    {/* Model Value Table */}
-                    <div className="flex justify-center">
-                      <div className="w-[98%] border-t border-border py-6 mt-auto">
-                        <h5 className="text-center font-bold mb-2">
-                          این اعتبار چقدر ارزش داره؟
-                        </h5>
-                        <div className="my-1 w-full flex justify-center text-center">
-                          <PricingSectionDoodleArrow
-                            className="w-15 h-15"
-                            fill={theme === "light" ? "#000" : "#fff"}
-                          />
-                        </div>
-                        <table className="w-full text-sm divide-y divide-border/50 rtl">
-                          <thead>
-                            <tr>
-                              <th className="rtl text-right py-2 font-medium">
-                                اجازه استفاده تقریبی
-                              </th>
-                              <th className="rtl text-left py-2 font-medium">
-                                مثلا اگر مدل این باشه
-                              </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {modelsForComparison.map((model, idx) => {
-                              const { raw, rawOut, unit, inOutRatio } = (() => {
-                                const raw =
-                                  (usdToCredit(plan.usdCredits) /
-                                    model.creditCostPerMilInToken +
-                                    usdToCredit(plan.usdCredits) /
-                                      model.creditCostPerMilOutToken) *
-                                  (1e6 / 1.5);
-                                const rawOut =
-                                  (usdToCredit(plan.usdCredits) /
-                                    model.creditCostPerMilOutToken) *
-                                  (1e6 / 1.5);
-                                const unit =
-                                  raw > 10_000_000
-                                    ? 1_000_000
-                                    : raw > 1_000_000
-                                      ? 100_000
-                                      : 10_000;
-                                return {
-                                  raw,
-                                  unit,
-                                  rawOut,
-                                  inOutRatio: roundToDecimals(
-                                    model.creditCostPerMilOutToken /
-                                      model.creditCostPerMilInToken,
-                                    1,
-                                  ),
-                                };
-                              })();
-                              const totalFarsiWords = roundToUnit(raw, unit);
-
-                              return (
-                                <tr
-                                  key={idx}
-                                  className="border-b border-border/50"
-                                >
-                                  <td className="rtl text-right py-3">
-                                    <div>
-                                      {numberToReadableFarsi(
-                                        roundToUnit(rawOut, unit) / 2_000,
-                                      )}{" "}
-                                      مقاله 2 هزار کلمه‌ای
-                                    </div>
-                                    <div className="flex gap-1 items-center">
-                                      (
-                                      <span
-                                        className="font-vazir-force"
-                                        title={
-                                          "در این مدل ضریب مصرف اعتبار کلمه خروجی (متنی که از مدل دریافت میکنید) " +
-                                          inOutRatio +
-                                          " برابر کلمه ورودی (متنی که شما میفرستید) می‌باشد."
-                                        }
-                                      >
-                                        <QuestionMarkCircledIcon />
-                                      </span>
-                                      <span className="text-xs">
-                                        {numberToReadableFarsi(totalFarsiWords)}{" "}
-                                        کلمه
-                                      </span>
-                                      )
-                                    </div>
-                                  </td>
-                                  <td className="ltr text-left py-3 font-medium">
-                                    {model.name.split(":")[1].trim()}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                        <p className="mt-4 text-sm text-center">
-                          برای مشاهده اجازه استفاده از باقی مدل‌ها با این اعتبار{" "}
-                          <Link
-                            href={`/usage?plan=${plan.id}`}
-                            className="text-accent underline"
-                          >
-                            کلیک کنید
-                          </Link>
-                          .
-                        </p>
+                      <div className="my-1 w-full flex justify-center text-center">
+                        <PricingSectionDoodleArrow className="w-15 h-15" />
                       </div>
                     </div>
 
+                    {/* Language table */}
+                    <AllowanceLanguage
+                      credits={credits}
+                      models={modelsForComparison}
+                    />
+
+                    {/* Image table */}
+                    <AllowanceImage
+                      credits={credits}
+                      models={imageModelsForComparison}
+                    />
+
+                    {/* Video table */}
+                    <AllowanceVideo
+                      credits={credits}
+                      models={videoModelsForComparison}
+                    />
+
                     {/* Features Section */}
-                    <div className="w-full flex justify-center border-t border-border pt-4 mt-auto">
+                    <div className="w-full flex justify-center border-t border-border pt-4 mt-4">
                       <ul className="space-y-2 text-sm rtl">
                         <li className="flex items-start gap-2">
                           <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
-                          <span>دسترسی به تمامی مدل‌ها</span>
+                          <span>دسترسی به همه مدل‌های زبان، تصویر و ویدیو</span>
                         </li>
                         <li className="flex items-start gap-2">
                           <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
-                          <span>ذخیره و مدیریت چت‌ها</span>
-                        </li>
-                        <li className="flex items-start gap-2">
-                          <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
-                          <span>آپلود و تحلیل فایل‌ها</span>
+                          <span>
+                            ذخیره و مدیریت چت‌ها و پروژه‌ها فقط در مرورگر شما
+                          </span>
                         </li>
                       </ul>
                     </div>
@@ -247,5 +176,189 @@ export default function PricingSection({
         </div>
       </div>
     </section>
+  );
+}
+
+function AllowanceLanguage({
+  credits,
+  models,
+}: {
+  credits: number;
+  models: LanguageModelPricingDto[];
+}) {
+  return (
+    <div className="flex justify-center">
+      <div className="w-[98%] border-t border-border py-6 mt-auto">
+        <h5 className="text-center font-bold mb-2">متن (زبان)</h5>
+        <table className="w-full text-sm divide-y divide-border/50 rtl">
+          <thead>
+            <tr>
+              <th className="rtl text-right py-2 font-medium">
+                اجازه استفاده تقریبی
+              </th>
+              <th className="rtl text-left py-2 font-medium">
+                مثلاً اگر مدل این باشد
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {models.map((model, idx) => {
+              const calc = (() => {
+                const raw =
+                  (credits / model.milInCreditCost +
+                    credits / model.milOutCreditCost) *
+                  (1e6 / 1.5);
+                const rawOut = (credits / model.milOutCreditCost) * (1e6 / 1.5);
+                const unit =
+                  raw > 10_000_000
+                    ? 1_000_000
+                    : raw > 1_000_000
+                      ? 100_000
+                      : 10_000;
+                return {
+                  raw,
+                  unit,
+                  rawOut,
+                  inOutRatio: roundToDecimals(
+                    model.milOutCreditCost / model.milInCreditCost,
+                    1,
+                  ),
+                };
+              })();
+              const totalFarsiWords = roundToUnit(calc.raw, calc.unit);
+
+              return (
+                <tr key={idx}>
+                  <td className="rtl text-right py-3">
+                    <div>
+                      {numberToReadableFarsi(
+                        roundToUnit(calc.rawOut, calc.unit) / 2_000,
+                      )}{" "}
+                      مقاله ۲هزار کلمه‌ای
+                    </div>
+                    <div className="flex gap-1 items-center">
+                      (<QuestionMarkCircledIcon className="w-4 h-4" />
+                      <span className="text-xs">
+                        {numberToReadableFarsi(totalFarsiWords)} کلمه
+                      </span>
+                      )
+                    </div>
+                  </td>
+                  <td className="ltr text-left py-3 font-medium">
+                    {model.name}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AllowanceImage({
+  credits,
+  models,
+}: {
+  credits: number;
+  models: ImageModelPricingDto[];
+}) {
+  return (
+    <div className="flex justify-center">
+      <div className="w-[98%] border-t border-border py-6">
+        <h5 className="text-center font-bold mb-2 flex items-center gap-2 justify-center">
+          <ImageIcon /> تصویر
+        </h5>
+        <table className="w-full text-sm divide-y divide-border/50 rtl">
+          <thead>
+            <tr>
+              <th className="rtl text-right py-2 font-medium">
+                تقریباً چند تصویر
+              </th>
+              <th className="rtl text-left py-2 font-medium">
+                اگر مدل این باشد
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {models.map((m, i) => {
+              const count = Math.floor(credits / m.creditCostPerImage);
+              return (
+                <tr key={i}>
+                  <td className="rtl text-right py-3">
+                    {count ? (
+                      numberToReadableFarsi(count)
+                    ) : (
+                      <span className="text-orange-700">صفر</span>
+                    )}{" "}
+                    تصویر
+                  </td>
+                  <td className="ltr text-left py-3 font-medium">{m.name}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function AllowanceVideo({
+  credits,
+  models,
+}: {
+  credits: number;
+  models: VideoModelPricingDto[];
+}) {
+  return (
+    <div className="flex justify-center">
+      <div className="w-[98%] border-t border-border py-6">
+        <h5 className="text-center font-bold mb-2 flex items-center gap-2 justify-center">
+          <VideoIcon /> ویدیو
+        </h5>
+        <table className="w-full text-sm divide-y divide-border/50 rtl">
+          <thead>
+            <tr>
+              <th className="rtl text-right py-2 font-medium">
+                تقریباً چند ویدیو
+              </th>
+              <th className="rtl text-left py-2 font-medium">
+                اگر مدل این باشد
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {models.map((m, i) => {
+              const count = Math.max(
+                0,
+                Math.floor(credits / m.creditCostPerVideo),
+              );
+              const duration = m.durations.sort()[0];
+              return (
+                <tr key={i}>
+                  <td className="rtl text-right py-3">
+                    {count ? (
+                      numberToReadableFarsi(count)
+                    ) : (
+                      <span className="text-orange-700">صفر</span>
+                    )}{" "}
+                    ویدیو
+                    {duration ? (
+                      <span className="text-foreground/60 text-xs">
+                        {" "}
+                        — {duration}s
+                      </span>
+                    ) : null}
+                  </td>
+                  <td className="ltr text-left py-3 font-medium">{m.name}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

@@ -12,11 +12,13 @@ import {
   HamburgerMenuIcon,
   Cross1Icon,
   ExitIcon,
-  GearIcon,
   LightningBoltIcon,
   SunIcon,
   MoonIcon,
+  VideoIcon,
+  ImageIcon,
 } from "@radix-ui/react-icons";
+import { IoMdChatboxes } from "react-icons/io";
 
 // A reusable sidebar link component
 const SidebarLink = ({
@@ -96,8 +98,18 @@ const NavContent = ({
         </div>
 
         <SidebarLink href="/dashboard" onClick={onLinkClick}>
-          <PlusIcon />
+          <IoMdChatboxes />
           <span>چت جدید</span>
+        </SidebarLink>
+
+        <SidebarLink href="/dashboard/gen/video" onClick={onLinkClick}>
+          <VideoIcon />
+          <span>ساخت ویدئو</span>
+        </SidebarLink>
+
+        <SidebarLink href="/dashboard/gen/image" onClick={onLinkClick}>
+          <ImageIcon />
+          <span>ساخت عکس</span>
         </SidebarLink>
 
         <div className="relative mt-4">
@@ -188,10 +200,10 @@ const NavContent = ({
           <span>شارژ اکانت</span>
         </SidebarLink>
 
-        <SidebarLink href="/dashboard" onClick={onLinkClick}>
+        {/* <SidebarLink href="/dashboard" onClick={onLinkClick}>
           <GearIcon />
           <span>تنظیمات</span>
-        </SidebarLink>
+        </SidebarLink> */}
 
         <a href="/logout">
           <button className="w-full px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 hover:bg-black/15 dark:hover:bg-muted/60 hover:text-destructive">

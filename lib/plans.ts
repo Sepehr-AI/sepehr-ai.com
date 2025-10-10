@@ -6,7 +6,7 @@ import utc from "dayjs/plugin/utc";
 import getExchangeRate from "./exchange";
 import { unstable_cache } from "next/cache";
 import timezone from "dayjs/plugin/timezone";
-import type { WebPlan } from "@/prisma/client";
+import type { WebPlan } from "@/lib/prisma";
 import { numberToReadableFarsi, roundWebPlan } from "./cost";
 
 dayjs.extend(utc);
@@ -18,10 +18,10 @@ export type WebPlansForUsers = ((Pick<
   "id" | "name" | "usdCredits" | "discountEndsOn" | "discountPercentage"
 > &
   Partial<WebPlan>) & {
-  price: number;
-  displayPrice: string;
-  discountedDisplayPrice: string | null;
-})[];
+    price: number;
+    displayPrice: string;
+    discountedDisplayPrice: string | null;
+  })[];
 
 export const getWebPlans: () => Promise<WebPlansForUsers> = unstable_cache(
   async () => {

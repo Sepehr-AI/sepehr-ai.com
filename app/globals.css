@@ -2,65 +2,33 @@
 
 /* Define theme variables */
 @theme {
-  /* Colors */
-  --color-card: oklch(0.95 0.005 240);
-  --color-popover: oklch(0.95 0.005 240);
+  --color-background: oklch(0.985 0.005 240); /* near-white */
+  --color-foreground: oklch(0.2 0.03 250); /* deep neutral for text */
 
-  /* --color-background: oklch(
-    0.95 0.005 240
-  ); slightly off-white but much darker than before */
-  /* --color-foreground: oklch(0.02 0.005 240); nearly black text */
-  --color-background: oklch(0.9 0 240);
-  --color-foreground: oklch(0 0 240);
+  --color-card: oklch(0.99 0.004 240);
+  --color-card-foreground: var(--color-foreground);
 
-  --color-card-foreground: oklch(0.02 0.005 240);
-  --color-popover-foreground: oklch(0.02 0.005 240);
+  --color-popover: oklch(0.99 0.004 240);
+  --color-popover-foreground: var(--color-foreground);
 
-  --color-primary: oklch(0 0 240); /* pure black for primary actions */
-  --color-primary-foreground: oklch(1 0 0); /* pure white text */
+  --color-primary: oklch(0.2 0.03 250);
+  --color-primary-foreground: oklch(1 0 0);
 
-  --color-secondary: oklch(0.15 0.02 240); /* deep grey secondary backgrounds */
-  --color-secondary-foreground: oklch(1 0 0);
+  --color-secondary: oklch(0.96 0.01 240);
+  --color-secondary-foreground: var(--color-foreground);
 
-  --color-muted: oklch(0.8 0.01 240); /* obvious layer separation */
-  --color-muted-foreground: oklch(0.3 0.01 240); /* mid-grey text */
+  --color-muted: oklch(0.96 0.01 240);
+  --color-muted-foreground: oklch(0.38 0.02 250); /* readable dimmed text */
 
-  --color-accent: oklch(0.59 0.2 280);
+  --color-accent: oklch(0.62 0.2 280); /* vibrant indigo/violet */
   --color-accent-foreground: oklch(1 0 0);
 
-  --color-destructive: oklch(0.65 0.22 25);
+  --color-destructive: oklch(0.62 0.22 25);
   --color-destructive-foreground: oklch(1 0 0);
 
-  --color-border: oklch(0.85 0.01 240);
-  --color-input: oklch(0.85 0.01 240);
-  --color-ring: oklch(0.59 0.2 280);
-
-  /* Border radius */
-  --radius-sm: 0.125rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-
-  /* Animation keyframes */
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
+  --color-border: oklch(0.9 0.01 240); /* clearer separation */
+  --color-input: var(--color-border);
+  --color-ring: var(--color-accent);
 }
 
 /* Dark mode theme overrides */
@@ -151,6 +119,42 @@
   .feature-grid {
     @apply bg-card p-6 rounded-xl border border-border hover:shadow-md transition-shadow opacity-0;
   }
+}
+
+/* Optional: use tokenized dimmed text instead of alpha where possible */
+.text-dim {
+  color: var(--color-muted-foreground);
+}
+
+/* Subtle glass + transitions */
+.glass {
+  background: color-mix(in oklch, var(--color-card) 70%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+}
+
+/* Hero motion polish */
+.hero-heading {
+  will-change: transform, opacity;
+}
+.hero-gradient {
+  will-change: transform, opacity;
+}
+/* Slideshow cards keep the same design language */
+.slideshow-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Prevent blocky render; keep media crisp and contained */
+.slideshow-card img,
+.slideshow-card video {
+  image-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  object-fit: cover;
+  border-radius: 0.75rem;
 }
 
 body {

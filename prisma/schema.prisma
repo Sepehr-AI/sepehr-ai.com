@@ -10,27 +10,19 @@ datasource db {
 }
 
 model User {
-  id               Int               @id @default(autoincrement())
-  email            String?           @unique
-  name             String
-  mobile           String            @unique
-  referralCode     String?
-  otp              Otp?
-  OpenrouterApiKey OpenrouterApiKey?
-  referredBy       Referral[]        @relation("ReferredUser")
-  referrals        Referral[]        @relation("UserReferrals")
-  transactions     Transaction[]
-  referralBalance  Float             @default(0)
-  createdAt        DateTime          @default(now()) @db.Timestamptz(3)
-}
-
-model Referral {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id], name: "UserReferrals")
-  userId    Int
-  newUser   User     @relation(fields: [newUserId], references: [id], name: "ReferredUser")
-  newUserId Int      @unique()
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  id              Int           @id @default(autoincrement())
+  email           String?       @unique
+  name            String
+  mobile          String        @unique
+  referralCode    String?
+  otp             Otp?
+  transactions    Transaction[]
+  imageJobs       ImageJob[]
+  videoJobs       VideoJob[]
+  languageJobs    LanguageJob[]
+  balance         Float         @default(0)
+  referralBalance Float         @default(0)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
 }
 
 model Transaction {
@@ -57,23 +49,6 @@ model Transaction {
   createdAt          DateTime @default(now()) @db.Timestamptz(3)
 }
 
-model LlmModel {
-  id                 Int      @id @default(autoincrement())
-  code               String   @unique()
-  name               String
-  description        String
-  companyWebsite     String
-  priority           Int?
-  costPerMilInToken  Float
-  costPerMilOutToken Float
-  useToComparePlans  Boolean  @default(false)
-  inputModalities    String[] @default(["text"])
-  outputModalities   String[] @default(["text"])
-  contextLength      Int
-  disabled           Boolean  @default(false)
-  createdAt          DateTime @default(now()) @db.Timestamptz(3)
-}
-
 model WebPlan {
   id                 Int       @id @default(autoincrement())
   name               String
@@ -90,17 +65,6 @@ model Otp {
   user      User     @relation(fields: [userId], references: [id])
   userId    Int      @unique
   code      String
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-}
-
-model OpenrouterApiKey {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int      @unique
-  limit     Int
-  metadata  Bytes
-  hash      String
-  updatedAt DateTime @updatedAt @db.Timestamptz(3)
   createdAt DateTime @default(now()) @db.Timestamptz(3)
 }
 
@@ -123,4 +87,164 @@ model Error {
   context   String
   type      ErrorType
   createdAt DateTime  @default(now()) @db.Timestamptz(3)
+}
+
+enum ImageInput {
+  UNAVAILABLE
+  SINGLE
+  MULTI
+}
+
+model LanguageModel {
+  id                     Int        @id @default(autoincrement())
+  code                   String     @unique()
+  name                   String
+  description            String
+  milInCost              Float
+  milOutCost             Float
+  imageInput             ImageInput
+  supportsMessages       Boolean
+  defaultOptions         Json?
+  // The least amount of output tokens possible
+  minCompletionTokens    Int?
+  // The most amount of output tokens possible
+  maxCompletionTokens    Int?
+  // The default maximum amount of generated output tokens
+  defMaxCompletionTokens Int?
+  showCaseImage          String?
+  disabled               Boolean    @default(false)
+  createdAt              DateTime   @default(now()) @db.Timestamptz(3)
+}
+
+enum Ratio {
+  // Match input
+  RATIO_X_Y  @map("X:Y")
+  RATIO_1_1  @map("1:1")
+  RATIO_16_9 @map("16:9")
+  RATIO_9_16 @map("9:16")
+  RATIO_4_3  @map("4:3")
+  RATIO_3_4  @map("3:4")
+  RATIO_2_1  @map("2:1")
+  RATIO_1_2  @map("1:2")
+  RATIO_21_9 @map("21:9")
+  RATIO_9_21 @map("9:21")
+  RATIO_3_2  @map("3:2")
+  RATIO_2_3  @map("2:3")
+  RATIO_5_4  @map("5:4")
+  RATIO_4_5  @map("4:5")
+}
+
+model ImageModel {
+  id             Int        @id @default(autoincrement())
+  code           String     @unique()
+  name           String
+  description    String
+  defaultOptions Json?
+  cost           Float
+  imageInput     ImageInput
+  ratios         Ratio[]    @default([RATIO_1_1])
+  showCaseImage  String?
+  disabled       Boolean    @default(false)
+  createdAt      DateTime   @default(now()) @db.Timestamptz(3)
+}
+
+model VideoModel {
+  id              Int      @id @default(autoincrement())
+  code            String   @unique()
+  name            String
+  description     String
+  defaultOptions  Json?
+  cost            Float
+  durations       Int[]
+  image           Boolean  @default(false)
+  startImage      Boolean  @default(false)
+  firstFrameImage Boolean  @default(false)
+  lastFrameImage  Boolean  @default(false)
+  referenceImages Boolean  @default(false)
+  endImage        Boolean  @default(false)
+  audio           Boolean  @default(false)
+  ratios          Ratio[]  @default([RATIO_16_9])
+  showCaseImage   String?
+  showCaseVideo   String?
+  disabled        Boolean  @default(false)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}
+
+model ImageJob {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // request
+  prompt String
+  model  String
+  ratio  Ratio?
+
+  // progress
+  progress Int       @default(0)
+  status   JobStatus @default(QUEUED)
+
+  // replicate metadata
+  replicateId        String?
+  replicateGetUrl    String?
+  replicateCancelUrl String?
+  replicateWebUrl    String?
+
+  // result
+  imageUrl String?
+  cost     Float
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model VideoJob {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // request
+  prompt    String
+  model     String
+  ratio     Ratio?
+  lengthSec Int?
+
+  // progress
+  progress Int       @default(0)
+  status   JobStatus @default(QUEUED)
+
+  // replicate metadata
+  replicateId        String?
+  replicateGetUrl    String?
+  replicateCancelUrl String?
+  replicateWebUrl    String?
+
+  // result
+  videoUrl String?
+  cost     Float
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model LanguageJob {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cost      Float?
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
 }

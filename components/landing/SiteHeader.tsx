@@ -46,23 +46,11 @@ export default function SiteHeader() {
             <NavigationMenu.Item>
               <NavigationMenu.Link asChild>
                 <a
-                  href="#faq"
+                  href="#models"
                   className="flex items-center gap-1 text-sm font-medium hover:text-accent transition-colors"
                 >
-                  <QuestionMarkCircledIcon />
-                  <span>سوالات متداول</span>
-                </a>
-              </NavigationMenu.Link>
-            </NavigationMenu.Item>
-
-            <NavigationMenu.Item>
-              <NavigationMenu.Link asChild>
-                <a
-                  href="#pricing"
-                  className="flex items-center gap-1 text-sm font-medium hover:text-accent transition-colors"
-                >
-                  <MixerHorizontalIcon />
-                  <span>قیمت‌گذاری</span>
+                  <LightningBoltIcon />
+                  <span>مدل‌ها</span>
                 </a>
               </NavigationMenu.Link>
             </NavigationMenu.Item>
@@ -82,11 +70,23 @@ export default function SiteHeader() {
             <NavigationMenu.Item>
               <NavigationMenu.Link asChild>
                 <a
-                  href="#models"
+                  href="#pricing"
                   className="flex items-center gap-1 text-sm font-medium hover:text-accent transition-colors"
                 >
-                  <LightningBoltIcon />
-                  <span>مدل‌ها</span>
+                  <MixerHorizontalIcon />
+                  <span>قیمت‌گذاری</span>
+                </a>
+              </NavigationMenu.Link>
+            </NavigationMenu.Item>
+
+            <NavigationMenu.Item>
+              <NavigationMenu.Link asChild>
+                <a
+                  href="#faq"
+                  className="flex items-center gap-1 text-sm font-medium hover:text-accent transition-colors"
+                >
+                  <QuestionMarkCircledIcon />
+                  <span>سوالات متداول</span>
                 </a>
               </NavigationMenu.Link>
             </NavigationMenu.Item>
