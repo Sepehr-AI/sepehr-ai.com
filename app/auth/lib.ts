@@ -318,7 +318,7 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
   userId = Number(userId);
   const user = await errorOnThrow("findingUserInAuthLogin", () =>
     prisma.user.findUnique({
-      select: { id: true, mobile: true, name: true, email: true },
+      select: { id: true, mobile: true, name: true, email: true, balance: true },
       where: { id: userId },
     }),
   );

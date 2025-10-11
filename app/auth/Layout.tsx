@@ -24,6 +24,62 @@ import {
   EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
 
+// Common page elements
+const AuthPageWrapper = ({
+  theme,
+  children,
+}: {
+  theme: "light" | "dark";
+  children: React.ReactNode;
+}) => (
+  <div
+    className="min-h-screen w-full bg-background flex justify-center items-center p-4 md:p-8"
+    dir="rtl"
+  >
+    <div className="w-full max-w-md relative z-10 auth-animation">
+      <div className="mb-8 flex justify-center">
+        <Icon
+          fill={theme === "dark" ? "#fff" : "#000"}
+          className="h-12 w-auto"
+        />
+      </div>
+
+      <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+        {children}
+      </div>
+
+      <div className="mt-4 text-center text-sm text-foreground/60">
+        <p>سپهر AI - دنیای هوش مصنوعی در دستان شما</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Common form button
+const SubmitButton = ({
+  text,
+  isLoading,
+}: {
+  text: string;
+  isLoading: boolean;
+}) => (
+  <button
+    type="submit"
+    disabled={isLoading}
+    className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-3 px-4 rounded-lg font-medium transition-colors relative overflow-hidden group"
+  >
+    <span className={isLoading ? "opacity-0" : "opacity-100"}>{text}</span>
+    {isLoading && (
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="w-5 h-5 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin"></div>
+      </div>
+    )}
+    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transform translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200">
+      <ArrowLeftIcon />
+    </div>
+  </button>
+);
+
 export default function AuthLayout({
   otp,
   error,
@@ -90,54 +146,10 @@ export default function AuthLayout({
     if (error) toast.error(error, { position: "top-center", toastId: error });
   }, [error]);
 
-  // Common page elements
-  const AuthPageWrapper = ({ children }: { children: React.ReactNode }) => (
-    <div
-      className="min-h-screen w-full bg-background flex justify-center items-center p-4 md:p-8"
-      dir="rtl"
-    >
-      <div className="w-full max-w-md relative z-10 auth-animation">
-        <div className="mb-8 flex justify-center">
-          <Icon
-            fill={theme === "dark" ? "#fff" : "#000"}
-            className="h-12 w-auto"
-          />
-        </div>
-
-        <div className="bg-card border border-border rounded-xl shadow-lg overflow-hidden">
-          {children}
-        </div>
-
-        <div className="mt-4 text-center text-sm text-foreground/60">
-          <p>سپهر AI - دنیای هوش مصنوعی در دستان شما</p>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Common form button
-  const SubmitButton = ({ text }: { text: string }) => (
-    <button
-      type="submit"
-      disabled={isLoading}
-      className="w-full bg-accent hover:bg-accent/90 text-accent-foreground py-3 px-4 rounded-lg font-medium transition-colors relative overflow-hidden group"
-    >
-      <span className={isLoading ? "opacity-0" : "opacity-100"}>{text}</span>
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-5 h-5 border-2 border-accent-foreground/30 border-t-accent-foreground rounded-full animate-spin"></div>
-        </div>
-      )}
-      <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 transform translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200">
-        <ArrowLeftIcon />
-      </div>
-    </button>
-  );
-
   // Step 1: Mobile entry form (if no mobile query parameter exists)
   if (!mobile) {
     return (
-      <AuthPageWrapper>
+      <AuthPageWrapper theme={theme}>
         <div className="p-6 md:p-8">
           <div className="text-center mb-6">
             <h2 className="text-2xl font-bold mb-2">ورود / ثبت‌نام</h2>
@@ -174,7 +186,7 @@ export default function AuthLayout({
               </Form.Message>
             </Form.Field>
 
-            <SubmitButton text="ادامه" />
+            <SubmitButton isLoading={isLoading} text="ادامه" />
           </Form.Root>
 
           <div className="mt-8">
@@ -197,7 +209,7 @@ export default function AuthLayout({
   // Step 2A: Login form (if the mobile exists)
   if (exists === "true") {
     return (
-      <AuthPageWrapper>
+      <AuthPageWrapper theme={theme}>
         <div className="p-6 md:p-8">
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -241,7 +253,7 @@ export default function AuthLayout({
               </Form.Message>
             </Form.Field>
 
-            <SubmitButton text="ورود به حساب کاربری" />
+            <SubmitButton isLoading={isLoading} text="ورود به حساب کاربری" />
           </Form.Root>
 
           <div className="mt-6 text-center">
@@ -260,7 +272,7 @@ export default function AuthLayout({
 
   // Step 2B: Registration form (if the mobile does not exist)
   return (
-    <AuthPageWrapper>
+    <AuthPageWrapper theme={theme}>
       <div className="p-6 md:p-8">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -340,7 +352,7 @@ export default function AuthLayout({
             </Form.Message>
           </Form.Field>
 
-          <SubmitButton text="تکمیل ثبت نام" />
+          <SubmitButton isLoading={isLoading} text="تکمیل ثبت نام" />
         </Form.Root>
 
         <div className="mt-6 text-center">

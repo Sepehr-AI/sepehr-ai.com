@@ -190,8 +190,8 @@ export async function setupPaymentGate({
     price = !hasDiscount
       ? originalPrice
       : roundWebPlan(
-          originalPrice - (originalPrice * webPlan.discountPercentage!) / 100,
-        );
+        originalPrice - (originalPrice * webPlan.discountPercentage!) / 100,
+      );
     if (hasDiscount) discountPercentage = webPlan.discountPercentage;
   } catch (e) {
     error("DatabaseOrExchangeErrorForPayment:", {
@@ -251,6 +251,7 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
     id: Number(headersList.get("userId")),
     email: headersList.get("userEmail") as string,
     mobile: headersList.get("usermobile") as string,
+    balance: Number(headersList.get("userBalance")) as number,
   };
 
   if (isNaN(planId) || isNaN(user.id) || !user.mobile) {

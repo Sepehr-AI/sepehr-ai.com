@@ -1,5 +1,5 @@
 import prisma from "@/lib/prisma";
-import type { Faq } from "@/lib/prisma";
+import type { Faq } from "@/prisma/client";
 import { unstable_cache } from "next/cache";
 
 export type FaqsForLandingPage = (Pick<Faq, "title" | "description"> &

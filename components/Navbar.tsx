@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../components/ThemeProvider";
 import * as Separator from "@radix-ui/react-separator";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { type DbChat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
 import {
   PlusIcon,
@@ -54,25 +54,23 @@ const NavContent = ({
   const { theme, setTheme } = useTheme();
   const [search, setSearch] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [filteredChats, setFilteredChats] = useState(chats);
   const [showBottomShadow, setShowBottomShadow] = useState(false);
 
-  // Filter chats based on search
-  useEffect(() => {
-    setFilteredChats(
+  // Compute derived data instead of storing it in state
+  const filteredChats = useMemo(
+    () =>
       chats.filter((chat) =>
         chat.value.namePrefix.toLowerCase().includes(search.toLowerCase()),
       ),
-    );
-  }, [search, chats]);
+    [chats, search],
+  );
 
-  // Check for scroll shadow
+  // Check for scroll shadow whenever the list changes
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (container) {
-      const hasOverflow = container.scrollHeight > container.clientHeight;
-      setShowBottomShadow(hasOverflow);
-    }
+    if (!container) return;
+    const hasOverflow = container.scrollHeight > container.clientHeight;
+    setShowBottomShadow(hasOverflow);
   }, [filteredChats]);
 
   return (

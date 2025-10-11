@@ -1,6 +1,7 @@
 import prisma from "./prisma";
-import type { ErrorType } from "@/lib/prisma";
-import type { JsonObject } from "@/lib/prisma/runtime/library";
+import type { ErrorType } from "@/prisma/client";
+import type { JsonObject } from "@/prisma/client/runtime/library";
+
 
 const storeIntoDB = (type: ErrorType, context: string, msg: unknown) =>
   prisma.error

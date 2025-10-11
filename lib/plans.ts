@@ -6,7 +6,7 @@ import utc from "dayjs/plugin/utc";
 import getExchangeRate from "./exchange";
 import { unstable_cache } from "next/cache";
 import timezone from "dayjs/plugin/timezone";
-import type { WebPlan } from "@/lib/prisma";
+import type { WebPlan } from "@/prisma/client";
 import { numberToReadableFarsi, roundWebPlan } from "./cost";
 
 dayjs.extend(utc);

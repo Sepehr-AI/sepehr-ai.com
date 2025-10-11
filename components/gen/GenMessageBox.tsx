@@ -153,16 +153,12 @@ export default function GenMessageBox({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsSelectOpen(false);
+        setSearchTerm("");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Reset search when dropdown closes
-  useEffect(() => {
-    if (!isSelectOpen) setSearchTerm("");
-  }, [isSelectOpen]);
 
   return (
     <div className="space-y-4">
@@ -218,7 +214,13 @@ export default function GenMessageBox({
           <button
             type="button"
             disabled={disabled}
-            onClick={() => !disabled && setIsSelectOpen((o) => !o)}
+            onClick={() => {
+              if (!disabled) {
+                const toggeled = !isSelectOpen;
+                setIsSelectOpen(toggeled);
+                if (!toggeled) setSearchTerm("");
+              }
+            }}
             className={`ltr text-center flex items-center justify-between w-full p-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 transition-colors ${
               disabled ? "opacity-60 cursor-not-allowed" : ""
             }`}
@@ -262,6 +264,7 @@ export default function GenMessageBox({
                       onClick={() => {
                         setModelId(m.code);
                         setIsSelectOpen(false);
+                        setSearchTerm("");
                       }}
                     >
                       <div className="flex items-center gap-2">

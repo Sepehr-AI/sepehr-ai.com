@@ -1,4 +1,3 @@
-// lib/imageModels.ts
 import prisma from "@/lib/prisma";
 import NodeCache from "node-cache";
 import { usdToCredit } from "./cost";

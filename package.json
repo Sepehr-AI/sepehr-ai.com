@@ -5,13 +5,11 @@
   "type": "module",
   "scripts": {
     "lint": "next lint",
-    "build": "next build",
     "start": "next start",
     "dev:webpack": "next dev",
     "dev": "next dev --turbopack",
     "transfer-credits": "tsx scripts/transfer-credits.ts",
-    "expose-openrouter-key": "tsx scripts/expose-openrouter-key.ts",
-    "register-openrouter-key": "tsx scripts/register-openrouter-key.ts",
+    "build": "NODE_OPTIONS=--max_old_space_size=3072 next build",
     "post-pull": "rm -Rf .next && pnpm i && npx prisma generate && npx prisma generate --sql && next build",
     "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start"
   },

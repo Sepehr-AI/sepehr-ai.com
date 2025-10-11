@@ -4,11 +4,11 @@ import type { z } from "zod";
 import prisma from "@/lib/prisma";
 import { error } from "@/lib/log";
 import { NextRequest, NextResponse } from "next/server";
-import { findTransactionForUpdate } from "@/lib/prisma/sql";
 import {
   sepehrAiVerifyPaymentResSchema,
   sepehrAiVerifyPaymentPayloadSchema,
 } from "@/sepehr-ai-ipg/src/lib";
+import { findTransactionForUpdate } from "@/prisma/client/sql";
 
 const localIPs = ["127.0.0.1", "::1"];
 

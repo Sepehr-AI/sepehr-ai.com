@@ -89,6 +89,7 @@ export default function NewChatBody({
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setIsSelectOpen(false);
+        setSearchTerm("");
       }
     };
 
@@ -97,13 +98,6 @@ export default function NewChatBody({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
-  // Reset search when dropdown closes
-  useEffect(() => {
-    if (!isSelectOpen) {
-      setSearchTerm("");
-    }
-  }, [isSelectOpen]);
 
   return (
     <div className="flex flex-col md:h-dvh min-h-0 px-2">
@@ -119,7 +113,11 @@ export default function NewChatBody({
             <div className="pt-2 mb-6 relative" ref={dropdownRef}>
               <button
                 className="ltr text-center flex items-center justify-between w-full p-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 transition-colors"
-                onClick={() => setIsSelectOpen(!isSelectOpen)}
+                onClick={() => {
+                  const toggled = !isSelectOpen;
+                  setIsSelectOpen(toggled);
+                  if (!toggled) setSearchTerm("");
+                }}
               >
                 <div className="flex-auto"></div>
                 <div className="flex items-center gap-2 overflow-hidden">
@@ -161,6 +159,7 @@ export default function NewChatBody({
                           onClick={() => {
                             handleEngineChange(model.code);
                             setIsSelectOpen(false);
+                            setSearchTerm("");
                           }}
                         >
                           <CompanyLogo
