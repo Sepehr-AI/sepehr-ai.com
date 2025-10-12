@@ -37,7 +37,7 @@ export default function PricingSection({
 
   return (
     <section id="pricing" className="py-20">
-      <div className="container mx-auto px-2">
+      <div className="mx-auto px-[3dvw] xl:max-w-8xl">
         <div className="text-center mb-14">
           <h2 className="text-3xl font-bold mb-3">پلن‌های قیمت‌گذاری</h2>
           <p className="text-foreground/70">
@@ -46,7 +46,7 @@ export default function PricingSection({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-8xl mx-auto">
+        <div className="grid gap-6 grid-cols-1 md:gap-4 md:grid-cols-2 xl:gap-6 xl:grid-cols-3">
           {plans.map((plan, index) => {
             const { diffInFarsi, hasDiscount, discountPercent } =
               extractDiscountInfo(plan);
@@ -63,7 +63,11 @@ export default function PricingSection({
                     index === 1 ? "border-accent relative" : "border-border"
                   }` +
                   (hasDiscount ? " ribbon-container" : "") +
-                  (theme === "light" ? " shadow-lg" : " shadow-sm ")
+                  (theme === "light" ? " shadow-lg" : " shadow-sm ") +
+                  // Center the 3rd grid element when 2 are shown in each row, also fully takes up the width
+                  (index === plans.length - 1
+                    ? "[grid-column:auto] md:[grid-column:1/-1] xl:[grid-column:auto]"
+                    : "")
                 }
               >
                 {index === 1 && (
@@ -158,10 +162,10 @@ export default function PricingSection({
                         <span className="text-orange-700">تذکر:</span>
                         <span>
                           {" "}
-                          این اعداد نشان‌دهندهٔ حداکثرِ استفاده در صورتِ
-                          استفادهٔ تنها از همان مدل هستند؛ اگر چند مدل را ترکیب
-                          کنید، این اعداد جمع نمی‌شوند و سهم هر مدل براساس
-                          اعتبارات مصرفی شما محاسبه می‌شود.
+                          این اعداد نشان‌دهندهٔ سقف استفاده هر مدل به‌صورت مستقل
+                          هستند. در صورت استفاده از چند مدل مختلف، این مقادیر با
+                          هم جمع نمی‌شوند؛ بلکه میزان استفاده بر اساس اعتبار کلی
+                          پلن و میزان مصرف هر مدل از همان اعتبار محاسبه می‌شود.
                         </span>
                       </p>
                     </div>
