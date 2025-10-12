@@ -1,7 +1,19 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
+import CompanyLogo from "@/components/companyLogos/CompanyLogo";
+import type {
+  BaseGenModelDto,
+  MediaFilesState,
+  MediaInputSpec,
+} from "@/types/gen";
+import type { JobStatus } from "@/types/jobs";
+import {
+  CaretSortIcon,
+  CheckIcon,
+  ImageIcon,
+  MagnifyingGlassIcon,
+  PaperPlaneIcon,
+} from "@radix-ui/react-icons";
 import {
   type Dispatch,
   type SetStateAction,
@@ -9,20 +21,10 @@ import {
   useRef,
   useState,
 } from "react";
-import {
-  PaperPlaneIcon,
-  ImageIcon,
-  CaretSortIcon,
-  CheckIcon,
-  MagnifyingGlassIcon,
-} from "@radix-ui/react-icons";
-import CompanyLogo from "@/components/companyLogos/CompanyLogo";
-import type { JobStatus } from "@/types/jobs";
-import type {
-  BaseGenModelDto,
-  MediaInputSpec,
-  MediaFilesState,
-} from "@/types/gen";
+
+import RatioSelector from "./RatioSelector";
+
+/* eslint-disable @next/next/no-img-element */
 
 interface Props {
   // Prompt + reference image
@@ -345,31 +347,12 @@ export default function GenMessageBox({
 
       {/* Ratio selector (always visible if ratios are provided) */}
       {ratios.length > 0 && (
-        <div>
-          <label className="text-sm text-foreground/80">
-            {labels.ratioLabel ?? "نسبت تصویر خروجی"}
-          </label>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {ratios.map((r) => {
-              const active = r === ratio;
-              return (
-                <button
-                  key={r}
-                  type="button"
-                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                    active
-                      ? "bg-accent/10 text-accent border border-accent/40"
-                      : "border border-border hover:bg-black/10 dark:hover:bg-muted/60"
-                  }`}
-                  onClick={() => setRatio(r)}
-                  disabled={disabled}
-                >
-                  {r !== "X:Y" ? r : "مطابق تصویر ورودی"}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <RatioSelector
+          ratios={ratios}
+          ratio={ratio}
+          setRatio={setRatio}
+          disabled={disabled}
+        />
       )}
 
       {/* Dynamic media inputs (video) */}

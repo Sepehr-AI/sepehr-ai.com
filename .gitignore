@@ -45,5 +45,4 @@ prisma/migrations
 
 .vscode
 
-public/*
-!public/README.md
+public/show-cases/

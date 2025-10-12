@@ -1,7 +1,8 @@
 "use server";
 
-import ImageGenComponent from "./ImageComponent";
 import { getImageModelsForWeb } from "@/lib/imageModels";
+
+import ImageGenComponent from "./ImageComponent";
 
 export default async function ImageGenPage() {
   const imageModels = await getImageModelsForWeb();

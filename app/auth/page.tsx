@@ -1,14 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use server";
 
 import AuthLayout from "./Layout";
 import {
   checkMobileAction,
   loginAction,
-  registerAction,
   redirectToDashboardIfUserAuth,
+  registerAction,
 } from "./lib";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /**
  * The AuthPage component.

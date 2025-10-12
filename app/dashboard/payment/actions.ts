@@ -1,25 +1,25 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use server";
 
-import net from "net";
-import path from "path";
-import type { z } from "zod";
-import fs from "fs/promises";
+import { roundWebPlan } from "@/lib/cost";
+import { extractDiscountInfo } from "@/lib/discount";
+import getExchangeRate from "@/lib/exchange";
 import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
-import { spawn } from "child_process";
-import { headers } from "next/headers";
-import { roundWebPlan } from "@/lib/cost";
-import { redirect } from "next/navigation";
-import getExchangeRate from "@/lib/exchange";
-import { extractDiscountInfo } from "@/lib/discount";
 import type { MiddlewareUserData } from "@/middleware";
 import {
-  sepehrFetch,
-  chargeApiResSchema,
   chargeApiPayloadSchema,
+  chargeApiResSchema,
+  sepehrFetch,
 } from "@/sepehr-ai-ipg/src/lib";
+import { spawn } from "child_process";
+import fs from "fs/promises";
+import net from "net";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import path from "path";
+import type { z } from "zod";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const PROJECT_ROOT = process.cwd();
 const SEPEHR_AI_IPG_ADDR: string =
@@ -190,8 +190,8 @@ export async function setupPaymentGate({
     price = !hasDiscount
       ? originalPrice
       : roundWebPlan(
-        originalPrice - (originalPrice * webPlan.discountPercentage!) / 100,
-      );
+          originalPrice - (originalPrice * webPlan.discountPercentage!) / 100,
+        );
     if (hasDiscount) discountPercentage = webPlan.discountPercentage;
   } catch (e) {
     error("DatabaseOrExchangeErrorForPayment:", {

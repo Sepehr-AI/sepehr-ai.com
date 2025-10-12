@@ -1,6 +1,6 @@
 import { updateChat } from "@/lib/chatDB";
 import type { ChatStatus, UIMessage } from "ai";
-import { useEffect, type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type SetStateAction, useEffect } from "react";
 
 export function usePersistMessages({
   status,

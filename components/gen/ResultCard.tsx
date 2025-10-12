@@ -3,9 +3,9 @@
 type Props = {
   kind: "image" | "video";
   url: string;
+  resetLabel: string;
   onReset: () => void;
-  downloadLabel: string; // "دانلود ویدئو" | "دانلود تصویر"
-  resetLabel: string; // "ساخت یک ویدئوی دیگر" | "ساخت تصویر دیگر"
+  downloadLabel: string;
 };
 
 export default function ResultCard({

@@ -1,13 +1,14 @@
 "use server";
 
-import dayjs from "dayjs";
 import prisma from "@/lib/prisma";
-import utc from "dayjs/plugin/utc";
-import getExchangeRate from "./exchange";
-import { unstable_cache } from "next/cache";
-import timezone from "dayjs/plugin/timezone";
 import type { WebPlan } from "@/prisma/client";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { unstable_cache } from "next/cache";
+
 import { numberToReadableFarsi, roundWebPlan } from "./cost";
+import getExchangeRate from "./exchange";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -18,10 +19,10 @@ export type WebPlansForUsers = ((Pick<
   "id" | "name" | "usdCredits" | "discountEndsOn" | "discountPercentage"
 > &
   Partial<WebPlan>) & {
-    price: number;
-    displayPrice: string;
-    discountedDisplayPrice: string | null;
-  })[];
+  price: number;
+  displayPrice: string;
+  discountedDisplayPrice: string | null;
+})[];
 
 export const getWebPlans: () => Promise<WebPlansForUsers> = unstable_cache(
   async () => {

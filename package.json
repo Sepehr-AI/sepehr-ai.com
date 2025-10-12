@@ -10,8 +10,9 @@
     "dev": "next dev --turbopack",
     "transfer-credits": "tsx scripts/transfer-credits.ts",
     "build": "NODE_OPTIONS=--max_old_space_size=3072 next build",
+    "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start",
     "post-pull": "rm -Rf .next && pnpm i && npx prisma generate && npx prisma generate --sql && next build",
-    "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start"
+    "fmt": "prettier --config ./prettier.config.cjs --write \"middleware.ts\" \"{types,sepehr-ai-ipg/src,scripts,replicate-chat-provider/src,prisma,lib,hooks,app,components}/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@ai-sdk/provider": "^2.0.0",
@@ -72,6 +73,7 @@
     "@eslint/eslintrc": "^3.3.1",
     "@next/eslint-plugin-next": "^15.5.4",
     "@tailwindcss/postcss": "^4.1.14",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/bcrypt": "^6.0.0",
     "@types/humanize-duration": "^3.27.4",
     "@types/node": "24.7.1",
@@ -109,5 +111,5 @@
       "unrs-resolver"
     ]
   },
-  "packageManager": "pnpm@10.17.1"
+  "packageManager": "pnpm@10.18.2"
 }

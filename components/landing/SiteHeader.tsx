@@ -1,21 +1,22 @@
 "use client";
 
-import Icon from "./Icon";
+import {
+  HamburgerMenuIcon,
+  LightningBoltIcon,
+  MixerHorizontalIcon,
+  MoonIcon,
+  PersonIcon,
+  QuestionMarkCircledIcon,
+  RocketIcon,
+  SunIcon,
+} from "@radix-ui/react-icons";
+import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+import * as Switch from "@radix-ui/react-switch";
 import Link from "next/link";
 import { useState } from "react";
+
 import { useTheme } from "../ThemeProvider";
-import * as Switch from "@radix-ui/react-switch";
-import * as NavigationMenu from "@radix-ui/react-navigation-menu";
-import {
-  RocketIcon,
-  MixerHorizontalIcon,
-  HamburgerMenuIcon,
-  SunIcon,
-  MoonIcon,
-  QuestionMarkCircledIcon,
-  LightningBoltIcon,
-  PersonIcon,
-} from "@radix-ui/react-icons";
+import Icon from "./Icon";
 
 export default function SiteHeader() {
   const { theme, setTheme } = useTheme();

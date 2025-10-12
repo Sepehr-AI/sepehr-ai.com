@@ -1,20 +1,20 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ImageModelPricingDto } from "@/lib/imageModels";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+/* eslint-disable @next/next/no-img-element */
 
 const BASE_URL = (process.env.NEXT_PUBLIC_URL || "").replace(/\/$/, "");
 
 type Slide = {
   key: string;
-  title: string; // model name
+  title: string;
+  src: string;
+  poster?: string;
   type: "image" | "video";
-  src: string; // image url or video url
-  poster?: string; // for video placeholder
-  ratio?: "square" | "video"; // styling
+  ratio?: "square" | "video";
 };
 
 export default function ShowcaseSlideshow({
@@ -49,14 +49,16 @@ export default function ShowcaseSlideshow({
   const videoSlides: Slide[] = useMemo(
     () =>
       videoModels
-        .filter((m) => !!m.showCaseVideo || !!m.showCaseImage)
+        .filter((m) => !!m.showCaseVideo)
         .slice(0, 12)
         .map((m) => ({
           key: m.code,
           title: m.name,
           type: m.showCaseVideo ? "video" : "image",
-          src: toUrl(m.showCaseVideo || m.showCaseImage),
-          poster: m.showCaseImage ? toUrl(m.showCaseImage) : undefined,
+          src: toUrl(m.showCaseVideo),
+          poster: m.showCaseVideoPoster
+            ? toUrl(m.showCaseVideoPoster)
+            : undefined,
           ratio: "video",
         })),
     [videoModels, toUrl],
@@ -330,16 +332,18 @@ function AnimatedSlide({
         ) : (
           <video
             ref={attachVideoRef}
-            src={slide.src}
             poster={slide.poster}
             // Autoplay requirements
             muted
+            autoPlay
             playsInline
             // no loop; we advance on "ended"
             controls={false}
             className="w-full h-full object-cover bg-black"
             preload="auto"
-          />
+          >
+            <source src={slide.src} type="video/mp4"></source>
+          </video>
         )}
       </div>
 

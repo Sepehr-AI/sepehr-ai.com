@@ -1,10 +1,11 @@
 "use server";
 
-import PaymentLayout from "./Layout";
-import { headers } from "next/headers";
 import { usdToCredit } from "@/lib/cost";
 import { getWebPlans } from "@/lib/plans";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+import PaymentLayout from "./Layout";
 
 export default async function PaymentPage({
   searchParams: _searchParams,

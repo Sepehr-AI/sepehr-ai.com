@@ -1,14 +1,15 @@
 "use client";
 
-import { toast } from "react-toastify";
-import { usdToCredit } from "@/lib/cost";
-import { CiDollar } from "react-icons/ci";
-import { useFormStatus } from "react-dom";
 import Loading from "@/components/Loading";
-import { useEffect, useState } from "react";
-import { chargeAccountAction } from "./actions";
-import type { WebPlansForUsers } from "@/lib/plans";
+import { usdToCredit } from "@/lib/cost";
 import { extractDiscountInfo } from "@/lib/discount";
+import type { WebPlansForUsers } from "@/lib/plans";
+import { useEffect, useState } from "react";
+import { useFormStatus } from "react-dom";
+import { CiDollar } from "react-icons/ci";
+import { toast } from "react-toastify";
+
+import { chargeAccountAction } from "./actions";
 
 function Form({
   plans,

@@ -1,11 +1,11 @@
 "use client";
 
-import { useInView } from "react-intersection-observer";
 import {
-  PersonIcon,
   MixerHorizontalIcon,
+  PersonIcon,
   RocketIcon,
 } from "@radix-ui/react-icons";
+import { useInView } from "react-intersection-observer";
 
 const steps = [
   {

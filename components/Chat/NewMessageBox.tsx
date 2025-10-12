@@ -1,22 +1,22 @@
 "use client";
 
 import {
-  useEffect,
-  type Dispatch,
-  type RefObject,
-  type MouseEvent,
-  type ChangeEvent,
-  type ElementType,
-  type SyntheticEvent,
-  type SetStateAction,
-} from "react";
-import {
+  FilePlusIcon,
   PaperPlaneIcon,
   ReloadIcon,
   StopIcon,
-  FilePlusIcon,
 } from "@radix-ui/react-icons";
 import type { UIMessage } from "ai";
+import {
+  type ChangeEvent,
+  type Dispatch,
+  type ElementType,
+  type MouseEvent,
+  type RefObject,
+  type SetStateAction,
+  type SyntheticEvent,
+  useEffect,
+} from "react";
 
 interface NewMessageBoxProps {
   input?: string;

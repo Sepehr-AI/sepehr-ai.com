@@ -1,24 +1,25 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useTheme } from "../components/ThemeProvider";
-import * as Separator from "@radix-ui/react-separator";
-import { useState, useRef, useEffect, useMemo } from "react";
 import { type DbChat, getChatsForNavbar, newChatListener } from "@/lib/chatDB";
 import {
-  PlusIcon,
-  MagnifyingGlassIcon,
-  HamburgerMenuIcon,
   Cross1Icon,
   ExitIcon,
-  LightningBoltIcon,
-  SunIcon,
-  MoonIcon,
-  VideoIcon,
+  HamburgerMenuIcon,
   ImageIcon,
+  LightningBoltIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  PlusIcon,
+  SunIcon,
+  VideoIcon,
 } from "@radix-ui/react-icons";
+import * as Separator from "@radix-ui/react-separator";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IoMdChatboxes } from "react-icons/io";
+
+import { useTheme } from "../components/ThemeProvider";
 
 // A reusable sidebar link component
 const SidebarLink = ({

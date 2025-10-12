@@ -1,6 +1,6 @@
-import { RiRobot2Fill } from "react-icons/ri";
-import type { IconBaseProps } from "react-icons";
 import { companyWebsiteToRiMap } from "@/lib/aiCompaniesForFrontend";
+import type { IconBaseProps } from "react-icons";
+import { RiRobot2Fill } from "react-icons/ri";
 
 export default function CompanyLogo({
   companyWebsite,

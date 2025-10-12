@@ -1,6 +1,6 @@
 import { useDebouncedEffect } from "@/hooks/useDebouncedEffects";
 import type { UIMessage } from "ai";
-import { useEffect, useState, type RefObject } from "react";
+import { type RefObject, useEffect, useState } from "react";
 
 export function useScrollManager({
   messages,

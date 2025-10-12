@@ -1,4 +1,3 @@
-// components/landing/HeroSection.tsx
 "use client";
 
 import * as Separator from "@radix-ui/react-separator";

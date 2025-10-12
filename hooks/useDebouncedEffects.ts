@@ -1,8 +1,8 @@
 import {
-  useRef,
-  useEffect,
   type DependencyList,
   type EffectCallback,
+  useEffect,
+  useRef,
 } from "react";
 
 export const useDebouncedEffect = (

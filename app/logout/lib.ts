@@ -1,25 +1,18 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { NEXT_PUBLIC_BASE_URL } from "@/lib/url";
 import { revalidatePath } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
-export async function handleServerLogout(req: NextRequest) {
+export async function handleServerLogout() {
   revalidatePath("/", "layout");
-
-  let destination = new URL("/", req.url);
-  if (
-    process.env.NODE_ENV === "production" &&
-    process.env.NEXT_PUBLIC_BASE_URL
-  ) {
-    destination = new URL(process.env.NEXT_PUBLIC_BASE_URL);
-  }
 
   // Clear the session cookie explicitly. Generally this can be done by just
   // using Set-Cookie: <cookie-name>=; but Next.js gives us an API to do it.
   (await cookies()).delete("token");
 
-  return NextResponse.redirect(destination, {
+  return NextResponse.redirect(NEXT_PUBLIC_BASE_URL, {
     headers: {
       "Clear-Site-Data": `"cookies"`,
       // Next.js accepts this directive to clear its own client fetch cache.

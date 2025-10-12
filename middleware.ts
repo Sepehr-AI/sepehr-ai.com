@@ -1,9 +1,10 @@
-import { jwtVerify } from "jose";
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { jwtVerify } from "jose";
 import type { NextRequest } from "next/server";
-import { handleServerLogout } from "./app/logout/lib";
+import { NextResponse } from "next/server";
+
 import type { SepehrAiJwtPayload } from "./app/auth/lib";
+import { handleServerLogout } from "./app/logout/lib";
 
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
@@ -44,9 +45,12 @@ export async function middleware(req: NextRequest) {
     try {
       user = await authenticate(req);
     } catch {
-      return handleServerLogout(req);
+      return handleServerLogout();
     }
-  } else if (pathname.startsWith("/api") && !pathname.startsWith("/api/verify-payment")) {
+  } else if (
+    pathname.startsWith("/api") &&
+    !pathname.startsWith("/api/verify-payment")
+  ) {
     try {
       user = await authenticate(req);
     } catch {

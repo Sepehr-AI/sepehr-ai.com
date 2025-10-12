@@ -1,31 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
-import Message from "./Message";
-import { v7 as uuidv7 } from "uuid";
-import NewMessageBox from "./NewMessageBox";
-import LoadingMessage from "./LoadingMessage";
-import CompanyLogo from "../companyLogos/CompanyLogo";
 import { useAttachments } from "@/components/Chat/hooks/useAttachments";
+import { NEXT_PUBLIC_BASE_URL } from "@/lib/url";
 import { type UIMessage, useChat } from "@ai-sdk/react";
-import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRef, useState, type RefObject } from "react";
 import { DefaultChatTransport } from "ai";
-import { useInitialContext } from "./hooks/useInitialContext";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { type RefObject, useRef, useState } from "react";
+import { v7 as uuidv7 } from "uuid";
+
+import CompanyLogo from "../companyLogos/CompanyLogo";
+import LoadingMessage from "./LoadingMessage";
+import Message from "./Message";
+import NewMessageBox from "./NewMessageBox";
 import { useAutoSend } from "./hooks/useAutoSend";
-import { useScrollManager } from "./hooks/useScrollManager";
 import {
   backendToClientErr,
   connectionFailedErrMsg,
   useErrorHandler,
 } from "./hooks/useErrorHandler";
+import { useInitialContext } from "./hooks/useInitialContext";
 import { usePersistMessages } from "./hooks/usePersistMessages";
+import { useScrollManager } from "./hooks/useScrollManager";
 
-const NEXT_PUBLIC_BASE_URL =
-  process.env.NODE_ENV === "development"
-    ? ""
-    : process.env.NEXT_PUBLIC_BASE_URL || "";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export default function ChatBody({
   uuid,

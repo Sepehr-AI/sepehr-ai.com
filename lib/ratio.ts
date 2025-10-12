@@ -7,7 +7,7 @@ type RatioKey = keyof typeof RatioObj;
  * Example: ratioEnumKeyToLabel("RATIO_16_9") -> "16:9"
  */
 export const ratioEnumKeyToLabel = (key: RatioKey): string => {
-    return key.replace('RATIO_', '').replace('_', ':') as string;
+  return key.replace("RATIO_", "").replace("_", ":") as string;
 };
 
 /**
@@ -15,5 +15,5 @@ export const ratioEnumKeyToLabel = (key: RatioKey): string => {
  * Example: ratioLabelToEnumKey("16:9") -> "RATIO_16_9"
  */
 export const ratioLabelToEnumKey = (label: string): RatioKey | undefined => {
-    return `RATIO_${label.replace(':', '_')}` as RatioKey;
+  return `RATIO_${label.replace(":", "_")}` as RatioKey;
 };

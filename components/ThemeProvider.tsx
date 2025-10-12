@@ -1,15 +1,9 @@
 "use client";
 
-import { Theme } from "@radix-ui/themes";
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import { Theme as RadixTheme } from "@radix-ui/themes";
+import { createContext, useContext, useEffect, useState } from "react";
 
-type ThemeMode = "light" | "dark";
+export type ThemeMode = "light" | "dark";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -32,10 +26,12 @@ export function useTheme() {
   return useContext(ThemeProviderContext);
 }
 
-function getInitialTheme(defaultTheme: ThemeMode): ThemeMode {
-  if (typeof window === "undefined") return defaultTheme; // SSR
-  const saved = localStorage.getItem("theme") as ThemeMode | null;
-  if (saved) return saved;
+function getInitialTheme(defaultTheme: ThemeMode) {
+  if (typeof window === "undefined") return defaultTheme;
+
+  const savedTheme = localStorage.getItem("theme") as ThemeMode | null;
+  if (savedTheme) return savedTheme;
+
   return window.matchMedia("(prefers-color-scheme: dark)").matches
     ? "dark"
     : defaultTheme;
@@ -45,49 +41,36 @@ export default function ThemeProvider({
   children,
   defaultTheme = "light",
 }: ThemeProviderProps) {
-  // Initialize from localStorage or system preference without an effect
-  const [theme, _setTheme] = useState<ThemeMode>(() =>
-    getInitialTheme(defaultTheme),
-  );
+  const [theme, setTheme] = useState<ThemeMode>(defaultTheme);
 
-  // Wrap setter to also persist to localStorage
-  const setTheme = useCallback((t: ThemeMode) => {
-    try {
-      localStorage.setItem("theme", t);
-    } catch {}
-    _setTheme(t);
-  }, []);
-
-  // Sync <html> classes with current theme
   useEffect(() => {
-    const root = document.documentElement;
+    setTheme(getInitialTheme(defaultTheme));
+  }, [defaultTheme]);
+
+  useEffect(() => {
+    const root = window.document.documentElement;
     root.classList.remove("light-theme", "dark-theme");
     root.classList.add(`${theme}-theme`);
   }, [theme]);
 
-  // Update when system theme changes, but only if the user hasn't chosen explicitly
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      const saved = localStorage.getItem("theme") as ThemeMode | null;
-      if (!saved) _setTheme(e.matches ? "dark" : "light");
-    };
-    mq.addEventListener?.("change", handleChange);
-    return () => mq.removeEventListener?.("change", handleChange);
-  }, []);
-
-  const value: ThemeProviderState = { theme, setTheme };
+  const value = {
+    theme,
+    setTheme: (theme: ThemeMode) => {
+      localStorage.setItem("theme", theme);
+      setTheme(theme);
+    },
+  };
 
   return (
     <ThemeProviderContext.Provider value={value}>
-      <Theme
+      <RadixTheme
         appearance={theme}
         accentColor="indigo"
         scaling="100%"
         radius="medium"
       >
         {children}
-      </Theme>
+      </RadixTheme>
     </ThemeProviderContext.Provider>
   );
 }

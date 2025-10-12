@@ -1,32 +1,29 @@
 "use server";
 
-import Head from "next/head";
 import ThemeProvider from "@/components/ThemeProvider";
-
-import SiteHeader from "@/components/landing/SiteHeader";
-import SiteFooter from "@/components/landing/SiteFooter";
+import CallToAction from "@/components/landing/CallToAction";
+import FaqSection from "@/components/landing/FaqSection";
 import HeroSection from "@/components/landing/HeroSection";
-import ShowcaseSlideshow from "@/components/landing/ShowcaseSlideshow";
 import ModelShowcase from "@/components/landing/ModelShowcase";
 import PricingSection from "@/components/landing/PricingSection";
-import FaqSection from "@/components/landing/FaqSection";
-import CallToAction from "@/components/landing/CallToAction";
-
+import ShowcaseSlideshow from "@/components/landing/ShowcaseSlideshow";
+import SiteFooter from "@/components/landing/SiteFooter";
+import SiteHeader from "@/components/landing/SiteHeader";
 import { getFaqs } from "@/lib/faqs";
-import { getWebPlans } from "@/lib/plans";
-
-import {
-  getLanguageModelsForWeb,
-  getWebLanguageModelsLength,
-} from "@/lib/languageModels";
 import {
   getImageModelsForWeb,
   getWebImageModelsLength,
 } from "@/lib/imageModels";
 import {
+  getLanguageModelsForWeb,
+  getWebLanguageModelsLength,
+} from "@/lib/languageModels";
+import { getWebPlans } from "@/lib/plans";
+import {
   getVideoModelsForWeb,
   getWebVideoModelsLength,
 } from "@/lib/videoModels";
+import Head from "next/head";
 
 export default async function Home() {
   const [faqs, plans] = await Promise.all([getFaqs(), getWebPlans()]);

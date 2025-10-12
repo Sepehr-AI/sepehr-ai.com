@@ -1,15 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
 import dynamic from "next/dynamic";
 import React, {
-  Suspense,
-  type FC,
-  type JSX,
   type ComponentProps,
   type ComponentType,
+  type FC,
+  type JSX,
+  Suspense,
 } from "react";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // A small inline fallback that preserves layout.
 // You can adjust height/width or replace with a spinner.

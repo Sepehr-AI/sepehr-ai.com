@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
-import type { z } from "zod";
 import Loading from "@/components/Loading";
-import { useEffect, useState } from "react";
-import { redirect, useSearchParams } from "next/navigation";
 import { sepehrAiPaymentResultPayloadSchema } from "@/sepehr-ai-ipg/src/lib";
+import { redirect, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   FaCheckCircle,
-  FaTimesCircle,
   FaExclamationCircle,
+  FaTimesCircle,
 } from "react-icons/fa";
+import type { z } from "zod";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 const TELEGRAM_SUPPORT_USERNAME =
   process.env.NEXT_PUBLIC_TELEGRAM_SUPPORT_USERNAME || "example";

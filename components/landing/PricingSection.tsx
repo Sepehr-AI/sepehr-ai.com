@@ -1,25 +1,25 @@
-// components/landing/PricingSection.tsx
 "use client";
 
-import Link from "next/link";
 import {
   numberToReadableFarsi,
   roundToDecimals,
   roundToUnit,
   usdToCredit,
 } from "@/lib/cost";
-import { useTheme } from "../ThemeProvider";
+import { extractDiscountInfo } from "@/lib/discount";
+import type { ImageModelPricingDto } from "@/lib/imageModels";
+import type { LanguageModelPricingDto } from "@/lib/languageModels";
+import type { WebPlansForUsers } from "@/lib/plans";
+import type { VideoModelPricingDto } from "@/lib/videoModels";
 import {
   CheckIcon,
-  QuestionMarkCircledIcon,
   ImageIcon,
+  QuestionMarkCircledIcon,
   VideoIcon,
 } from "@radix-ui/react-icons";
-import type { WebPlansForUsers } from "@/lib/plans";
-import { extractDiscountInfo } from "@/lib/discount";
-import type { LanguageModelPricingDto } from "@/lib/languageModels";
-import type { ImageModelPricingDto } from "@/lib/imageModels";
-import type { VideoModelPricingDto } from "@/lib/videoModels";
+import Link from "next/link";
+
+import { useTheme } from "../ThemeProvider";
 import PricingSectionDoodleArrow from "./PricingSectionDoodleArrow";
 
 export default function PricingSection({
@@ -46,7 +46,7 @@ export default function PricingSection({
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-8xl mx-auto">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 max-w-8xl mx-auto">
           {plans.map((plan, index) => {
             const { diffInFarsi, hasDiscount, discountPercent } =
               extractDiscountInfo(plan);
@@ -152,6 +152,19 @@ export default function PricingSection({
                       credits={credits}
                       models={videoModelsForComparison}
                     />
+
+                    <div className="border-t border-border pt-4 mt-4">
+                      <p className="text-[0.79em] text-justify">
+                        <span className="text-orange-700">تذکر:</span>
+                        <span>
+                          {" "}
+                          این اعداد نشان‌دهندهٔ حداکثرِ استفاده در صورتِ
+                          استفادهٔ تنها از همان مدل هستند؛ اگر چند مدل را ترکیب
+                          کنید، این اعداد جمع نمی‌شوند و سهم هر مدل براساس
+                          اعتبارات مصرفی شما محاسبه می‌شود.
+                        </span>
+                      </p>
+                    </div>
 
                     {/* Features Section */}
                     <div className="w-full flex justify-center border-t border-border pt-4 mt-4">

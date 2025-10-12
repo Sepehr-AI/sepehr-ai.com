@@ -1,7 +1,7 @@
 "use client";
 
-import { ReloadIcon } from "@radix-ui/react-icons";
 import type { JobStatus } from "@/types/jobs";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 type Props = {
   status: JobStatus;
@@ -9,9 +9,9 @@ type Props = {
   progress?: number;
   onCancel: () => void;
 
-  submittingLabel?: string; // "در حال ارسال درخواست ..."
-  workingLabel: string; // "در حال تولید ویدئو ..." | "در حال تولید تصویر ..."
   buttomText?: string;
+  workingLabel: string;
+  submittingLabel?: string;
 };
 
 export default function JobProgressCard({

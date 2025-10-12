@@ -1,7 +1,7 @@
 "use client";
 
 import type { UIDataTypes, UIMessagePart, UITools } from "ai";
-import { useRef, useState, useMemo, type ChangeEvent } from "react";
+import { type ChangeEvent, useMemo, useRef, useState } from "react";
 
 const MAX_FILE_COUNT = 5;
 const MAX_FILE_SIZE = 3 * 1024 * 1024;

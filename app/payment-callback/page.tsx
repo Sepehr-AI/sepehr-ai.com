@@ -1,8 +1,8 @@
 "use client";
 
 import Loading from "@/components/Loading";
-import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect } from "react";
 
 function PaymentCallback() {
   const router = useRouter();

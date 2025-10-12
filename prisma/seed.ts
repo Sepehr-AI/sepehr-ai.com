@@ -1,26 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { z } from "zod";
+import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
+import prisma from "@/lib/prisma";
+import { ratioLabelToEnumKey } from "@/lib/ratio";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { generateText } from "ai";
+import { existsSync } from "fs";
 import fs from "fs/promises";
 import path from "node:path";
-import { existsSync } from "fs";
-import prisma from "@/lib/prisma";
-import { generateText } from "ai";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
+import { z } from "zod";
+
 import type { ImageInput } from "./client";
-import { createOpenRouter } from "@openrouter/ai-sdk-provider";
-import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
-
 import _faqSeed from "./seed-data/Faq.json";
-import _userSeed from "./seed-data/User.json";
-import _webPlanSeed from "./seed-data/WebPlan.json";
-import _imageModelSeed from "./seed-data/ImageModel.json"
-import _videoModelSeed from "./seed-data/VideoModel.json"
+import _imageModelSeed from "./seed-data/ImageModel.json";
 import _languageModelSeed from "./seed-data/LanguageModel.json";
-import { ratioLabelToEnumKey } from "@/lib/ratio";
+import _userSeed from "./seed-data/User.json";
+import _videoModelSeed from "./seed-data/VideoModel.json";
+import _webPlanSeed from "./seed-data/WebPlan.json";
 
-const insertIdFromIndex = <T>(seed: T[]): (T & { id: number })[] => seed.map((e, idx) => ({ ...e, id: idx + 1 }));
+const insertIdFromIndex = <T>(seed: T[]): (T & { id: number })[] =>
+  seed.map((e, idx) => ({ ...e, id: idx + 1 }));
 
 const faqSeed = insertIdFromIndex(_faqSeed);
 const userSeed = insertIdFromIndex(_userSeed);
@@ -44,7 +44,10 @@ const farsiDescriptionSchema = z.string().refine(
   { message: "Farsi description must be between 50 and 100 words." },
 );
 
-const DESC_JSON_FILE = path.resolve(__dirname, "./seed-data/AiModelDescription.json");
+const DESC_JSON_FILE = path.resolve(
+  __dirname,
+  "./seed-data/AiModelDescription.json",
+);
 
 async function loadDescriptions(): Promise<Record<string, string>> {
   if (!existsSync(DESC_JSON_FILE)) {
@@ -66,9 +69,7 @@ async function saveDescriptions(
   await fs.writeFile(DESC_JSON_FILE, JSON.stringify(descriptions, null, 2));
 }
 
-async function fetchFarsiDescription(
-  modelName: string
-): Promise<string> {
+async function fetchFarsiDescription(modelName: string): Promise<string> {
   const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 75 words long. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Search the web for finding information about the AI model to generate the description. The description should be in simple terms and understandable for the average person.`;
 
   const maxRetries = 10;
@@ -115,7 +116,12 @@ function upsertWithSameData<Model extends { upsert(args: any): Promise<any> }>(
 
 // Shared seeding loop for models that need Farsi descriptions
 function buildSeedTasks(
-  seed: Array<{ id: number; code: string; name: string; imageInput: ImageInput } & Record<string, any>>,
+  seed: Array<
+    { id: number; code: string; name: string; imageInput: ImageInput } & Record<
+      string,
+      any
+    >
+  >,
   prismaModel: { upsert(args: any): Promise<any> },
   descriptionsMap: Record<string, string>,
 ): Array<Promise<any>> {
@@ -124,13 +130,20 @@ function buildSeedTasks(
   for (const m of seed) {
     tasks.push(
       (async () => {
-        const companyWebsite = (companyToWebsiteMap as any)[m.code.split("/")[0]];
+        const companyWebsite = (companyToWebsiteMap as any)[
+          m.code.split("/")[0]
+        ];
         if (!companyWebsite) {
           console.error(m);
-          throw new Error(`Company '${m.code.split("/")[0]}' is not defined in the codebase!`);
+          throw new Error(
+            `Company '${m.code.split("/")[0]}' is not defined in the codebase!`,
+          );
         }
 
-        if (!descriptionsMap[m.code] || !descriptionsMap[m.code].trim().length) {
+        if (
+          !descriptionsMap[m.code] ||
+          !descriptionsMap[m.code].trim().length
+        ) {
           const desc = await fetchFarsiDescription(m.name);
           descriptionsMap[m.code] = desc;
         }
@@ -140,7 +153,9 @@ function buildSeedTasks(
           description: descriptionsMap[m.code],
         };
         if (typeof (newData as any).ratios !== "undefined") {
-          (newData as any).ratios = (newData as any).ratios.map((r: string) => ratioLabelToEnumKey(r));
+          (newData as any).ratios = (newData as any).ratios.map((r: string) =>
+            ratioLabelToEnumKey(r),
+          );
         }
 
         await prismaModel.upsert({
@@ -157,10 +172,19 @@ function buildSeedTasks(
 
 async function main() {
   await Promise.all([
-    ...(userSeed
-      .map((user) => upsertWithSameData(prisma.user, { email: user.email, mobile: user.mobile }, user))),
-    ...(faqSeed.map((faq) => upsertWithSameData(prisma.faq, { id: faq.id }, faq))),
-    ...(webPlanSeed.map((plan) => upsertWithSameData(prisma.webPlan, { id: plan.id }, plan))),
+    ...userSeed.map((user) =>
+      upsertWithSameData(
+        prisma.user,
+        { email: user.email, mobile: user.mobile },
+        user,
+      ),
+    ),
+    ...faqSeed.map((faq) =>
+      upsertWithSameData(prisma.faq, { id: faq.id }, faq),
+    ),
+    ...webPlanSeed.map((plan) =>
+      upsertWithSameData(prisma.webPlan, { id: plan.id }, plan),
+    ),
   ]);
 
   const descriptionsMap = await loadDescriptions();
@@ -172,9 +196,21 @@ async function main() {
     prisma.videoModel.deleteMany({}),
   ]);
 
-  const languageTasks = buildSeedTasks(languageModelSeed as any[], prisma.languageModel, descriptionsMap);
-  const imageTasks = buildSeedTasks(imageModelSeed as any[], prisma.imageModel, descriptionsMap);
-  const videoTasks = buildSeedTasks(videoModelSeed as any[], prisma.videoModel, descriptionsMap);
+  const languageTasks = buildSeedTasks(
+    languageModelSeed as any[],
+    prisma.languageModel,
+    descriptionsMap,
+  );
+  const imageTasks = buildSeedTasks(
+    imageModelSeed as any[],
+    prisma.imageModel,
+    descriptionsMap,
+  );
+  const videoTasks = buildSeedTasks(
+    videoModelSeed as any[],
+    prisma.videoModel,
+    descriptionsMap,
+  );
 
   await Promise.all([...languageTasks, ...imageTasks, ...videoTasks]);
   await saveDescriptions(descriptionsMap);

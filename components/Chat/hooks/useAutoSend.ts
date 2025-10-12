@@ -5,6 +5,7 @@ import type {
   UITools,
 } from "ai";
 import { useEffect, useRef } from "react";
+
 import type { InitialContext } from "./useInitialContext";
 
 export function useAutoSend({

@@ -1,43 +1,44 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { z } from "zod";
+import {
+  type LanguageModelDto,
+  getLanguageModelsMap,
+} from "@/lib/languageModels";
 import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import { getLanguageModelsMap, type LanguageModelDto } from "@/lib/languageModels";
 import { createReplicate } from "@/replicate-chat-provider";
 import {
-  streamText,
-  type UIMessage,
   type ModelMessage,
-
+  type UIMessage,
   convertToModelMessages,
+  streamText,
 } from "ai";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 // 408
-class TimeoutError extends Error { }
+class TimeoutError extends Error {}
 // 416
-class MaxTokensError extends Error { }
+class MaxTokensError extends Error {}
 // 429
-class RateLimitError extends Error { }
+class RateLimitError extends Error {}
 // 400
-class ValidationError extends Error { }
+class ValidationError extends Error {}
 // 500
-class UnexpectedError extends Error { }
+class UnexpectedError extends Error {}
 // 404
-class ModelNotFoundError extends Error { }
+class ModelNotFoundError extends Error {}
 // 403
-class AuthorizationError extends Error { }
+class AuthorizationError extends Error {}
 // 413
-class MaxContextLengthError extends Error { }
+class MaxContextLengthError extends Error {}
 // 402
-class InsufficientFundsError extends Error { }
+class InsufficientFundsError extends Error {}
 // 401
-class InvalidCredentialsError extends Error { }
+class InvalidCredentialsError extends Error {}
 // 403, 502, 503
-class NoAvailableProviderError extends Error { }
+class NoAvailableProviderError extends Error {}
 // 415
-class UnsupportedMediaTypeError extends Error { }
+class UnsupportedMediaTypeError extends Error {}
 
 const tryOrErr = async <T extends Error>(
   f: () => Promise<unknown>,
@@ -62,7 +63,8 @@ const RequestSchema = z.object({
 
 const defaultAiSystemPrompt: ModelMessage = {
   role: "system",
-  content: "Farsi is default but be flexible based on how the user communicates.",
+  content:
+    "Farsi is default but be flexible based on how the user communicates.",
 };
 
 function errorToStatus(e: any): number {
@@ -121,7 +123,10 @@ function concurrencyLimit(balance: number): number {
   return 3;
 }
 
-function minDollarsForOutputTokens(model: LanguageModelDto, tokens: number): number {
+function minDollarsForOutputTokens(
+  model: LanguageModelDto,
+  tokens: number,
+): number {
   // cost is quoted per 1M tokens
   return (model.milOutCost / 1_000_000) * tokens;
 }
@@ -199,7 +204,9 @@ export async function POST(
         // must have enough for 1000 output tokens on this model
         const required = minDollarsForOutputTokens(model!, 1000);
         if (user.balance < required) {
-          throw new InsufficientFundsError("Not enough credits for 1000 output tokens");
+          throw new InsufficientFundsError(
+            "Not enough credits for 1000 output tokens",
+          );
         }
 
         const job = await tx.languageJob.create({
@@ -209,13 +216,15 @@ export async function POST(
         jobId = job.id;
       },
       // Postgres supports serializable.
-      { isolationLevel: "Serializable" }
+      { isolationLevel: "Serializable" },
     );
 
     const s = streamText({
       messages,
       abortSignal: req.signal,
-      model: createReplicate()(USE_ACTUAL_SELECTED_MODEL ? modelCode : "deepseek/deepseek-r1:free"),
+      model: createReplicate()(
+        USE_ACTUAL_SELECTED_MODEL ? modelCode : "deepseek/deepseek-r1:free",
+      ),
       providerOptions: { model: model! },
       onFinish: async ({ usage, ...otherProps }) => {
         let cost = 0;
@@ -233,7 +242,11 @@ export async function POST(
             data: { balance: { decrement: cost } },
           });
         } else {
-          error("NoTokenUsageReportedByReplicateProvider", { usage, otherProps, jobId });
+          error("NoTokenUsageReportedByReplicateProvider", {
+            usage,
+            otherProps,
+            jobId,
+          });
         }
 
         await finalizeJob(jobId, cost);

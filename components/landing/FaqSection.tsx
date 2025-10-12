@@ -1,9 +1,9 @@
 "use client";
 
 import type { FaqsForLandingPage } from "@/lib/faqs";
-import { useInView } from "react-intersection-observer";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ChevronDownIcon } from "@radix-ui/react-icons";
+import { useInView } from "react-intersection-observer";
 
 export default function FaqSection({ faqs }: { faqs: FaqsForLandingPage }) {
   const { ref, inView } = useInView({});

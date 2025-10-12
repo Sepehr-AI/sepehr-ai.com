@@ -149,25 +149,25 @@ model ImageModel {
 }
 
 model VideoModel {
-  id              Int      @id @default(autoincrement())
-  code            String   @unique()
-  name            String
-  description     String
-  defaultOptions  Json?
-  cost            Float
-  durations       Int[]
-  image           Boolean  @default(false)
-  startImage      Boolean  @default(false)
-  firstFrameImage Boolean  @default(false)
-  lastFrameImage  Boolean  @default(false)
-  referenceImages Boolean  @default(false)
-  endImage        Boolean  @default(false)
-  audio           Boolean  @default(false)
-  ratios          Ratio[]  @default([RATIO_16_9])
-  showCaseImage   String?
-  showCaseVideo   String?
-  disabled        Boolean  @default(false)
-  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  id                  Int      @id @default(autoincrement())
+  code                String   @unique()
+  name                String
+  description         String
+  defaultOptions      Json?
+  cost                Float
+  durations           Int[]
+  image               Boolean  @default(false)
+  startImage          Boolean  @default(false)
+  firstFrameImage     Boolean  @default(false)
+  lastFrameImage      Boolean  @default(false)
+  referenceImages     Boolean  @default(false)
+  endImage            Boolean  @default(false)
+  audio               Boolean  @default(false)
+  ratios              Ratio[]  @default([RATIO_16_9])
+  showCaseVideo       String?
+  showCaseVideoPoster String?
+  disabled            Boolean  @default(false)
+  createdAt           DateTime @default(now()) @db.Timestamptz(3)
 }
 
 enum JobStatus {

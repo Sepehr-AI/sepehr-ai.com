@@ -1,18 +1,18 @@
+import BlackForestLabs from "@/components/companyLogos/BlackForestLabs";
+import Bytedance from "@/components/companyLogos/Bytedance";
+import DeepSeek from "@/components/companyLogos/Deepseek";
+import Mistral from "@/components/companyLogos/Mistral";
+import Perplexity from "@/components/companyLogos/Perplexity";
+import Qwen from "@/components/companyLogos/Qwen";
+import Stability from "@/components/companyLogos/Stability";
+import WithColor from "@/components/companyLogos/WithColor";
 import type { IconType } from "react-icons";
 import { FaMicrosoft } from "react-icons/fa6";
 import { FaMeta, FaXTwitter } from "react-icons/fa6";
-import { SiAmazon, SiNvidia, SiOpenai } from "react-icons/si";
 import { RiAnthropicFill, RiGeminiFill } from "react-icons/ri";
+import { SiAmazon, SiNvidia, SiOpenai } from "react-icons/si";
 
-import Qwen from "@/components/companyLogos/Qwen";
-import Mistral from "@/components/companyLogos/Mistral";
-import DeepSeek from "@/components/companyLogos/Deepseek";
-import WithColor from "@/components/companyLogos/WithColor";
-import Stability from "@/components/companyLogos/Stability";
-import Bytedance from "@/components/companyLogos/Bytedance";
-import Perplexity from "@/components/companyLogos/Perplexity";
 import { companyToWebsiteMap } from "./aiCompaniesForBackend";
-import BlackForestLabs from "@/components/companyLogos/BlackForestLabs";
 
 type CompanyWebsite =
   (typeof companyToWebsiteMap)[keyof typeof companyToWebsiteMap];

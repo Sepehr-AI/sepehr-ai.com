@@ -1,21 +1,22 @@
 "use client";
 
-import { v7 as uuidv7 } from "uuid";
-import { toast } from "react-toastify";
-import type { LanguageModelPricingDto } from "@/lib/languageModels";
 import { createChat } from "@/lib/chatDB";
-import NewMessageBox from "./NewMessageBox";
-import { generateId } from "ai";
-import CompanyLogo from "../companyLogos/CompanyLogo";
-import { useState, useEffect, type SyntheticEvent, useRef } from "react";
-import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { roundToDecimals } from "@/lib/cost";
+import type { LanguageModelPricingDto } from "@/lib/languageModels";
 import {
   CaretSortIcon,
   CheckIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
+import { generateId } from "ai";
+import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { type SyntheticEvent, useEffect, useRef, useState } from "react";
+import { toast } from "react-toastify";
+import { v7 as uuidv7 } from "uuid";
+
+import CompanyLogo from "../companyLogos/CompanyLogo";
+import NewMessageBox from "./NewMessageBox";
 import { useAttachments } from "./hooks/useAttachments";
-import { roundToDecimals } from "@/lib/cost";
 
 export default function NewChatBody({
   router,

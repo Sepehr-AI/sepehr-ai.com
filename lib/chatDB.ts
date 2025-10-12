@@ -1,14 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
-import { decodeJwt } from "jose";
 import type { UIMessage } from "ai";
+import { decodeJwt } from "jose";
+
 import {
-  listenOnEvent,
-  dispatchEvent,
   type EventHandler,
+  dispatchEvent,
+  listenOnEvent,
 } from "./eventTransfer";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export interface Chat {
   engineCode: string;

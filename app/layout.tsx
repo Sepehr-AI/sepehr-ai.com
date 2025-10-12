@@ -1,13 +1,13 @@
-import Head from "next/head";
-import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import localFont from "next/font/local";
-import { ToastContainer } from "react-toastify";
 import ThemeProvider from "@/components/ThemeProvider";
-
 import "@radix-ui/themes/styles.css";
-import "./globals.css";
+import type { Metadata } from "next";
+import localFont from "next/font/local";
+import Head from "next/head";
+import type { ReactNode } from "react";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+import "./globals.css";
 
 const vazir = localFont({
   src: [

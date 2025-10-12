@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import Enamad from "./Enamad";
 import * as Separator from "@radix-ui/react-separator";
+import Link from "next/link";
+
+import Enamad from "./Enamad";
 
 export default function SiteFooter() {
   return (

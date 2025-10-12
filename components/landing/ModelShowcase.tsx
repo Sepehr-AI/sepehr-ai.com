@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import * as Tabs from "@radix-ui/react-tabs";
-import * as ScrollArea from "@radix-ui/react-scroll-area";
-import type { LanguageModelPricingDto } from "@/lib/languageModels";
 import type { ImageModelPricingDto } from "@/lib/imageModels";
+import type { LanguageModelPricingDto } from "@/lib/languageModels";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
-import { LightningBoltIcon, ImageIcon, VideoIcon } from "@radix-ui/react-icons";
+import { ImageIcon, LightningBoltIcon, VideoIcon } from "@radix-ui/react-icons";
+import * as ScrollArea from "@radix-ui/react-scroll-area";
+import * as Tabs from "@radix-ui/react-tabs";
+import { useMemo, useState } from "react";
 
 export default function ModelShowcase({
   languageModels,

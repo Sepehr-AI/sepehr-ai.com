@@ -1,21 +1,22 @@
-/* eslint-disable @next/next/no-img-element */
-
 "use client";
 
-import type { UIMessage } from "ai";
-import copy from "copy-to-clipboard";
-import { toast } from "react-toastify";
-import LoadingMessage, { GeneratingAnswer } from "./LoadingMessage";
-import CompanyLogo from "../companyLogos/CompanyLogo";
-import { MemoizedMarkdown } from "./MemoizedMarkdown";
-import { useState, useMemo, type JSX, useEffect, type MouseEvent } from "react";
 import {
-  CopyIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  CopyIcon,
   FilePlusIcon,
   PersonIcon,
 } from "@radix-ui/react-icons";
+import type { UIMessage } from "ai";
+import copy from "copy-to-clipboard";
+import { type JSX, type MouseEvent, useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+
+import CompanyLogo from "../companyLogos/CompanyLogo";
+import LoadingMessage, { GeneratingAnswer } from "./LoadingMessage";
+import { MemoizedMarkdown } from "./MemoizedMarkdown";
+
+/* eslint-disable @next/next/no-img-element */
 
 const Message = ({
   message,

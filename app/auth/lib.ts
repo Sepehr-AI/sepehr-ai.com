@@ -1,27 +1,29 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 
-import dayjs from "dayjs";
-import { SignJWT } from "jose";
-import prisma from "@/lib/prisma";
-import utc from "dayjs/plugin/utc";
-import { randomInt } from "node:crypto";
-import { redirect } from "next/navigation";
-import timezone from "dayjs/plugin/timezone";
-import { hash, verify } from "@node-rs/argon2";
-import { cookies, headers } from "next/headers";
-import { error, errorOnThrow } from "@/lib/log";
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
-import { findOrCreateOtp } from "@/prisma/client/sql";
+import { error, errorOnThrow } from "@/lib/log";
+import prisma from "@/lib/prisma";
 import type { MiddlewareUserData } from "@/middleware";
-import { setupPaymentGate } from "../dashboard/payment/actions";
-import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { PrismaClientKnownRequestError } from "@/prisma/client/runtime/library";
+import { findOrCreateOtp } from "@/prisma/client/sql";
+import { hash, verify } from "@node-rs/argon2";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { SignJWT } from "jose";
+import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { randomInt } from "node:crypto";
+
+import { setupPaymentGate } from "../dashboard/payment/actions";
 import {
   checkMobileFormSchema,
   loginFormSchema,
   registerFormSchema,
 } from "./validationSchema";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -37,11 +39,11 @@ const cookiesConfig: Partial<ResponseCookie> = {
   path: "/",
   ...(process.env.NODE_ENV === "production"
     ? {
-      secure: true,
-      sameSite: "strict",
-      domain: "sepehr-ai.com",
-      expires: dayjs().tz("Asia/Tehran").add(30, "day").toDate(),
-    }
+        secure: true,
+        sameSite: "strict",
+        domain: "sepehr-ai.com",
+        expires: dayjs().tz("Asia/Tehran").add(30, "day").toDate(),
+      }
     : {}),
 };
 
@@ -318,7 +320,13 @@ export async function loginAction(formData: FormData, selectedPlan?: number) {
   userId = Number(userId);
   const user = await errorOnThrow("findingUserInAuthLogin", () =>
     prisma.user.findUnique({
-      select: { id: true, mobile: true, name: true, email: true, balance: true },
+      select: {
+        id: true,
+        mobile: true,
+        name: true,
+        email: true,
+        balance: true,
+      },
       where: { id: userId },
     }),
   );

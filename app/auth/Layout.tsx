@@ -1,35 +1,36 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
-import Link from "next/link";
-import { toast } from "react-toastify";
+import { type ThemeMode, useTheme } from "@/components/ThemeProvider";
+import ValidatedInput from "@/components/ValidatedInput";
 import Icon from "@/components/landing/Icon";
 import * as Form from "@radix-ui/react-form";
-import { useTheme } from "@/components/ThemeProvider";
-import * as Separator from "@radix-ui/react-separator";
-import ValidatedInput from "@/components/ValidatedInput";
-import { type FormEvent, useActionState, useEffect, useState } from "react";
 import {
-  loginFormSchema,
-  registerFormSchema,
-  checkMobileFormSchema,
-} from "./validationSchema";
-import {
-  MobileIcon,
-  PersonIcon,
   ArrowLeftIcon,
-  LockClosedIcon,
   ChevronRightIcon,
   EnvelopeClosedIcon,
+  LockClosedIcon,
+  MobileIcon,
+  PersonIcon,
 } from "@radix-ui/react-icons";
+import * as Separator from "@radix-ui/react-separator";
+import Link from "next/link";
+import { type FormEvent, useActionState, useEffect, useState } from "react";
+import { toast } from "react-toastify";
+
+import {
+  checkMobileFormSchema,
+  loginFormSchema,
+  registerFormSchema,
+} from "./validationSchema";
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Common page elements
 const AuthPageWrapper = ({
   theme,
   children,
 }: {
-  theme: "light" | "dark";
+  theme: ThemeMode;
   children: React.ReactNode;
 }) => (
   <div

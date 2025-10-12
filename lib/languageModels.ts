@@ -1,16 +1,23 @@
-import prisma from "@/lib/prisma";
-import NodeCache from "node-cache";
-import { usdToCredit } from "./cost";
-import { revalidateTag, unstable_cache } from "next/cache";
 import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
+import prisma from "@/lib/prisma";
 import type { LanguageModel as LanguageModelDb } from "@/prisma/client";
+import { revalidateTag, unstable_cache } from "next/cache";
+import NodeCache from "node-cache";
+
+import { usdToCredit } from "./cost";
 
 export type LanguageModelDto = Pick<
   LanguageModelDb,
-  | "id" | "code" | "name" | "description"
-  | "maxCompletionTokens" | "milInCost" | "milOutCost"
-  | "supportsMessages" | "imageInput"
-  | "showCaseImage" // NEW
+  | "id"
+  | "code"
+  | "name"
+  | "description"
+  | "maxCompletionTokens"
+  | "milInCost"
+  | "milOutCost"
+  | "supportsMessages"
+  | "imageInput"
+  | "showCaseImage"
 > & {
   companyWebsite: string;
 };
@@ -30,7 +37,7 @@ const getLanguageModels = async (): Promise<LanguageModelDto[]> => {
         milOutCost: true,
         supportsMessages: true,
         imageInput: true,
-        showCaseImage: true, // NEW
+        showCaseImage: true,
       },
     })) || [];
 
@@ -50,7 +57,9 @@ export const getLanguageModelsMap = async () => {
   const map = new Map<string, LanguageModelDto>();
   (await getLanguageModels()).forEach((m) => map.set(m.code, m));
   cache.set("languageModelsMap", map);
-  try { revalidateTag("languageModelsForWeb"); } catch { }
+  try {
+    revalidateTag("languageModelsForWeb");
+  } catch {}
   return map;
 };
 
@@ -69,14 +78,22 @@ export const getLanguageModelsForWeb = unstable_cache(
     if (cached) return cached as LanguageModelPricingDto[];
 
     const modelsForWeb = (await getLanguageModels()).map(
-      ({ code, name, description, milInCost, milOutCost, companyWebsite, showCaseImage }) => ({
+      ({
+        code,
+        name,
+        description,
+        milInCost,
+        milOutCost,
+        companyWebsite,
+        showCaseImage,
+      }) => ({
         code,
         name,
         description,
         companyWebsite,
         showCaseImage,
-        milInCreditCost: usdToCredit(milInCost, true),
-        milOutCreditCost: usdToCredit(milOutCost, true),
+        milInCreditCost: usdToCredit(milInCost, false),
+        milOutCreditCost: usdToCredit(milOutCost, false),
       }),
     );
 
