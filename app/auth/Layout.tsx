@@ -108,8 +108,7 @@ export default function AuthLayout({
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_1, action, _2] = useActionState<any, FormData>(
+  const [, action] = useActionState<any, FormData>(
     !mobile
       ? checkMobileAction
       : exists === "true"

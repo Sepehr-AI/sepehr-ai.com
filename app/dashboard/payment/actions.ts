@@ -220,6 +220,7 @@ export async function setupPaymentGate({
   const paymentPayload: z.infer<typeof chargeApiPayloadSchema> = {
     invoiceId,
     amount: price,
+    mobile: user.mobile,
     payload: `پلن ${planId} برای کاربر ${user.id}`,
   };
 

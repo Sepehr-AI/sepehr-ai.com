@@ -3,7 +3,7 @@ import { z } from "zod";
 const userIdSchema = z.coerce.number({
   message: "آیدی کاربر باید یک عدد باشد!",
 });
-const mobileSchema = z
+export const mobileSchema = z
   .string()
   .trim()
   .min(11, { message: "شماره موبایل باید 11 رقمی باشد!" })
