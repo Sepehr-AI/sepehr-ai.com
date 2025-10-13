@@ -1,12 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
 import type { JobStatus } from "@/types/jobs";
 import { useRef, useState } from "react";
 import { toast } from "react-toastify";
-
-/* eslint-disable @typescript-eslint/no-explicit-any */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
