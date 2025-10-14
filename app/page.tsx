@@ -122,7 +122,6 @@ export default async function Home() {
               videoModels={vidModels}
             />
 
-            {/* New multi-modal showcase */}
             <ModelShowcase
               languageModels={langModels}
               imageModels={imgModels}

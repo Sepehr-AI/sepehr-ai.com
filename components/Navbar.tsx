@@ -96,19 +96,19 @@ const NavContent = ({
           </button>
         </div>
 
-        <SidebarLink href="/dashboard" onClick={onLinkClick}>
+        <SidebarLink href="/dashboard/chat/models" onClick={onLinkClick}>
           <IoMdChatboxes />
           <span>چت جدید</span>
         </SidebarLink>
 
-        <SidebarLink href="/dashboard/gen/video" onClick={onLinkClick}>
+        <SidebarLink href="/dashboard/gen/video/models" onClick={onLinkClick}>
           <VideoIcon />
           <span>ساخت ویدئو</span>
         </SidebarLink>
 
-        <SidebarLink href="/dashboard/gen/image" onClick={onLinkClick}>
+        <SidebarLink href="/dashboard/gen/image/models" onClick={onLinkClick}>
           <ImageIcon />
-          <span>ساخت عکس</span>
+          <span>ساخت تصویر</span>
         </SidebarLink>
 
         <div className="relative mt-4">
@@ -199,11 +199,6 @@ const NavContent = ({
           <span>شارژ اکانت</span>
         </SidebarLink>
 
-        {/* <SidebarLink href="/dashboard" onClick={onLinkClick}>
-          <GearIcon />
-          <span>تنظیمات</span>
-        </SidebarLink> */}
-
         <a href="/logout">
           <button className="w-full px-3 py-2 rounded-lg text-sm transition-colors flex items-center gap-2 hover:bg-black/15 dark:hover:bg-muted/60 hover:text-destructive">
             <ExitIcon />
@@ -274,7 +269,7 @@ export default function Navbar() {
         </div>
 
         <Link
-          href="/dashboard"
+          href="/dashboard/chat/new"
           className="p-1.5 rounded-md hover:bg-muted/60 transition-colors"
         >
           <PlusIcon />

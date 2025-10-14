@@ -11,6 +11,7 @@ import type {
   MediaFilesState,
   MediaInputSpec,
 } from "@/types/gen";
+import { useSearchParams } from "next/navigation";
 import {
   type Dispatch,
   type SetStateAction,
@@ -73,6 +74,16 @@ export default function VideoGenComponent({
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModel]);
+
+  // inside component
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const code = searchParams.get("selectedModel");
+    if (!code) return;
+    const m = videoModels.find((x) => x.code === code);
+    if (m) setSelectedModel(m);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Build dynamic media inputs for this model (no memoization)
   const mediaInputs: MediaInputSpec[] = (() => {

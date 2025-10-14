@@ -19,14 +19,20 @@ import {
 
 export default function ImageGenComponent({
   imageModels,
+  initialModelCode,
 }: {
   imageModels: ImageModelPricingDto[];
+  initialModelCode: string;
 }) {
   const [prompt, setPrompt] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const imagePreviewUrl = usePreviewObjectUrl(imageFile);
 
-  const [modelCode, setModelCode] = useState<string>(imageModels[0].code);
+  const [modelCode, setModelCode] = useState<string>(
+    initialModelCode && imageModels.some((m) => m.code === initialModelCode)
+      ? initialModelCode
+      : imageModels[0].code,
+  );
   const selectedModel = useMemo(
     () => imageModels.find((m) => m.code === modelCode)!,
     [imageModels, modelCode],

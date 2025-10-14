@@ -17,7 +17,9 @@ export type LanguageModelDto = Pick<
   | "milOutCost"
   | "supportsMessages"
   | "imageInput"
+  | "shortDescription"
   | "showCaseImage"
+  | "cardImage"
 > & {
   companyWebsite: string;
 };
@@ -37,7 +39,9 @@ const getLanguageModels = async (): Promise<LanguageModelDto[]> => {
         milOutCost: true,
         supportsMessages: true,
         imageInput: true,
+        shortDescription: true,
         showCaseImage: true,
+        cardImage: true,
       },
     })) || [];
 
@@ -66,7 +70,13 @@ export const getLanguageModelsMap = async () => {
 // Web DTO (add showCaseImage)
 export type LanguageModelPricingDto = Pick<
   LanguageModelDto,
-  "code" | "name" | "description" | "companyWebsite" | "showCaseImage"
+  | "code"
+  | "name"
+  | "description"
+  | "companyWebsite"
+  | "showCaseImage"
+  | "shortDescription"
+  | "cardImage"
 > & {
   milInCreditCost: number;
   milOutCreditCost: number;
@@ -86,12 +96,16 @@ export const getLanguageModelsForWeb = unstable_cache(
         milOutCost,
         companyWebsite,
         showCaseImage,
+        shortDescription,
+        cardImage,
       }) => ({
         code,
         name,
         description,
         companyWebsite,
         showCaseImage,
+        shortDescription,
+        cardImage,
         milInCreditCost: usdToCredit(milInCost, false),
         milOutCreditCost: usdToCredit(milOutCost, false),
       }),

@@ -9,7 +9,7 @@ import { useFormStatus } from "react-dom";
 import { CiDollar } from "react-icons/ci";
 import { toast } from "react-toastify";
 
-import { chargeAccountAction } from "./actions";
+import { chargeAccountAction } from "../../app/dashboard/payment/actions";
 
 function Form({
   plans,

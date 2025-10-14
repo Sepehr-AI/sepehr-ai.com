@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
     });
     if (debit.count <= 0) {
       return NextResponse.json(
-        { error: "اعتبار کیف پول کافی نیست." },
+        { error: "اعتبار حساب شما کافی نیست!" },
         { status: 402 },
       ); // Payment Required
     }
@@ -288,9 +288,9 @@ export async function GET(req: NextRequest) {
     const makeStreamUrl = () =>
       job.imageUrl
         ? new URL(
-            `/api/gen/image/stream?jobId=${encodeURIComponent(String(job.id))}`,
-            NEXT_PUBLIC_BASE_URL,
-          ).toString()
+          `/api/gen/image/stream?jobId=${encodeURIComponent(String(job.id))}`,
+          NEXT_PUBLIC_BASE_URL,
+        ).toString()
         : undefined;
 
     // Terminal states
@@ -369,9 +369,9 @@ export async function GET(req: NextRequest) {
       etaSeconds,
       imageUrl: updated.imageUrl
         ? new URL(
-            `/api/gen/image/stream?jobId=${encodeURIComponent(String(updated.id))}`,
-            NEXT_PUBLIC_BASE_URL,
-          ).toString()
+          `/api/gen/image/stream?jobId=${encodeURIComponent(String(updated.id))}`,
+          NEXT_PUBLIC_BASE_URL,
+        ).toString()
         : undefined,
       ...(updated.status === "FAILED"
         ? { error: "ساخت تصویر ناموفق بود." }
@@ -385,9 +385,9 @@ export async function GET(req: NextRequest) {
 
     const safe = Number.isFinite(jobId)
       ? await prisma.imageJob.findFirst({
-          where: { id: jobId, userId },
-          select: { status: true, progress: true, imageUrl: true, id: true },
-        })
+        where: { id: jobId, userId },
+        select: { status: true, progress: true, imageUrl: true, id: true },
+      })
       : null;
 
     return NextResponse.json(
@@ -397,9 +397,9 @@ export async function GET(req: NextRequest) {
         etaSeconds: 5,
         imageUrl: safe?.imageUrl
           ? new URL(
-              `/api/gen/image/stream?jobId=${encodeURIComponent(String(safe.id))}`,
-              NEXT_PUBLIC_BASE_URL,
-            ).toString()
+            `/api/gen/image/stream?jobId=${encodeURIComponent(String(safe.id))}`,
+            NEXT_PUBLIC_BASE_URL,
+          ).toString()
           : undefined,
         warning: "در هنگام دریافت وضعیت از سرویس خطایی رخ داد.",
       },

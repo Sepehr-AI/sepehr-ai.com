@@ -17,7 +17,7 @@ export default function ChatComponent({
 }) {
   const router = useRouter();
   const { id: chatId } = use(params);
-  if (!chatId) router.replace("/dashboard");
+  if (!chatId) router.replace("/dashboard/chat/new");
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [showSpinner, setShowSpinner] = useState(true);
@@ -35,7 +35,7 @@ export default function ChatComponent({
             clearTimeout(timerRef.current);
             timerRef.current = null;
           }
-        } else router.replace("/dashboard");
+        } else router.replace("/dashboard/chat/new");
       };
 
       fetchChats();

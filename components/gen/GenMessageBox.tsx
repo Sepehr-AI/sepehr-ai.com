@@ -250,7 +250,7 @@ export default function GenMessageBox({
                     autoFocus
                     style={{ direction: !searchTerm.length ? "rtl" : "ltr" }}
                   />
-                  <MagnifyingGlassIcon className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/50" />
+                  <MagnifyingGlassIcon className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/80" />
                 </div>
               </div>
 
@@ -299,7 +299,7 @@ export default function GenMessageBox({
                 className="w-full h-full"
               />
             </div>
-            <div className="border-accent border-1 rounded-3xl py-1 px-2">
+            <div className="border-accent border-1 rounded-3xl py-1 px-2 text-foreground/90">
               <span>مصرف</span>
               <span> {selectedModel.creditCostValue} </span>
               <span>{selectedModel.creditCostLabel}</span>
@@ -331,7 +331,7 @@ export default function GenMessageBox({
                 className="max-h-32 object-contain rounded"
               />
             ) : (
-              <div className="text-foreground/60 text-xs flex items-center gap-2">
+              <div className="text-foreground/80 text-xs flex items-center gap-2">
                 <ImageIcon />
                 افزودن تصویر مرجع
               </div>
@@ -381,13 +381,13 @@ export default function GenMessageBox({
                         className="max-h-32 object-contain rounded"
                       />
                     ) : (
-                      <div className="text-xs text-foreground/70">
+                      <div className="text-xs text-foreground/90">
                         {files[0].name}
                         {files.length > 1 ? ` +${files.length - 1}` : ""}
                       </div>
                     )
                   ) : (
-                    <div className="text-foreground/60 text-xs flex items-center gap-2">
+                    <div className="text-foreground/80 text-xs flex items-center gap-2">
                       <ImageIcon /> افزودن
                     </div>
                   )}

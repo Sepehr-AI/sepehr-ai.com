@@ -100,6 +100,8 @@ model LanguageModel {
   code                   String     @unique()
   name                   String
   description            String
+  shortDescription       String
+  cardImage              String
   milInCost              Float
   milOutCost             Float
   imageInput             ImageInput
@@ -135,17 +137,19 @@ enum Ratio {
 }
 
 model ImageModel {
-  id             Int        @id @default(autoincrement())
-  code           String     @unique()
-  name           String
-  description    String
-  defaultOptions Json?
-  cost           Float
-  imageInput     ImageInput
-  ratios         Ratio[]    @default([RATIO_1_1])
-  showCaseImage  String?
-  disabled       Boolean    @default(false)
-  createdAt      DateTime   @default(now()) @db.Timestamptz(3)
+  id               Int        @id @default(autoincrement())
+  code             String     @unique()
+  name             String
+  description      String
+  defaultOptions   Json?
+  shortDescription String
+  cardImage        String
+  cost             Float
+  imageInput       ImageInput
+  ratios           Ratio[]    @default([RATIO_1_1])
+  showCaseImage    String?
+  disabled         Boolean    @default(false)
+  createdAt        DateTime   @default(now()) @db.Timestamptz(3)
 }
 
 model VideoModel {
@@ -153,6 +157,7 @@ model VideoModel {
   code                String   @unique()
   name                String
   description         String
+  shortDescription    String
   defaultOptions      Json?
   cost                Float
   durations           Int[]
@@ -165,7 +170,7 @@ model VideoModel {
   audio               Boolean  @default(false)
   ratios              Ratio[]  @default([RATIO_16_9])
   showCaseVideo       String?
-  showCaseVideoPoster String?
+  showCaseVideoPoster String
   disabled            Boolean  @default(false)
   createdAt           DateTime @default(now()) @db.Timestamptz(3)
 }

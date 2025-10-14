@@ -10,6 +10,7 @@ import {
 } from "@radix-ui/react-icons";
 import { generateId } from "ai";
 import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { useSearchParams } from "next/navigation";
 import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { v7 as uuidv7 } from "uuid";
@@ -17,6 +18,8 @@ import { v7 as uuidv7 } from "uuid";
 import CompanyLogo from "../companyLogos/CompanyLogo";
 import NewMessageBox from "./NewMessageBox";
 import { useAttachments } from "./hooks/useAttachments";
+
+const TOKENS_PER_WORD = 1.5;
 
 export default function NewChatBody({
   router,
@@ -56,6 +59,15 @@ export default function NewChatBody({
   const filteredModels = models.filter((model) =>
     model.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const code = searchParams.get("selectedModel");
+    if (!code) return;
+    const m = models.find((x) => x.code === code);
+    if (m) setSelectedEngine(m);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (
     e: SyntheticEvent<HTMLFormElement, SubmitEvent>,
@@ -107,7 +119,7 @@ export default function NewChatBody({
         <div className="flex-auto"></div>
         <div className="flex-none">
           <div
-            className="max-w-xl pt-4 bg-card border border-border rounded-xl p-6 shadow-sm"
+            className="max-w-xl pt-4 bg-card border border-border rounded-xl p-6"
             style={{ scrollbarWidth: "none" }}
           >
             {/* Model selector */}
@@ -197,7 +209,8 @@ export default function NewChatBody({
                     <span className="text-foreground/90">
                       مصرف تقریبی{" "}
                       {roundToDecimals(
-                        selectedEngine.milInCreditCost / 1000,
+                        (selectedEngine.milInCreditCost / 1000) *
+                          TOKENS_PER_WORD,
                         1,
                       )}{" "}
                       اعتبار هر هزار کلمه ارسالی به مدل
@@ -207,7 +220,8 @@ export default function NewChatBody({
                     <span className="text-foreground/90">
                       مصرف تقریبی{" "}
                       {roundToDecimals(
-                        selectedEngine.milOutCreditCost / 1000,
+                        (selectedEngine.milOutCreditCost / 1000) *
+                          TOKENS_PER_WORD,
                         1,
                       )}{" "}
                       اعتبار هر هزار کلمه دریافتی از مدل

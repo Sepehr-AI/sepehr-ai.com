@@ -19,6 +19,8 @@ export interface ImageModelView {
   defaultOptions: JsonValue;
   creditCostPerImage: number;
   showCaseImage?: string;
+  shortDescription?: string;
+  cardImage?: string;
 }
 
 export type ImageModelDto = Pick<
@@ -28,6 +30,8 @@ export type ImageModelDto = Pick<
   | "name"
   | "description"
   | "cost"
+  | "shortDescription"
+  | "cardImage"
   | "imageInput"
   | "defaultOptions"
   | "showCaseImage"
@@ -48,6 +52,8 @@ const getImageModels = async (): Promise<ImageModelDto[]> => {
         imageInput: true,
         defaultOptions: true,
         showCaseImage: true,
+        shortDescription: true,
+        cardImage: true,
       },
     })) || [];
 
@@ -86,6 +92,8 @@ export type ImageModelPricingDto = Pick<
   | "companyWebsite"
   | "imageInput"
   | "ratios"
+  | "shortDescription"
+  | "cardImage"
   | "defaultOptions"
   | "showCaseImage"
 > & { creditCostPerImage: number };
@@ -106,6 +114,8 @@ export const getImageModelsForWeb = unstable_cache(
         ratios,
         defaultOptions,
         showCaseImage,
+        cardImage,
+        shortDescription,
       }) => ({
         code,
         name,
@@ -115,6 +125,8 @@ export const getImageModelsForWeb = unstable_cache(
         description,
         companyWebsite,
         showCaseImage,
+        cardImage,
+        shortDescription,
         creditCostPerImage: usdToCredit(cost, false),
       }),
     );

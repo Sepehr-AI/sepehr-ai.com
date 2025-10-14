@@ -76,7 +76,7 @@ export default function NewMessageBox({
 
   return (
     <form dir="rtl" onSubmit={handleSubmit} className="space-y-3">
-      <div className="relative flex items-end border border-border bg-background rounded-lg shadow-sm overflow-hidden">
+      <div className="relative flex items-end border border-border bg-background shadow-md/20 shadow-muted-foreground rounded-xl overflow-hidden">
         {/* Left actions */}
         <div className="absolute right-2 bottom-2 flex items-center gap-1 z-10">
           {/* Hidden file input */}

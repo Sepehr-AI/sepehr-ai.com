@@ -212,7 +212,7 @@ export async function POST(req: NextRequest) {
     });
     if (debit.count <= 0) {
       return NextResponse.json(
-        { error: "اعتبار کیف پول کافی نیست." },
+        { error: "اعتبار حساب شما کافی نیست!" },
         { status: 402 },
       );
     }
@@ -331,9 +331,9 @@ export async function GET(req: NextRequest) {
     const makeStreamUrl = () =>
       job.videoUrl
         ? new URL(
-            `/api/gen/video/stream?jobId=${encodeURIComponent(String(job.id))}`,
-            NEXT_PUBLIC_BASE_URL,
-          ).toString()
+          `/api/gen/video/stream?jobId=${encodeURIComponent(String(job.id))}`,
+          NEXT_PUBLIC_BASE_URL,
+        ).toString()
         : undefined;
 
     if (job.status === "SUCCEEDED") {
@@ -407,9 +407,9 @@ export async function GET(req: NextRequest) {
       progress: updated.progress,
       videoUrl: updated.videoUrl
         ? new URL(
-            `/api/gen/video/stream?jobId=${encodeURIComponent(String(updated.id))}`,
-            NEXT_PUBLIC_BASE_URL,
-          ).toString()
+          `/api/gen/video/stream?jobId=${encodeURIComponent(String(updated.id))}`,
+          NEXT_PUBLIC_BASE_URL,
+        ).toString()
         : undefined,
       ...(updated.status === "FAILED"
         ? { error: "ساخت ویدئو ناموفق بود." }
@@ -423,9 +423,9 @@ export async function GET(req: NextRequest) {
 
     const safe = Number.isFinite(jobId)
       ? await prisma.videoJob.findFirst({
-          where: { id: jobId, userId },
-          select: { status: true, progress: true, videoUrl: true, id: true },
-        })
+        where: { id: jobId, userId },
+        select: { status: true, progress: true, videoUrl: true, id: true },
+      })
       : null;
 
     return NextResponse.json(
@@ -434,9 +434,9 @@ export async function GET(req: NextRequest) {
         progress: safe?.progress ?? 0,
         videoUrl: safe?.videoUrl
           ? new URL(
-              `/api/gen/video/stream?jobId=${encodeURIComponent(String(safe.id))}`,
-              NEXT_PUBLIC_BASE_URL,
-            ).toString()
+            `/api/gen/video/stream?jobId=${encodeURIComponent(String(safe.id))}`,
+            NEXT_PUBLIC_BASE_URL,
+          ).toString()
           : undefined,
         warning: "در هنگام دریافت وضعیت از سرویس خطایی رخ داد.",
       },

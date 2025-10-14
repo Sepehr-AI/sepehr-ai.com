@@ -25,6 +25,7 @@ export interface VideoModelDto
     | "referenceImages"
     | "audio"
     | "showCaseVideo"
+    | "shortDescription"
     | "showCaseVideoPoster"
   > {
   ratios: string[];
@@ -51,6 +52,7 @@ const getVideoModels = async (): Promise<VideoModelDto[]> => {
       lastFrameImage: true,
       referenceImages: true,
       audio: true,
+      shortDescription: true,
       showCaseVideo: true,
       showCaseVideoPoster: true,
     },
@@ -99,6 +101,7 @@ export type VideoModelPricingDto = Pick<
   | "lastFrameImage"
   | "referenceImages"
   | "audio"
+  | "shortDescription"
   | "showCaseVideo"
   | "showCaseVideoPoster"
 > & { creditCostPerVideo: number };
@@ -127,6 +130,7 @@ export const getVideoModelsForWeb = unstable_cache(
         audio,
         showCaseVideoPoster,
         showCaseVideo,
+        shortDescription,
       }) => ({
         code,
         name,
@@ -144,6 +148,7 @@ export const getVideoModelsForWeb = unstable_cache(
         audio,
         showCaseVideoPoster,
         showCaseVideo,
+        shortDescription,
         creditCostPerVideo: usdToCredit(cost, false),
       }),
     );

@@ -1,12 +1,11 @@
 "use client";
 
 import type { ImageModelPricingDto } from "@/lib/imageModels";
+import { showCaseUriToUrl } from "@/lib/url";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 /* eslint-disable @next/next/no-img-element */
-
-const BASE_URL = (process.env.NEXT_PUBLIC_URL || "").replace(/\/$/, "");
 
 type Slide = {
   key: string;
@@ -27,7 +26,7 @@ export default function ShowcaseSlideshow({
   videoModels: VideoModelPricingDto[];
 }) {
   const toUrl = useCallback(
-    (file: string | null) => (file ? `${BASE_URL}/show-cases/${file}` : ""),
+    (f: string | null, s?: string) => (f ? showCaseUriToUrl(f, s) : ""),
     [],
   );
 
@@ -40,7 +39,7 @@ export default function ShowcaseSlideshow({
           key: m.code,
           title: m.name,
           type: "image",
-          src: toUrl(m.showCaseImage),
+          src: toUrl(m.showCaseImage, "images"),
           ratio: "square",
         })),
     [imageModels, toUrl],
@@ -55,9 +54,9 @@ export default function ShowcaseSlideshow({
           key: m.code,
           title: m.name,
           type: m.showCaseVideo ? "video" : "image",
-          src: toUrl(m.showCaseVideo),
+          src: toUrl(m.showCaseVideo, "videos"),
           poster: m.showCaseVideoPoster
-            ? toUrl(m.showCaseVideoPoster)
+            ? toUrl(m.showCaseVideoPoster, "videos/posters")
             : undefined,
           ratio: "video",
         })),
