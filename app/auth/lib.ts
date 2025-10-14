@@ -39,11 +39,11 @@ const cookiesConfig: Partial<ResponseCookie> = {
   path: "/",
   ...(process.env.NODE_ENV === "production"
     ? {
-      secure: true,
-      sameSite: "strict",
-      domain: "sepehr-ai.com",
-      expires: dayjs().tz("Asia/Tehran").add(30, "day").toDate(),
-    }
+        secure: true,
+        sameSite: "strict",
+        domain: "sepehr-ai.com",
+        expires: dayjs().tz("Asia/Tehran").add(30, "day").toDate(),
+      }
     : {}),
 };
 
