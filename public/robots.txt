@@ -8,6 +8,7 @@ Disallow: /auth?*
 Disallow: /logout
 Disallow: /_next/*
 Disallow: /dashbord/*
+Disallow: /model-showcase/*
 
 User-agent: Googlebot-Image
 Disallow: /
