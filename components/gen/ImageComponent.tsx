@@ -63,7 +63,7 @@ export default function ImageGenComponent({
   const endOfThePageRef = useRef<HTMLDivElement | null>(null);
   const { status, progress, eta, resultUrl, submit, cancel, resetAll } =
     useGenJob<"imageUrl">({
-      fetchInterval: 5000,
+      fetchInterval: 20_000,
       endpoint: "/api/gen/image",
       resultKey: "imageUrl",
       scrollRef: endOfThePageRef,

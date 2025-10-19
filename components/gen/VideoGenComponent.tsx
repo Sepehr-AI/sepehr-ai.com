@@ -125,7 +125,7 @@ export default function VideoGenComponent({
   const endRef = useRef<HTMLDivElement | null>(null);
   const { status, progress, eta, resultUrl, submit, cancel, resetAll } =
     useGenJob<"videoUrl">({
-      fetchInterval: 20_000,
+      fetchInterval: 60_000,
       endpoint: "/api/gen/video",
       resultKey: "videoUrl",
       scrollRef: endRef,
