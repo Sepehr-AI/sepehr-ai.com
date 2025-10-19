@@ -26,7 +26,6 @@ export default async function LanguageModelsPage() {
       name: m.name,
       companyWebsite: m.companyWebsite,
       shortDescription: m.shortDescription,
-      cardImage: m.cardImage ?? null,
       creditPills: [
         { label: "اعتبار / هزار کلمه ورودی", value: perThousandWordsIn },
         { label: "اعتبار / هزار کلمه خروجی", value: perThousandWordsOut },
@@ -47,7 +46,7 @@ export default async function LanguageModelsPage() {
           از میان مدل‌های مختلف انتخاب کنید. برای شروع روی هر کارت کلیک نمایید.
         </p>
 
-        <UniversalModelSelection items={cards} />
+        <UniversalModelSelection type="language" items={cards} />
       </div>
     </div>
   );

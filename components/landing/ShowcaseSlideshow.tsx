@@ -1,7 +1,7 @@
 "use client";
 
 import type { ImageModelPricingDto } from "@/lib/imageModels";
-import { showCaseUriToUrl } from "@/lib/url";
+import { modelCodeToShowCaseUrl } from "@/lib/url";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -26,21 +26,20 @@ export default function ShowcaseSlideshow({
   videoModels: VideoModelPricingDto[];
 }) {
   const toUrl = useCallback(
-    (f: string | null, s?: string) => (f ? showCaseUriToUrl(f, s) : ""),
+    (c: string, s: string) => modelCodeToShowCaseUrl(c, s),
     [],
   );
 
   const imageSlides: Slide[] = useMemo(
     () =>
       imageModels
-        .filter((m) => !!m.showCaseImage)
-        .slice(0, 12)
+        .filter((m) => m.hasShowCaseImage)
         .map((m) => ({
           key: m.code,
           title: m.name,
           type: "image",
-          src: toUrl(m.showCaseImage, "images"),
           ratio: "square",
+          src: toUrl(m.code, "images"),
         })),
     [imageModels, toUrl],
   );
@@ -48,17 +47,14 @@ export default function ShowcaseSlideshow({
   const videoSlides: Slide[] = useMemo(
     () =>
       videoModels
-        .filter((m) => !!m.showCaseVideo)
-        .slice(0, 12)
+        .filter((m) => m.hasShowCaseVideo)
         .map((m) => ({
           key: m.code,
           title: m.name,
-          type: m.showCaseVideo ? "video" : "image",
-          src: toUrl(m.showCaseVideo, "videos"),
-          poster: m.showCaseVideoPoster
-            ? toUrl(m.showCaseVideoPoster, "videos/posters")
-            : undefined,
+          type: "video",
           ratio: "video",
+          src: toUrl(m.code, "videos"),
+          poster: toUrl(m.code, "videos/posters"),
         })),
     [videoModels, toUrl],
   );

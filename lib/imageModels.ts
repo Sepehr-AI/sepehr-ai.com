@@ -18,9 +18,8 @@ export interface ImageModelView {
   imageInput: ImageInput;
   defaultOptions: JsonValue;
   creditCostPerImage: number;
-  showCaseImage?: string;
+  hasShowCaseImage?: string;
   shortDescription?: string;
-  cardImage?: string;
 }
 
 export type ImageModelDto = Pick<
@@ -31,10 +30,9 @@ export type ImageModelDto = Pick<
   | "description"
   | "cost"
   | "shortDescription"
-  | "cardImage"
   | "imageInput"
   | "defaultOptions"
-  | "showCaseImage"
+  | "hasShowCaseImage"
 > & { companyWebsite: string; ratios: string[] };
 
 const getImageModels = async (): Promise<ImageModelDto[]> => {
@@ -51,9 +49,8 @@ const getImageModels = async (): Promise<ImageModelDto[]> => {
         description: true,
         imageInput: true,
         defaultOptions: true,
-        showCaseImage: true,
+        hasShowCaseImage: true,
         shortDescription: true,
-        cardImage: true,
       },
     })) || [];
 
@@ -83,7 +80,7 @@ export const getImageModelsMap = async () => {
   return map;
 };
 
-// Web DTO (add showCaseImage)
+// Web DTO (add hasShowCaseImage)
 export type ImageModelPricingDto = Pick<
   ImageModelDto,
   | "code"
@@ -93,9 +90,8 @@ export type ImageModelPricingDto = Pick<
   | "imageInput"
   | "ratios"
   | "shortDescription"
-  | "cardImage"
   | "defaultOptions"
-  | "showCaseImage"
+  | "hasShowCaseImage"
 > & { creditCostPerImage: number };
 
 export const getImageModelsForWeb = unstable_cache(
@@ -113,8 +109,7 @@ export const getImageModelsForWeb = unstable_cache(
         imageInput,
         ratios,
         defaultOptions,
-        showCaseImage,
-        cardImage,
+        hasShowCaseImage,
         shortDescription,
       }) => ({
         code,
@@ -124,8 +119,7 @@ export const getImageModelsForWeb = unstable_cache(
         defaultOptions,
         description,
         companyWebsite,
-        showCaseImage,
-        cardImage,
+        hasShowCaseImage,
         shortDescription,
         creditCostPerImage: usdToCredit(cost, false),
       }),

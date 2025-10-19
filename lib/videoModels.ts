@@ -22,11 +22,11 @@ export interface VideoModelDto
     | "endImage"
     | "firstFrameImage"
     | "lastFrameImage"
-    | "referenceImages"
     | "audio"
-    | "showCaseVideo"
+    | "hasShowCaseVideo"
     | "shortDescription"
-    | "showCaseVideoPoster"
+    | "userNotes"
+    | "allowedReferenceImages"
   > {
   ratios: string[];
   companyWebsite: string;
@@ -50,11 +50,11 @@ const getVideoModels = async (): Promise<VideoModelDto[]> => {
       endImage: true,
       firstFrameImage: true,
       lastFrameImage: true,
-      referenceImages: true,
+      userNotes: true,
       audio: true,
       shortDescription: true,
-      showCaseVideo: true,
-      showCaseVideoPoster: true,
+      hasShowCaseVideo: true,
+      allowedReferenceImages: true,
     },
   });
 
@@ -99,11 +99,11 @@ export type VideoModelPricingDto = Pick<
   | "endImage"
   | "firstFrameImage"
   | "lastFrameImage"
-  | "referenceImages"
   | "audio"
+  | "userNotes"
   | "shortDescription"
-  | "showCaseVideo"
-  | "showCaseVideoPoster"
+  | "hasShowCaseVideo"
+  | "allowedReferenceImages"
 > & { creditCostPerVideo: number };
 
 export const getVideoModelsForWeb = unstable_cache(
@@ -126,10 +126,10 @@ export const getVideoModelsForWeb = unstable_cache(
         endImage,
         firstFrameImage,
         lastFrameImage,
-        referenceImages,
+        allowedReferenceImages,
         audio,
-        showCaseVideoPoster,
-        showCaseVideo,
+        userNotes,
+        hasShowCaseVideo,
         shortDescription,
       }) => ({
         code,
@@ -144,10 +144,10 @@ export const getVideoModelsForWeb = unstable_cache(
         endImage,
         firstFrameImage,
         lastFrameImage,
-        referenceImages,
+        allowedReferenceImages,
         audio,
-        showCaseVideoPoster,
-        showCaseVideo,
+        userNotes,
+        hasShowCaseVideo,
         shortDescription,
         creditCostPerVideo: usdToCredit(cost, false),
       }),

@@ -4,10 +4,8 @@
     "milInCost": 1.6,
     "imageInput": "MULTI",
     "code": "openai/gpt-5",
-    "name": "Openai GPT 5",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "cardImage": "gpt-5.jpg",
     "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" },
     "shortDescription": "گفتگوهای طبیعی، استدلال ژرف، نتایج سنجیده پایدار."
   },
@@ -16,9 +14,7 @@
     "milInCost": 19,
     "imageInput": "MULTI",
     "code": "openai/gpt-5-pro",
-    "name": "Openai GPT 5 Pro",
     "supportsMessages": true,
-    "cardImage": "gpt-5-pro.jpg",
     "maxCompletionTokens": 1280000,
     "defaultOptions": { "verbosity": "high" },
     "shortDescription": "کیفیت حرفه‌ای ویژه پروژه‌های پیچیده سازمانی حساس."
@@ -28,10 +24,8 @@
     "milInCost": 0.07,
     "imageInput": "MULTI",
     "code": "openai/gpt-5-nano",
-    "name": "Openai GPT 5 Nano",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "cardImage": "gpt-5-nano.jpg",
     "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" },
     "shortDescription": "کم‌مصرف چابک مناسب دستگاه‌های همراه لبه‌ای محلی."
   },
@@ -40,10 +34,8 @@
     "milInCost": 0.35,
     "imageInput": "MULTI",
     "code": "openai/gpt-5-mini",
-    "name": "Openai GPT 5 Mini",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "cardImage": "gpt-5-mini.jpg",
     "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" },
     "shortDescription": "کم‌هزینه تند پاسخگو امور روزمره پوشش‌دهی فراگیر."
   },
@@ -56,98 +48,78 @@
     "minCompletionTokens": 1024,
     "defMaxCompletionTokens": 8192,
     "code": "anthropic/claude-4-sonnet",
-    "name": "Anthropic Claude 4 Sonnet",
-    "cardImage": "claude-4-sonnet.jpg",
     "shortDescription": "گفتگو امن شفاف؛ درک متن‌های طولانی عمیق."
   },
   {
     "milOutCost": 12.5,
     "milInCost": 4.7,
-    "name": "Deepseek R1",
     "supportsMessages": false,
     "imageInput": "UNAVAILABLE",
     "code": "deepseek-ai/deepseek-r1",
-    "cardImage": "deepseek-r1.jpg",
     "shortDescription": "استدلال مرحله‌به‌مرحله، حل مسئله، توضیح روشن تحلیلی."
   },
   {
     "milOutCost": 10,
     "milInCost": 2.5,
     "imageInput": "MULTI",
-    "name": "Openai GPT 4.1",
     "code": "openai/gpt-4.1",
     "supportsMessages": true,
-    "cardImage": "gpt-4.1.jpg",
     "shortDescription": "تعادل سرعت، دقت، امکانات توسعه، یکپارچگی گسترده."
   },
   {
     "milOutCost": 0.5,
     "milInCost": 0.2,
     "imageInput": "MULTI",
-    "name": "Openai GPT 4.1 Nano",
     "code": "openai/gpt-4.1-nano",
     "supportsMessages": true,
-    "cardImage": "gpt-4.1-nano.jpg",
     "shortDescription": "کم‌منبع اقتصادی مناسب مقیاس بالا تعبیه آسان."
   },
   {
     "milOutCost": 2,
     "milInCost": 0.5,
     "imageInput": "MULTI",
-    "name": "Openai GPT 4.1 Mini",
     "code": "openai/gpt-4.1-mini",
     "supportsMessages": true,
-    "cardImage": "gpt-4.1-mini.jpg",
     "shortDescription": "فرز مطمئن پشتیبانی گفتگو محتوا کاربردهای متنوع."
   },
   {
     "milOutCost": 12.5,
     "milInCost": 3.2,
     "imageInput": "MULTI",
-    "name": "Openai GPT 4o",
     "code": "openai/gpt-4o",
     "supportsMessages": true,
-    "cardImage": "gpt-4o.jpg",
     "shortDescription": "چندرسانه‌ای زنده متن تصویر صوت مکالمه طبیعی."
   },
   {
     "milOutCost": 0.75,
     "milInCost": 0.19,
     "imageInput": "MULTI",
-    "name": "Openai GPT 4o Mini",
     "code": "openai/gpt-4o-mini",
     "supportsMessages": true,
-    "cardImage": "gpt-4o-mini.jpg",
     "shortDescription": "کم‌حجم چندحسگر تعامل سریع ارزان تجربه محاوره‌ای."
   },
   {
     "milOutCost": 1.3,
     "milInCost": 3.2,
     "imageInput": "MULTI",
-    "name": "Openai GPT o4 Mini",
     "code": "openai/gpt-o4-mini",
     "supportsMessages": true,
-    "cardImage": "gpt-o4-mini.jpg",
     "shortDescription": "سازگار شفافیت خوب خروجی کوتاه هزینه پایین."
   },
   {
     "milOutCost": 75,
     "milInCost": 19,
     "imageInput": "MULTI",
-    "name": "Openai o1",
     "code": "openai/o1",
     "supportsMessages": true,
-    "cardImage": "o1.jpg",
     "shortDescription": "تمرکز بر تفکر ژرفنگر حل مسائل دشوار."
   },
   {
     "milOutCost": 5.5,
     "milInCost": 1.4,
-    "name": "Openai o1 Mini",
     "code": "openai/o1-mini",
     "supportsMessages": true,
     "imageInput": "UNAVAILABLE",
-    "cardImage": "o1-mini.jpg",
     "shortDescription": "منطقی سریع‌العمل مقرون‌به‌صرفه پاسخ‌های مرحله‌ای کاربردی روزانه."
   },
   {
@@ -155,9 +127,7 @@
     "milInCost": 4,
     "imageInput": "SINGLE",
     "supportsMessages": false,
-    "name": "Anthropic Claude 3.7 Sonnet",
     "code": "anthropic/claude-3.7-sonnet",
-    "cardImage": "claude-3.7-sonnet.jpg",
     "shortDescription": "خلاقیت پرمایه، ایمن، خلاصه‌سازی اسناد طولانی موثق."
   },
   {
@@ -165,9 +135,7 @@
     "milInCost": 1.5,
     "supportsMessages": false,
     "imageInput": "UNAVAILABLE",
-    "name": "Anthropic Claude 3.5 Haiku",
     "code": "anthropic/claude-3.5-haiku",
-    "cardImage": "claude-3.5-haiku.jpg",
     "shortDescription": "تندرو به‌صرفه مکالمات روان تحلیل ملایم تصویری."
   },
   {
@@ -175,9 +143,7 @@
     "milInCost": 4.7,
     "imageInput": "SINGLE",
     "supportsMessages": false,
-    "name": "Anthropic Claude 3.5 Sonnet",
     "code": "anthropic/claude-3.5-sonnet",
-    "cardImage": "claude-3.5-sonnet.jpg",
     "shortDescription": "هماهنگی امنیت کیفیت نگارش کاربری تیمی قابل‌اعتماد."
   }
 ]

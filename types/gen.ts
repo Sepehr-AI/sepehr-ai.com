@@ -24,7 +24,7 @@ export type MediaInputSpec = {
     | "audio";
   label: string; // Farsi label for UI
   accept: string; // "image/*" | "audio/*"
-  multiple?: boolean; // only true for reference_images
+  maximumNumberOfEntity?: number; // used for reference_images because it accepts multiple images
 };
 
 export type MediaFilesState = Record<string, File[]>;

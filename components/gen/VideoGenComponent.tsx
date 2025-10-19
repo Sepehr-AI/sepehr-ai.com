@@ -89,29 +89,29 @@ export default function VideoGenComponent({
   const mediaInputs: MediaInputSpec[] = (() => {
     const list: MediaInputSpec[] = [];
     if (selectedModel.image)
-      list.push({ id: "image", label: "عکس مرجع", accept: "image/*" });
+      list.push({ id: "image", label: "تصویر مرجع", accept: "image/*" });
     if (selectedModel.startImage)
-      list.push({ id: "start_image", label: "عکس شروع", accept: "image/*" });
+      list.push({ id: "start_image", label: "تصویر شروع", accept: "image/*" });
     if (selectedModel.endImage)
-      list.push({ id: "end_image", label: "عکس پایان", accept: "image/*" });
+      list.push({ id: "end_image", label: "تصویر پایان", accept: "image/*" });
     if (selectedModel.firstFrameImage)
       list.push({
         id: "first_frame_image",
-        label: "عکس فریم اول",
+        label: "تصویر فریم اول",
         accept: "image/*",
       });
     if (selectedModel.lastFrameImage)
       list.push({
         id: "last_frame_image",
-        label: "عکس فریم  آخر",
+        label: "تصویر فریم آخر",
         accept: "image/*",
       });
-    if (selectedModel.referenceImages)
+    if (selectedModel.allowedReferenceImages)
       list.push({
         id: "reference_images",
-        label: "عکس های مرجع",
+        label: "تصویر های مرجع",
         accept: "image/*",
-        multiple: true,
+        maximumNumberOfEntity: selectedModel.allowedReferenceImages,
       });
     if (selectedModel.audio)
       list.push({ id: "audio", label: "صدای تصویر", accept: "audio/*" });
@@ -162,7 +162,7 @@ export default function VideoGenComponent({
     for (const spec of mediaInputs) {
       const files = mediaFiles[spec.id] || [];
       if (!files.length) continue;
-      if (spec.multiple) {
+      if (spec.maximumNumberOfEntity) {
         for (const f of files) form.append(spec.id, f);
       } else {
         form.append(spec.id, files[0]);

@@ -13,7 +13,6 @@ export default async function ModelsPage() {
     name: m.name,
     companyWebsite: m.companyWebsite,
     shortDescription: m.shortDescription ?? m.description,
-    cardImage: m.cardImage ?? m.showCaseImage ?? null,
     ratios: m.ratios,
     creditPills: [{ label: "اعتبار / تصویر", value: m.creditCostPerImage }],
     href: `/dashboard/gen/image?selectedModel=${encodeURIComponent(m.code)}`,
@@ -31,7 +30,7 @@ export default async function ModelsPage() {
           از میان مدل‌های مختلف انتخاب کنید. برای شروع روی هر کارت کلیک نمایید.
         </p>
 
-        <UniversalModelSelection items={cards} />
+        <UniversalModelSelection type="image" items={cards} />
       </div>
     </div>
   );

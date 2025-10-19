@@ -6,6 +6,7 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { existsSync } from "fs";
 import fs from "fs/promises";
+import fsp from "fs/promises";
 import path from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -35,6 +36,10 @@ const __dirname = dirname(__filename);
 const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
+
+function capitalizeFirstLetter(string: string): string {
+  return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+}
 
 const farsiDescriptionSchema = z.string().refine(
   (value) => {
@@ -70,14 +75,14 @@ async function saveDescriptions(
 }
 
 async function fetchFarsiDescription(modelName: string): Promise<string> {
-  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 75 words long. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text, including any links. Search the web for finding information about the AI model to generate the description. The description should be in simple terms and understandable for the average person.`;
+  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 75 words long with no links nor any kind of online resources included in it. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text. Search the web for finding information about the AI model to generate the description. The description should be in simple terms and understandable for the average person. Don't include words like 'API' or 'web service' or similar technical terms. This model is available on the platform of 'سپهر AI'`;
 
   const maxRetries = 10;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const resp = await generateText({
         prompt,
-        model: openrouter("openai/gpt-5"),
+        model: openrouter("openai/gpt-5-mini:online"),
       });
       const parsRes = await farsiDescriptionSchema.safeParseAsync(resp.text);
       if (!parsRes.success) {
@@ -114,13 +119,25 @@ function upsertWithSameData<Model extends { upsert(args: any): Promise<any> }>(
   });
 }
 
+async function doesShowCaseFileExist(filename: string, subDir: string | null) {
+  try {
+    return (
+      await fsp.stat(
+        path.resolve(
+          __dirname,
+          `../public/model-showcase/${subDir ? subDir + "/" : ""}${filename}`,
+        ),
+      )
+    ).isFile();
+  } catch {
+    return false;
+  }
+}
+
 // Shared seeding loop for models that need Farsi descriptions
 function buildSeedTasks(
   seed: Array<
-    { id: number; code: string; name: string; imageInput: ImageInput } & Record<
-      string,
-      any
-    >
+    { id: number; code: string; imageInput: ImageInput } & Record<string, any>
   >,
   prismaModel: { upsert(args: any): Promise<any> },
   descriptionsMap: Record<string, string>,
@@ -130,27 +147,55 @@ function buildSeedTasks(
   for (const m of seed) {
     tasks.push(
       (async () => {
-        const companyWebsite = (companyToWebsiteMap as any)[
-          m.code.split("/")[0]
-        ];
+        const splitCode = m.code.split("/");
+        const companyWebsite = (companyToWebsiteMap as any)[splitCode[0]];
         if (!companyWebsite) {
           console.error(m);
           throw new Error(
-            `Company '${m.code.split("/")[0]}' is not defined in the codebase!`,
+            `Company '${splitCode[0]}' is not defined in the codebase!`,
           );
         }
+
+        if (
+          !(await doesShowCaseFileExist(`${splitCode[1]}.jpg`, "cards")) &&
+          !(await doesShowCaseFileExist(
+            `${splitCode[1]}.png`,
+            "videos/posters",
+          ))
+        ) {
+          throw new Error(`No card nor poster image for ${m.code} was found!`);
+        }
+        if (
+          m.hasShowCaseImage &&
+          !(await doesShowCaseFileExist(`${splitCode[1]}.jpg`, "images"))
+        ) {
+          throw new Error(`Image showcase for ${m.code} not found!`);
+        }
+        if (
+          m.hasShowCaseVideo &&
+          !(await doesShowCaseFileExist(`${splitCode[1]}.mp4`, "videos"))
+        ) {
+          throw new Error(`Video showcase for ${m.code} not found!`);
+        }
+
+        const modelName = [
+          ...new Set(m.code.replace("/", " ").replaceAll("-", " ").split(" ")),
+        ]
+          .map((n) => capitalizeFirstLetter(n))
+          .join(" ");
 
         if (
           !descriptionsMap[m.code] ||
           !descriptionsMap[m.code].trim().length
         ) {
-          const desc = await fetchFarsiDescription(m.name);
+          const desc = await fetchFarsiDescription(modelName);
           descriptionsMap[m.code] = desc;
         }
 
         const newData = {
           ...(m as typeof m & { imageInput: ImageInput }),
           description: descriptionsMap[m.code],
+          name: modelName,
         };
         if (typeof (newData as any).ratios !== "undefined") {
           (newData as any).ratios = (newData as any).ratios.map((r: string) =>

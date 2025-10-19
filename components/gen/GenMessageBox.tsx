@@ -10,12 +10,14 @@ import type { JobStatus } from "@/types/jobs";
 import {
   CaretSortIcon,
   CheckIcon,
+  Cross2Icon,
   ImageIcon,
   MagnifyingGlassIcon,
   PaperPlaneIcon,
 } from "@radix-ui/react-icons";
 import {
   type Dispatch,
+  type ReactNode,
   type SetStateAction,
   useEffect,
   useRef,
@@ -27,12 +29,18 @@ import RatioSelector from "./RatioSelector";
 /* eslint-disable @next/next/no-img-element */
 
 interface Props {
-  // Prompt + reference image
+  // Prompt + reference image(s)
   prompt: string;
   setPrompt: Dispatch<SetStateAction<string>>;
+
+  // SINGLE
   imageFile: File | null;
   setImageFile: Dispatch<SetStateAction<File | null>>;
   imagePreviewUrl: string | null;
+
+  // MULTI
+  imageFiles?: File[];
+  setImageFiles?: Dispatch<SetStateAction<File[]>>;
 
   allowImageRef?: boolean;
 
@@ -77,6 +85,53 @@ interface Props {
   };
 }
 
+function fieldKey(id: string, index?: number) {
+  return index === undefined ? id : `${id}__${index}`;
+}
+
+function DropZone({
+  files,
+  isImage,
+  placeholder,
+  onClick,
+  disabled,
+}: {
+  files: File[];
+  isImage: boolean;
+  placeholder: ReactNode;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <div
+      className="mt-2 hover:cursor-pointer border border-dashed border-border rounded-md p-2 bg-muted/20 flex items-center justify-center min-h-[96px] overflow-hidden"
+      onClick={() => !disabled && onClick()}
+      role="button"
+      aria-label="file-picker"
+      title="file-picker"
+    >
+      {files.length > 0 ? (
+        isImage ? (
+          <img
+            src={URL.createObjectURL(files[0])}
+            alt={files[0].name}
+            className="max-h-32 object-contain rounded"
+          />
+        ) : (
+          <div className="text-xs text-foreground/90">
+            {files[0].name}
+            {files.length > 1 ? ` +${files.length - 1}` : ""}
+          </div>
+        )
+      ) : (
+        <div className="text-foreground/80 text-xs flex items-center gap-2">
+          <ImageIcon /> {placeholder}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function GenMessageBox({
   prompt,
   setPrompt,
@@ -106,9 +161,14 @@ export default function GenMessageBox({
   mediaInputs,
   mediaFiles,
   setMediaFiles,
+
+  // MULTI-image support
+  imageFiles = [],
+  setImageFiles,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const referenceImages = mediaInputs?.find((i) => i.id === "reference_images");
 
   // Auto-resize textarea
   useEffect(() => {
@@ -126,10 +186,11 @@ export default function GenMessageBox({
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const filteredModels = Object.values(models).filter((m) =>
+  const filteredModels = models.filter((m) =>
     m.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
+  // One ref per input key (including per-slot keys for reference images)
   const mediaInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const onPick = (
@@ -162,6 +223,31 @@ export default function GenMessageBox({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // MULTI: helpers
+  const onMultiPick = (filesList: FileList | null) => {
+    if (!setImageFiles) return;
+    if (!filesList || filesList.length === 0) return;
+    const picked = Array.from(filesList);
+    // Append to existing, avoid duplicates by name+size+lastModified
+    const key = (f: File) => `${f.name}-${f.size}-${f.lastModified}`;
+    const existingKeys = new Set(imageFiles.map(key));
+    const merged = [
+      ...imageFiles,
+      ...picked.filter((f) => !existingKeys.has(key(f))),
+    ];
+    setImageFiles(merged);
+    // reset input so the same file can be re-picked if removed
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeMultiAt = (idx: number) => {
+    if (!setImageFiles) return;
+    setImageFiles(imageFiles.filter((_, i) => i !== idx));
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const imageInputMode = (selectedModel as any)?.imageInput ?? "SINGLE";
+
   return (
     <div className="space-y-4">
       {/* Prompt */}
@@ -191,14 +277,20 @@ export default function GenMessageBox({
           </button>
         </div>
 
+        {/* Hidden input for SINGLE and MULTI modes */}
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           style={{ display: "none" }}
+          multiple={imageInputMode === "MULTI"}
           onChange={(e) => {
-            const f = e.target.files?.[0] || null;
-            setImageFile(f);
+            if (imageInputMode === "MULTI") {
+              onMultiPick(e.target.files);
+            } else {
+              const f = e.target.files?.[0] || null;
+              setImageFile(f);
+            }
           }}
           disabled={disabled}
         />
@@ -218,9 +310,9 @@ export default function GenMessageBox({
             disabled={disabled}
             onClick={() => {
               if (!disabled) {
-                const toggeled = !isSelectOpen;
-                setIsSelectOpen(toggeled);
-                if (!toggeled) setSearchTerm("");
+                const toggled = !isSelectOpen;
+                setIsSelectOpen(toggled);
+                if (!toggled) setSearchTerm("");
               }
             }}
             className={`ltr text-center flex items-center justify-between w-full p-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent/50 transition-colors ${
@@ -311,36 +403,94 @@ export default function GenMessageBox({
         )}
       </div>
 
-      {/* Reference Image (only when dynamic media inputs are NOT used) */}
+      {/* Reference Image(s) (only when dynamic media inputs are NOT used) */}
       {(!mediaInputs || !mediaInputs.length) && allowImageRef && (
         <div>
           <label className="text-sm text-foreground/80">
-            {labels.imageRefLabel ?? "تصویر مرجع (اختیاری)"}
+            {labels.imageRefLabel ??
+              (imageInputMode === "MULTI"
+                ? "تصاویر مرجع (اختیاری)"
+                : "تصویر مرجع (اختیاری)")}
           </label>
-          <div
-            className="mt-2 hover:cursor-pointer border border-dashed border-border rounded-md p-2 bg-muted/20 flex items-center justify-center min-h-[96px] overflow-hidden"
-            onClick={() => !disabled && fileInputRef.current?.click()}
-            role="button"
-            aria-label="انتخاب تصویر"
-            title="انتخاب تصویر"
-          >
-            {imagePreviewUrl ? (
-              <img
-                src={imagePreviewUrl}
-                alt={imageFile?.name || "preview"}
-                className="max-h-32 object-contain rounded"
-              />
-            ) : (
-              <div className="text-foreground/80 text-xs flex items-center gap-2">
-                <ImageIcon />
-                افزودن تصویر مرجع
+
+          {/* MULTI-mode grid */}
+          {imageInputMode === "MULTI" ? (
+            <>
+              <div
+                className="mt-2 hover:cursor-pointer border border-dashed border-border rounded-md p-2 bg-muted/20 flex items-center justify-center min-h-[96px] overflow-hidden"
+                onClick={() => !disabled && fileInputRef.current?.click()}
+                role="button"
+                aria-label="انتخاب تصاویر"
+                title="انتخاب تصاویر"
+              >
+                <div className="text-foreground/80 text-xs flex items-center gap-2">
+                  <ImageIcon />
+                  افزودن تصاویر مرجع
+                </div>
               </div>
-            )}
-          </div>
-          {imageFile && (
-            <div className="mt-1 text-[10px] text-foreground/60 truncate">
-              {imageFile.name}
-            </div>
+
+              {imageFiles.length > 0 && (
+                <>
+                  <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {imageFiles.map((f, idx) => (
+                      <div
+                        key={`${f.name}-${f.size}-${f.lastModified}-${idx}`}
+                        className="relative group border border-border rounded-md overflow-hidden"
+                        title={f.name}
+                      >
+                        <img
+                          src={URL.createObjectURL(f)}
+                          alt={f.name}
+                          className="w-full h-28 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeMultiAt(idx)}
+                          disabled={disabled}
+                          className="absolute top-1 right-1 bg-background/80 hover:bg-background text-foreground border border-border rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="حذف تصویر"
+                          title="حذف تصویر"
+                        >
+                          <Cross2Icon className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-1 text-[10px] text-foreground/60">
+                    {imageFiles.length} تصویر انتخاب شده
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            // SINGLE-mode picker
+            <>
+              <div
+                className="mt-2 hover:cursor-pointer border border-dashed border-border rounded-md p-2 bg-muted/20 flex items-center justify-center min-h-[96px] overflow-hidden"
+                onClick={() => !disabled && fileInputRef.current?.click()}
+                role="button"
+                aria-label="انتخاب تصویر"
+                title="انتخاب تصویر"
+              >
+                {imagePreviewUrl ? (
+                  <img
+                    src={imagePreviewUrl}
+                    alt={imageFile?.name || "preview"}
+                    className="max-h-32 object-contain rounded"
+                  />
+                ) : (
+                  <div className="text-foreground/80 text-xs flex items-center gap-2">
+                    <ImageIcon />
+                    افزودن تصویر مرجع
+                  </div>
+                )}
+              </div>
+              {imageFile && (
+                <div className="mt-1 text-[10px] text-foreground/60 truncate">
+                  {imageFile.name}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -359,50 +509,92 @@ export default function GenMessageBox({
       {mediaInputs && mediaInputs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {mediaInputs.map((f) => {
+            if (f.id === "reference_images") return null;
+
             const files = mediaFiles?.[f.id] || [];
+            const isImage = f.accept.startsWith("image/");
 
             return (
               <div key={f.id} className="md:col-span-1">
-                <label className="text-sm text-foreground/80">{f.label}</label>
-                <div
-                  className="mt-2 hover:cursor-pointer border border-dashed border-border rounded-md p-2 bg-muted/20 flex items-center justify-center min-h-[96px] overflow-hidden"
-                  onClick={() =>
-                    !disabled && mediaInputRefs.current[f.id]?.click()
-                  }
-                  role="button"
-                  aria-label={f.label}
-                  title={f.label}
-                >
-                  {files.length > 0 ? (
-                    f.accept.startsWith("image/") ? (
-                      <img
-                        src={URL.createObjectURL(files[0])}
-                        alt={files[0].name}
-                        className="max-h-32 object-contain rounded"
-                      />
-                    ) : (
-                      <div className="text-xs text-foreground/90">
-                        {files[0].name}
-                        {files.length > 1 ? ` +${files.length - 1}` : ""}
-                      </div>
-                    )
-                  ) : (
-                    <div className="text-foreground/80 text-xs flex items-center gap-2">
-                      <ImageIcon /> افزودن
-                    </div>
-                  )}
-                </div>
+                <label className="text-sm text-foreground/80">
+                  {f.label} (اختیاری)
+                </label>
+
+                <DropZone
+                  files={files}
+                  isImage={isImage}
+                  placeholder={<>افزودن</>}
+                  onClick={() => mediaInputRefs.current[f.id]?.click()}
+                  disabled={disabled}
+                />
+
+                {/* Exactly ONE hidden input per field id */}
                 <input
                   ref={(el) => {
                     mediaInputRefs.current[f.id] = el;
                   }}
                   type="file"
                   accept={f.accept}
-                  multiple={f.multiple}
                   style={{ display: "none" }}
-                  onChange={(e) => onPick(f.id, e.target.files, f.multiple)}
+                  multiple={(f.maximumNumberOfEntity || 1) > 1}
+                  onChange={(e) =>
+                    onPick(
+                      f.id,
+                      e.target.files,
+                      (f.maximumNumberOfEntity || 1) > 1,
+                    )
+                  }
                   disabled={disabled}
                 />
+
+                {files.length > 0 && (
+                  <div className="mt-1 text-[10px] text-foreground/60 truncate">
+                    {files.map((x) => x.name).join(", ")}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Reference images (video) */}
+      {referenceImages !== undefined && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {Array.from({
+            length: referenceImages.maximumNumberOfEntity || 1,
+          }).map((_, i) => {
+            const key = fieldKey(referenceImages.id, i);
+            const files = mediaFiles?.[key] || [];
+            const isImage = referenceImages.accept.startsWith("image/");
+
+            return (
+              <div key={key} className="md:col-span-1">
+                <label className="text-sm text-foreground/80">
+                  تصویر رفرنس {i + 1} (اختیاری)
+                </label>
+
+                <DropZone
+                  files={files}
+                  isImage={isImage}
+                  placeholder={<>افزودن</>}
+                  onClick={() => mediaInputRefs.current[key]?.click()}
+                  disabled={disabled}
+                />
+
+                {/* Unique hidden input and unique storage key per slot */}
+                <input
+                  ref={(el) => {
+                    mediaInputRefs.current[key] = el;
+                  }}
+                  type="file"
+                  accept={referenceImages.accept}
+                  style={{ display: "none" }}
+                  multiple={false}
+                  onChange={(e) => onPick(key, e.target.files, false)}
+                  disabled={disabled}
+                />
+
                 {files.length > 0 && (
                   <div className="mt-1 text-[10px] text-foreground/60 truncate">
                     {files.map((x) => x.name).join(", ")}

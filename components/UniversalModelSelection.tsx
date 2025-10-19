@@ -2,7 +2,7 @@
 
 import { useTheme } from "@/components/ThemeProvider";
 import CompanyLogo from "@/components/companyLogos/CompanyLogo";
-import { showCaseUriToUrl } from "@/lib/url";
+import { modelCodeToShowCaseUrl } from "@/lib/url";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
@@ -15,9 +15,6 @@ export type UniversalModelCard = {
   companyWebsite?: string;
   // Card text
   shortDescription?: string | null;
-  // Visuals (pick whichever you have)
-  cardImage?: string | null;
-  posterImage?: string | null;
   // Optional badges
   ratios?: string[]; // e.g. ["16:9", "1:1", "X:Y"]
   durationsSec?: number[]; // e.g. [5, 10, 15]
@@ -27,19 +24,21 @@ export type UniversalModelCard = {
   href: string;
 };
 
-export default function UniversalModelSelection({
+export default function UniversalModelsGrid({
+  type,
   items,
-  modelShowCaseSubUri = "cards",
 }: {
   items: UniversalModelCard[];
-  modelShowCaseSubUri?: string;
+  type: "language" | "image" | "video";
 }) {
   const { theme } = useTheme();
   const [q, setQ] = useState("");
 
+  const showCaseSubDir = type === "video" ? "videos/posters" : "cards";
   const toUrl = useCallback(
-    (f: string | null) => (f ? showCaseUriToUrl(f, modelShowCaseSubUri) : ""),
-    [modelShowCaseSubUri],
+    (code?: string) =>
+      code ? modelCodeToShowCaseUrl(code, showCaseSubDir) : "",
+    [showCaseSubDir],
   );
 
   const filtered = useMemo(() => {
@@ -70,8 +69,6 @@ export default function UniversalModelSelection({
       {/* Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((m) => {
-          const cover = m.cardImage ?? m.posterImage ?? null;
-
           return (
             <Link
               key={m.code}
@@ -79,22 +76,16 @@ export default function UniversalModelSelection({
               className={
                 `group rounded-xl overflow-hidden border border-border bg-card hover:shadow-md transition-shadow flex flex-col ` +
                 (theme === "dark"
-                  ? "shadow-lg/7 shadow-accent "
+                  ? "shadow-lg/10 shadow-accent "
                   : "shadow-lg/50 shadow-foreground ")
               }
             >
               <div className="relative aspect-[16/10] bg-muted/30">
-                {cover ? (
-                  <img
-                    src={toUrl(cover)}
-                    alt={m.name}
-                    className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                  />
-                ) : (
-                  <div className="h-full w-full flex items-center justify-center text-xs text-foreground/60">
-                    بدون تصویر
-                  </div>
-                )}
+                <img
+                  src={toUrl(m.code)}
+                  alt={m.name}
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                />
               </div>
 
               <div className="p-3 flex-1 flex flex-col gap-2">
@@ -158,13 +149,13 @@ export default function UniversalModelSelection({
                     {m.creditPills!.slice(0, 2).map((pill, i) => (
                       <div
                         key={pill.label + i}
-                        className="text-[11px] border border-accent/90 text-accent rounded-2xl px-2 py-0.5"
+                        className="text-[11px] border border-accent/80 text-accent rounded-2xl px-2 py-0.5"
                       >
                         {pill.value} {pill.label}
                       </div>
                     ))}
                     {m.creditPills!.length > 2 && (
-                      <div className="text-[11px] border border-accent/40 text-accent/90 rounded-2xl px-2 py-0.5">
+                      <div className="text-[11px] border border-accent/40 text-accent/80 rounded-2xl px-2 py-0.5">
                         +{m.creditPills!.length - 2}
                       </div>
                     )}

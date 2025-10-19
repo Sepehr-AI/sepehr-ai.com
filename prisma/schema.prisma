@@ -101,7 +101,6 @@ model LanguageModel {
   name                   String
   description            String
   shortDescription       String
-  cardImage              String
   milInCost              Float
   milOutCost             Float
   imageInput             ImageInput
@@ -113,7 +112,6 @@ model LanguageModel {
   maxCompletionTokens    Int?
   // The default maximum amount of generated output tokens
   defMaxCompletionTokens Int?
-  showCaseImage          String?
   disabled               Boolean    @default(false)
   createdAt              DateTime   @default(now()) @db.Timestamptz(3)
 }
@@ -143,36 +141,35 @@ model ImageModel {
   description      String
   defaultOptions   Json?
   shortDescription String
-  cardImage        String
   cost             Float
   imageInput       ImageInput
   ratios           Ratio[]    @default([RATIO_1_1])
-  showCaseImage    String?
+  hasShowCaseImage Boolean    @default(false)
   disabled         Boolean    @default(false)
   createdAt        DateTime   @default(now()) @db.Timestamptz(3)
 }
 
 model VideoModel {
-  id                  Int      @id @default(autoincrement())
-  code                String   @unique()
-  name                String
-  description         String
-  shortDescription    String
-  defaultOptions      Json?
-  cost                Float
-  durations           Int[]
-  image               Boolean  @default(false)
-  startImage          Boolean  @default(false)
-  firstFrameImage     Boolean  @default(false)
-  lastFrameImage      Boolean  @default(false)
-  referenceImages     Boolean  @default(false)
-  endImage            Boolean  @default(false)
-  audio               Boolean  @default(false)
-  ratios              Ratio[]  @default([RATIO_16_9])
-  showCaseVideo       String?
-  showCaseVideoPoster String
-  disabled            Boolean  @default(false)
-  createdAt           DateTime @default(now()) @db.Timestamptz(3)
+  id                     Int      @id @default(autoincrement())
+  code                   String   @unique()
+  name                   String
+  description            String
+  shortDescription       String
+  defaultOptions         Json?
+  cost                   Float
+  durations              Int[]
+  userNotes              String?
+  image                  Boolean  @default(false)
+  startImage             Boolean  @default(false)
+  firstFrameImage        Boolean  @default(false)
+  lastFrameImage         Boolean  @default(false)
+  allowedReferenceImages Int      @default(0)
+  endImage               Boolean  @default(false)
+  audio                  Boolean  @default(false)
+  ratios                 Ratio[]  @default([RATIO_16_9])
+  hasShowCaseVideo       Boolean  @default(false)
+  disabled               Boolean  @default(false)
+  createdAt              DateTime @default(now()) @db.Timestamptz(3)
 }
 
 enum JobStatus {

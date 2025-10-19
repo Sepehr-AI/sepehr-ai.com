@@ -1,8 +1,11 @@
 import BlackForestLabs from "@/components/companyLogos/BlackForestLabs";
 import Bytedance from "@/components/companyLogos/Bytedance";
 import DeepSeek from "@/components/companyLogos/Deepseek";
+import Kwaivgi from "@/components/companyLogos/Kwaivgi";
+import Minimax from "@/components/companyLogos/Minimax";
 import Mistral from "@/components/companyLogos/Mistral";
 import Perplexity from "@/components/companyLogos/Perplexity";
+import Pixverse from "@/components/companyLogos/Pixverse";
 import Qwen from "@/components/companyLogos/Qwen";
 import Stability from "@/components/companyLogos/Stability";
 import WithColor from "@/components/companyLogos/WithColor";
@@ -22,12 +25,15 @@ export const companyWebsiteToRiMap: Partial<
 > = {
   "qwen.ai": Qwen,
   "mistral.ai": Mistral,
+  "minimax.io": Minimax,
   "openai.com": SiOpenai,
+  "pixverse.ai": Pixverse,
   "deepseek.com": DeepSeek,
   "bfl.ai": BlackForestLabs,
   "stability.ai": Stability,
   "bytedance.com": Bytedance,
   "perplexity.ai": Perplexity,
+  "huggingface.co/KwaiVGI": Kwaivgi,
   "x.ai": WithColor(FaXTwitter, "#231f1e"),
   "llama.com": WithColor(FaMeta, "#0080fb"),
   "amazon.com": WithColor(SiAmazon, "#231f1e"),

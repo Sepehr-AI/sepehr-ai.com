@@ -13,7 +13,6 @@ export default async function VideoModelsPage() {
     name: m.name,
     companyWebsite: m.companyWebsite,
     shortDescription: m.shortDescription,
-    posterImage: m.showCaseVideoPoster ?? null,
     ratios: m.ratios,
     durationsSec: m.durations,
     creditPills: [{ label: "اعتبار / ویدئو", value: m.creditCostPerVideo }],
@@ -32,10 +31,7 @@ export default async function VideoModelsPage() {
           از میان مدل‌های مختلف انتخاب کنید. برای شروع روی هر کارت کلیک نمایید.
         </p>
 
-        <UniversalModelSelection
-          items={cards}
-          modelShowCaseSubUri="videos/posters"
-        />
+        <UniversalModelSelection type="video" items={cards} />
       </div>
     </div>
   );

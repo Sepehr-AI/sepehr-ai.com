@@ -5,8 +5,6 @@
     "durations": [8],
     "ratios": ["9:16", "16:9"],
     "code": "google/veo-3-fast",
-    "name": "Google Veo 3 Fast",
-    "showCaseVideoPoster": "veo3-fast.png",
     "defaultOptions": { "resolution": "1080p" },
     "shortDescription": "ویدیوهای فوری ویژه پیش‌نمایش اولیه ایده‌ها می‌سازد."
   },
@@ -15,22 +13,18 @@
     "image": true,
     "durations": [8],
     "code": "google/veo-3",
-    "name": "Google Veo 3",
+    "hasShowCaseVideo": true,
     "ratios": ["9:16", "16:9"],
     "defaultOptions": { "resolution": "1080p" },
-    "showCaseVideo": "veo3.mp4",
-    "showCaseVideoPoster": "veo3.png",
     "shortDescription": "کیفیت بالا همراه کنترل دقیق حرکت ویدیو."
   },
   {
     "cost": 0.85,
     "image": true,
     "durations": [5, 10],
+    "hasShowCaseVideo": true,
     "ratios": ["16:9", "9:16", "1:1"],
-    "name": "Kwaivgi Kling v2.5 Turbo Pro",
     "code": "kwaivgi/kling-v2.5-turbo-pro",
-    "showCaseVideo": "kling-v2.5-turbo-pro.mp4",
-    "showCaseVideoPoster": "kling-v2.5-turbo-pro.png",
     "shortDescription": "پایایی مخصوص قابل‌اعتماد جریان‌های محتوای زنده سریع."
   },
   {
@@ -38,19 +32,15 @@
     "startImage": true,
     "durations": [5, 10],
     "ratios": ["16:9", "9:16", "1:1"],
-    "name": "Kwaivgi Kling v2.1 Master",
     "code": "kwaivgi/kling-v2.1-master",
-    "showCaseVideoPoster": "kling-v2.1-master.png",
     "shortDescription": "پویانمایی روان از تصویر مرجع شروع می‌گردد."
   },
   {
     "cost": 1.5,
     "image": true,
     "lastFrameImage": true,
-    "name": "Bytedance Seedance 1 Pro",
+    "hasShowCaseVideo": true,
     "code": "bytedance/seedance-1-pro",
-    "showCaseVideo": "seedance-1-pro.mp4",
-    "showCaseVideoPoster": "seedance-1-pro.png",
     "durations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     "ratios": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"],
     "shortDescription": "انعطاف‌پذیری نسبت‌ها و زمان‌ها خروجی حرفه‌ای پایدار."
@@ -59,9 +49,7 @@
     "cost": 0.75,
     "image": true,
     "lastFrameImage": true,
-    "name": "Bytedance Seedance 1 Lite",
     "code": "bytedance/seedance-1-lite",
-    "showCaseVideoPoster": "seedance-1-lite.png",
     "durations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     "ratios": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"],
     "shortDescription": "بهینگی سبک برای اجرا روی سخت‌افزار معمولی."
@@ -71,11 +59,8 @@
     "image": true,
     "durations": [5, 8],
     "lastFrameImage": true,
-    "name": "Pixverse v5",
     "code": "pixverse/pixverse-v5",
     "ratios": ["16:9", "9:16", "1:1"],
-    "showCaseVideo": "pixverse-v5.mp4",
-    "showCaseVideoPoster": "pixverse-v5.png",
     "defaultOptions": { "quality": "1080p" },
     "shortDescription": "جزئیات قوی جنبش نرم نتیجه چشمگیر خلاقیت."
   },
@@ -85,10 +70,8 @@
     "durations": [6],
     "lastFrameImage": true,
     "firstFrameImage": true,
+    "hasShowCaseVideo": true,
     "code": "minimax/hailuo-02",
-    "name": "Minimax Hailuo 02",
-    "showCaseVideo": "hailuo-02.mp4",
-    "showCaseVideoPoster": "hailuo-02.png",
     "defaultOptions": { "resolution": "1080p" },
     "shortDescription": "چابک اقتصادی پاسخگو کارآمد پروژه‌های روزمره تصویری."
   }

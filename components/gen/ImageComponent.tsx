@@ -25,8 +25,11 @@ export default function ImageGenComponent({
   initialModelCode: string;
 }) {
   const [prompt, setPrompt] = useState("");
+  // SINGLE-image state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const imagePreviewUrl = usePreviewObjectUrl(imageFile);
+  // MULTI-image state
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const [modelCode, setModelCode] = useState<string>(
     initialModelCode && imageModels.some((m) => m.code === initialModelCode)
@@ -72,12 +75,31 @@ export default function ImageGenComponent({
       },
     });
 
+  // Keep image pickers in a valid state whenever the selected model changes.
   useEffect(() => {
-    if (selectedModel.imageInput === "UNAVAILABLE" && imageFile) {
-      setImageFile(null);
+    if (selectedModel.imageInput === "UNAVAILABLE") {
+      // Clear all images
+      if (imageFile) setImageFile(null);
+      if (imageFiles.length) setImageFiles([]);
+      return;
+    }
+    if (selectedModel.imageInput === "SINGLE") {
+      // If previously MULTI, keep the first file as SINGLE
+      if (!imageFile && imageFiles.length > 0) {
+        setImageFile(imageFiles[0]);
+      }
+      if (imageFiles.length > 0) setImageFiles([]);
+      return;
+    }
+    if (selectedModel.imageInput === "MULTI") {
+      // If previously SINGLE, migrate to MULTI list
+      if (imageFile) {
+        setImageFiles([imageFile]);
+        setImageFile(null);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedModel]);
+  }, [selectedModel.imageInput]);
 
   const canSubmit = useMemo(() => {
     return (
@@ -98,8 +120,15 @@ export default function ImageGenComponent({
     if (selectedModel.defaultOptions) {
       form.append("options", JSON.stringify(selectedModel.defaultOptions));
     }
-    if (selectedModel.imageInput !== "UNAVAILABLE" && imageFile) {
+
+    // Attach reference image(s) based on the model's imageInput capability
+    if (selectedModel.imageInput === "SINGLE" && imageFile) {
       form.append("image", imageFile);
+    } else if (selectedModel.imageInput === "MULTI" && imageFiles.length > 0) {
+      // Append multiple images under the "images" key
+      for (const f of imageFiles) {
+        form.append("images", f);
+      }
     }
 
     await submit(form);
@@ -121,12 +150,17 @@ export default function ImageGenComponent({
                 ratio,
                 prompt,
                 setPrompt,
+                // SINGLE
                 imageFile,
-                modelCode,
                 setImageFile,
                 imagePreviewUrl,
-                models: uiModels,
+                // MULTI
+                imageFiles,
+                setImageFiles,
+                // Models
+                modelCode,
                 setModelId: setModelCode,
+                models: uiModels,
                 ratios: selectedModel.ratios,
                 setRatio: setRatio as Dispatch<SetStateAction<string>>,
                 allowImageRef: selectedModel.imageInput !== "UNAVAILABLE",
@@ -140,7 +174,10 @@ export default function ImageGenComponent({
                   modelSearchPlaceholder: "جستجوی مدل ...",
                   noModelFound: "مدلی یافت نشد",
                   ratioLabel: "نسبت تصویر خروجی",
-                  imageRefLabel: "تصویر مرجع (اختیاری)",
+                  imageRefLabel:
+                    selectedModel.imageInput === "MULTI"
+                      ? "تصاویر مرجع (اختیاری)"
+                      : "تصویر مرجع (اختیاری)",
                 },
               }}
             />

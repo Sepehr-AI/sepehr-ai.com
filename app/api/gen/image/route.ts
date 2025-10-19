@@ -1,86 +1,59 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getImageModelsForWeb } from "@/lib/imageModels";
+import { error, info, warn } from "@/lib/log";
 import prisma from "@/lib/prisma";
 import { ratioLabelToEnumKey } from "@/lib/ratio";
-import {
-  buildReplicateImageInput,
-  resolveReplicateEndpoint,
-  parseSize as sharedParseSize,
-} from "@/lib/replicateModels";
+import { resolveReplicateEndpoint } from "@/lib/replicateModels";
 import { NEXT_PUBLIC_BASE_URL } from "@/lib/url";
 import { JobStatus } from "@/prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-// --- auth util ---
-function getUserId(req: NextRequest): number {
-  const userId = Number(req.headers.get("userId") || "abc");
-  if (isNaN(userId)) {
-    // Return localized error
-    throw Object.assign(new Error("دسترسی غیرمجاز"), { code: 401 });
-  }
-  return userId;
+const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
+
+/**
+ * ------------- small helpers -------------
+ */
+function json<T extends Record<string, unknown>>(data: T, status = 200) {
+  return NextResponse.json(data, { status });
 }
 
-// --- replicate helpers ---
-async function createReplicatePrediction(
-  modelId: string,
-  input: Record<string, unknown>,
-) {
-  const token = process.env.REPLICATE_API_TOKEN;
-  if (!token) throw new Error("Missing REPLICATE_API_TOKEN env var");
-
-  const { url, body } = resolveReplicateEndpoint(modelId, input);
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-      Prefer: "wait=5",
-    },
-    body,
-  });
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => "");
-    throw new Error(
-      `Replicate create FAILED (${resp.status}): ${text || resp.statusText}`,
-    );
-  }
-  return (await resp.json()) as {
-    id: string;
-    status: string;
-    output: unknown;
-    urls: { get: string; cancel: string; web: string };
-  };
+function jsonError(message: string, status = 500) {
+  return json({ error: message }, status);
 }
 
-async function getReplicatePrediction(predictionIdOrUrl: string) {
-  const token = process.env.REPLICATE_API_TOKEN;
-  if (!token) throw new Error("Missing REPLICATE_API_TOKEN env var");
-  const url = predictionIdOrUrl.startsWith("http")
-    ? predictionIdOrUrl
-    : `https://api.replicate.com/v1/predictions/${predictionIdOrUrl}`;
-  const resp = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => "");
-    throw new Error(
-      `Replicate get FAILED (${resp.status}): ${text || resp.statusText}`,
-    );
-  }
-  const json = await resp.json();
-  if (json.status && typeof json.status === "string")
-    json.status = (json.status as string).toUpperCase();
+function buildStreamUrl(jobId: number) {
+  return new URL(
+    `/api/gen/image/stream?jobId=${encodeURIComponent(String(jobId))}`,
+    NEXT_PUBLIC_BASE_URL,
+  ).toString();
+}
 
-  return json as {
-    id: string;
-    status: "STARTING" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELED";
-    output: unknown;
-    urls: { get: string; cancel: string; web: string };
-  };
+function extractImageUrl(output: unknown): string | null {
+  if (!output) return null;
+  if (typeof output === "string") return output;
+  if (Array.isArray(output) && output.length > 0) {
+    const first = output[0];
+    if (typeof first === "string") return first;
+    if (first && typeof first === "object" && "image" in (first as any)) {
+      const v = (first as any).image;
+      if (typeof v === "string") return v;
+      if (Array.isArray(v) && v.length > 0) return String(v[0]);
+    }
+  }
+  if (typeof output === "object" && output) {
+    if ("image" in (output as any)) {
+      const v = (output as any).image;
+      if (typeof v === "string") return v;
+      if (Array.isArray(v) && v.length > 0) return String(v[0]);
+    }
+    if ("images" in (output as any) && Array.isArray((output as any).images)) {
+      const v = (output as any).images;
+      if (v.length > 0) return String(v[0]);
+    }
+  }
+  return null;
 }
 
 function mapReplicateStatus(s: string): JobStatus {
@@ -97,40 +70,225 @@ function estimateProgress(prev: number, status: JobStatus): number {
   return Math.min(95, base + 15);
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const userId = getUserId(req);
-    const imageModels = await getImageModelsForWeb();
-    const form = await req.formData();
+async function fileToDataUrl(f: File) {
+  const buf = Buffer.from(await f.arrayBuffer());
+  const mime = f.type || "application/octet-stream";
+  return `data:${mime};base64,${buf.toString("base64")}`;
+}
 
-    const prompt = String(form.get("prompt") || "");
-    if (!prompt.trim()) {
-      return NextResponse.json(
-        { error: "وارد کردن پرامپت الزامی است." },
-        { status: 400 },
-      );
+// --- auth util ---
+function getUserId(req: NextRequest): number {
+  const userId = Number(req.headers.get("userId") || "abc");
+  if (isNaN(userId)) {
+    warn("Image.Auth.InvalidUserIdHeader", {
+      header: req.headers.get("userId"),
+    });
+    // Return localized error
+    const err = new Error("دسترسی غیرمجاز") as Error & { code?: number };
+    err.code = 401;
+    throw err;
+  }
+  return userId;
+}
+
+// --- replicate helpers ---
+async function createReplicatePrediction(
+  modelId: string,
+  input: Record<string, unknown>,
+) {
+  if (!REPLICATE_API_TOKEN) {
+    error("Image.Replicate.MissingToken", {});
+    throw new Error("Missing REPLICATE_API_TOKEN env var");
+  }
+
+  const { url, body } = resolveReplicateEndpoint(modelId, input);
+  const resp = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${REPLICATE_API_TOKEN}`,
+      "Content-Type": "application/json",
+      Prefer: "wait=5",
+    },
+    body,
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    const errMsg = `Replicate create FAILED (${resp.status}): ${text || resp.statusText}`;
+    error("Image.Replicate.CreateFailed", {
+      modelId,
+      status: resp.status,
+      statusText: resp.statusText,
+      bodyPreview:
+        typeof body === "string" && body.length > 1000
+          ? `${(body as string).slice(0, 1000)}...`
+          : body,
+      error: errMsg,
+    });
+    throw new Error(errMsg);
+  }
+
+  const json = (await resp.json()) as {
+    id: string;
+    status: string;
+    output: unknown;
+    urls: { get: string; cancel: string; web: string };
+  };
+
+  info("Image.Replicate.CreateSucceeded", {
+    modelId,
+    predictionId: json.id,
+    status: json.status,
+  });
+
+  return json;
+}
+
+async function getReplicatePrediction(predictionIdOrUrl: string) {
+  if (!REPLICATE_API_TOKEN) {
+    error("Image.Replicate.MissingToken", {});
+    throw new Error("Missing REPLICATE_API_TOKEN env var");
+  }
+  const url = predictionIdOrUrl.startsWith("http")
+    ? predictionIdOrUrl
+    : `https://api.replicate.com/v1/predictions/${predictionIdOrUrl}`;
+  const resp = await fetch(url, {
+    headers: { Authorization: `Bearer ${REPLICATE_API_TOKEN}` },
+    cache: "no-store",
+  });
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    const errMsg = `Replicate get FAILED (${resp.status}): ${text || resp.statusText}`;
+    error("Image.Replicate.GetFailed", {
+      url,
+      status: resp.status,
+      statusText: resp.statusText,
+      body: text,
+    });
+    throw new Error(errMsg);
+  }
+  const json = await resp.json();
+  if (json.status && typeof json.status === "string")
+    json.status = (json.status as string).toUpperCase();
+
+  return json as {
+    id: string;
+    status: "STARTING" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELED";
+    output: unknown;
+    urls: { get: string; cancel: string; web: string };
+  };
+}
+
+/**
+ * Build the exact input object sent to Replicate.
+ * - SINGLE -> put the source under 'image' (string)
+ * - MULTI  -> put the sources under 'image_input' (string[])
+ * - If ratio is present and no image(s) provided, set 'aspect_ratio'
+ * - Merge defaultOptions first, then fixed fields, then userOptions
+ *   (but userOptions cannot override prompt/num_outputs/image/image_input)
+ */
+function buildInputForReplicate(
+  spec: {
+    defaultOptions?: Record<string, unknown> | null;
+    imageInput?: "UNAVAILABLE" | "SINGLE" | "MULTI";
+  },
+  args: {
+    prompt: string;
+    ratio?: string | null;
+    imageDataUrlSingle?: string;
+    imageDataUrlsMulti?: string[];
+    userOptions?: Record<string, unknown>;
+  },
+) {
+  const input: Record<string, unknown> = {
+    ...((spec?.defaultOptions as object) ?? {}),
+    prompt: args.prompt,
+    num_outputs: 1,
+  };
+
+  const hasMulti =
+    spec?.imageInput === "MULTI" &&
+    Array.isArray(args.imageDataUrlsMulti) &&
+    args.imageDataUrlsMulti.length > 0;
+  const hasSingle = !!args.imageDataUrlSingle;
+
+  if (hasMulti) {
+    input.image_input = args.imageDataUrlsMulti!;
+  } else if (hasSingle) {
+    input.image = args.imageDataUrlSingle!;
+  }
+
+  if (args.ratio && !(hasSingle || hasMulti)) {
+    input.aspect_ratio = args.ratio;
+  }
+
+  if (args.userOptions && typeof args.userOptions === "object") {
+    for (const [k, v] of Object.entries(args.userOptions)) {
+      if (
+        k === "prompt" ||
+        k === "num_outputs" ||
+        k === "image" ||
+        k === "image_input"
+      )
+        continue;
+      input[k] = v;
+    }
+  }
+
+  return input;
+}
+
+/**
+ * POST /api/gen/image
+ */
+export async function POST(req: NextRequest) {
+  let userId: number | undefined;
+  try {
+    userId = getUserId(req);
+
+    const imageModels = await getImageModelsForWeb().catch((e) => {
+      error("Image.POST.GetModelsFailed", { userId, error: e });
+      throw e;
+    });
+
+    const form = await req.formData().catch((e) => {
+      error("Image.POST.ParseFormFailed", { userId, error: e });
+      throw e;
+    });
+
+    const prompt = String(form.get("prompt") || "").trim();
+    if (!prompt) {
+      warn("Image.POST.Validation.MissingPrompt", { userId });
+      return jsonError("وارد کردن پرامپت الزامی است.", 400);
     }
 
-    const model = String(form.get("model") || "");
-    const spec = imageModels.find((m) => m.code === model);
+    const modelCode = String(form.get("model") || "");
+    const spec = imageModels.find((m) => m.code === modelCode);
     if (!spec) {
-      return NextResponse.json(
-        { error: "شناسه مدل معتبر نیست." },
-        { status: 400 },
-      );
+      warn("Image.POST.Validation.InvalidModel", { userId, modelCode });
+      return jsonError("شناسه مدل معتبر نیست.", 400);
     }
 
     // Always get authoritative price from DB (not the web list),
     // and ensure model isn't disabled.
-    const dbModel = await prisma.imageModel.findUnique({
-      where: { code: spec.code },
-      select: { cost: true, disabled: true },
-    });
+    const dbModel = await prisma.imageModel
+      .findUnique({
+        where: { code: spec.code },
+        select: { cost: true, disabled: true },
+      })
+      .catch((e) => {
+        error("Image.POST.DB.FindImageModelFailed", {
+          userId,
+          modelCode,
+          error: e,
+        });
+        throw e;
+      });
     if (!dbModel || dbModel.disabled) {
-      return NextResponse.json(
-        { error: "شناسه مدل معتبر نیست." },
-        { status: 400 },
-      );
+      warn("Image.POST.Validation.ModelDisabledOrMissing", {
+        userId,
+        modelCode,
+      });
+      return jsonError("شناسه مدل معتبر نیست.", 400);
     }
     const cost = dbModel.cost;
 
@@ -145,67 +303,118 @@ export async function POST(req: NextRequest) {
     if (typeof optionsRaw === "string" && optionsRaw.trim().length) {
       try {
         userOptions = JSON.parse(optionsRaw);
-      } catch {
-        /* ignore */
+      } catch (e) {
+        warn("Image.POST.Options.JSONParseFailed", {
+          userId,
+          optionsRawPreview:
+            optionsRaw.length > 500
+              ? `${optionsRaw.slice(0, 500)}...`
+              : optionsRaw,
+          error: e,
+        });
       }
     }
 
-    // Optional source image -> data URL (small images only)
-    let imageDataUrl: string | undefined;
-    const imagePart = form.get("image");
-    if (imagePart instanceof File && spec.imageInput !== "UNAVAILABLE") {
-      const buf = Buffer.from(await imagePart.arrayBuffer());
-      const mime = imagePart.type || "application/octet-stream";
-      imageDataUrl = `data:${mime};base64,${buf.toString("base64")}`;
+    // Optional source image(s) -> data URL(s)
+    // SINGLE: "image" -> string
+    // MULTI:  "images" (multi-part) -> string[]
+    let imageDataUrlSingle: string | undefined;
+    let imageDataUrlsMulti: string[] | undefined;
+
+    if (spec.imageInput !== "UNAVAILABLE") {
+      if (spec.imageInput === "SINGLE") {
+        const imagePart = form.get("image");
+        if (imagePart instanceof File) {
+          try {
+            imageDataUrlSingle = await fileToDataUrl(imagePart);
+          } catch (e) {
+            error("Image.POST.FileToDataUrlFailed", { userId, error: e });
+            return jsonError("در بارگذاری فایل خطایی رخ داد.", 400);
+          }
+        }
+      } else if (spec.imageInput === "MULTI") {
+        const parts = form
+          .getAll("images")
+          .filter((x) => x instanceof File) as File[];
+        if (parts.length > 0) {
+          try {
+            const urls = await Promise.all(parts.map((f) => fileToDataUrl(f)));
+            imageDataUrlsMulti = urls;
+          } catch (e) {
+            error("Image.POST.FilesToDataUrlFailed", {
+              userId,
+              count: parts.length,
+              error: e,
+            });
+            return jsonError("در بارگذاری فایل‌ها خطایی رخ داد.", 400);
+          }
+        }
+      }
     }
 
-    const { w, h } = sharedParseSize(ratio);
-    const input = buildReplicateImageInput(spec, {
-      prompt,
-      ratio,
-      width: w,
-      height: h,
-      imageDataUrl,
-      userOptions,
-    });
+    // Build Replicate input here (do NOT use the shared build function).
+    const input = buildInputForReplicate(
+      {
+        defaultOptions: (spec.defaultOptions ?? null) as any,
+        imageInput: spec.imageInput,
+      },
+      {
+        prompt,
+        ratio,
+        imageDataUrlSingle,
+        imageDataUrlsMulti,
+        userOptions,
+      },
+    );
 
     // 1) Atomic debit, only if balance >= cost
-    const debit = await prisma.user.updateMany({
-      where: { id: userId, balance: { gte: cost } },
-      data: { balance: { decrement: cost } },
-    });
+    const debit = await prisma.user
+      .updateMany({
+        where: { id: userId, balance: { gte: cost } },
+        data: { balance: { decrement: cost } },
+      })
+      .catch((e) => {
+        error("Image.POST.DB.DebitFailed", { userId, cost, error: e });
+        throw e;
+      });
+
     if (debit.count <= 0) {
-      return NextResponse.json(
-        { error: "اعتبار حساب شما کافی نیست!" },
-        { status: 402 },
-      ); // Payment Required
+      warn("Image.POST.Validation.InsufficientBalance", { userId, cost });
+      return jsonError("اعتبار حساب شما کافی نیست!", 402);
     }
 
     // 2) Create prediction; refund on failure
-    let prediction: {
-      id: string;
-      status: string;
-      output: unknown;
-      urls: { get: string; cancel: string; web: string };
-    };
+    let prediction:
+      | {
+          id: string;
+          status: string;
+          output: unknown;
+          urls: { get: string; cancel: string; web: string };
+        }
+      | undefined;
+
     try {
       prediction = await createReplicatePrediction(spec.code, input);
     } catch (e) {
       // refund the debit if Replicate failed to start
-      await prisma.user.update({
-        where: { id: userId },
-        data: { balance: { increment: cost } },
-      });
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { balance: { increment: cost } },
+        });
+        info("Image.POST.RefundedAfterCreateError", { userId, cost });
+      } catch (refundErr) {
+        error("Image.POST.DB.RefundFailedAfterCreateError", {
+          userId,
+          cost,
+          error: refundErr,
+        });
+      }
       throw e;
     }
 
     const initialStatus = mapReplicateStatus(prediction.status);
-    const initialImageUrl =
-      Array.isArray(prediction.output) && prediction.output.length > 0
-        ? String(prediction.output[0])
-        : typeof prediction.output === "string"
-          ? prediction.output
-          : null;
+    const initialImageUrl = extractImageUrl(prediction.output);
 
     // 3) Create job; if this fails, refund too
     try {
@@ -232,13 +441,30 @@ export async function POST(req: NextRequest) {
         select: { id: true },
       });
 
-      return NextResponse.json({ jobId: job.id }, { status: 202 });
+      info("Image.POST.JobCreated", {
+        jobId: job.id,
+        userId,
+        model: spec.code,
+        status: initialStatus,
+      });
+
+      return json({ jobId: job.id }, 202);
     } catch (e) {
       // job couldn't be created -> refund
-      await prisma.user.update({
-        where: { id: userId },
-        data: { balance: { increment: cost } },
-      });
+      error("Image.POST.DB.CreateJobFailed", { userId, error: e });
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { balance: { increment: cost } },
+        });
+        info("Image.POST.RefundedAfterJobCreateError", { userId, cost });
+      } catch (refundErr) {
+        error("Image.POST.DB.RefundFailedAfterJobCreateError", {
+          userId,
+          cost,
+          error: refundErr,
+        });
+      }
       throw e;
     }
   } catch (err: any) {
@@ -247,68 +473,73 @@ export async function POST(req: NextRequest) {
       err?.code === 401
         ? "دسترسی غیرمجاز."
         : "در ایجاد درخواست ساخت تصویر خطایی رخ داد.";
-    return NextResponse.json({ error: msg }, { status });
+
+    error("Image.POST.Unhandled", {
+      userId: userId ?? null,
+      status,
+      error: err,
+    });
+
+    return jsonError(msg, status);
   }
 }
 
-// GET /api/gen/image?jobId=...
+/**
+ * GET /api/gen/image?jobId=...
+ */
 export async function GET(req: NextRequest) {
+  let userId: number | undefined;
+  let jobId: number | undefined;
+
   try {
-    const userId = getUserId(req);
+    userId = getUserId(req);
     const jobIdRaw = req.nextUrl.searchParams.get("jobId");
-    const jobId = Number(jobIdRaw);
+    jobId = Number(jobIdRaw);
     if (!jobIdRaw || Number.isNaN(jobId)) {
-      return NextResponse.json(
-        { error: "شناسه کار نامعتبر است." },
-        { status: 404 },
-      );
+      warn("Image.GET.Validation.InvalidJobId", { userId, jobIdRaw });
+      return jsonError("شناسه کار نامعتبر است.", 404);
     }
 
-    const job = await prisma.imageJob.findFirst({
-      where: { id: jobId, userId },
-      // include cost so we can refund the exact charged amount
-      select: {
-        id: true,
-        status: true,
-        progress: true,
-        createdAt: true,
-        imageUrl: true,
-        replicateGetUrl: true,
-        cost: true,
-      },
-    });
+    const job = await prisma.imageJob
+      .findFirst({
+        where: { id: jobId, userId },
+        // include cost so we can refund the exact charged amount
+        select: {
+          id: true,
+          status: true,
+          progress: true,
+          createdAt: true,
+          imageUrl: true,
+          replicateGetUrl: true,
+          cost: true,
+        },
+      })
+      .catch((e) => {
+        error("Image.GET.DB.FindJobFailed", { userId, jobId, error: e });
+        throw e;
+      });
 
     if (!job) {
-      return NextResponse.json(
-        { error: "کار مورد نظر یافت نشد." },
-        { status: 404 },
-      );
+      warn("Image.GET.Validation.JobNotFound", { userId, jobId });
+      return jsonError("کار مورد نظر یافت نشد.", 404);
     }
 
     const makeStreamUrl = () =>
-      job.imageUrl
-        ? new URL(
-            `/api/gen/image/stream?jobId=${encodeURIComponent(String(job.id))}`,
-            NEXT_PUBLIC_BASE_URL,
-          ).toString()
-        : undefined;
+      job.imageUrl ? buildStreamUrl(job.id) : undefined;
 
     // Terminal states
     if (job.status === "SUCCEEDED") {
-      return NextResponse.json({
+      return json({
         status: job.status,
         progress: job.progress,
         etaSeconds: 0,
         imageUrl: makeStreamUrl(),
-        // ...(job.status === "FAILED" ? { error: "ساخت تصویر ناموفق بود." } : {}),
       });
     }
 
     if (!job.replicateGetUrl) {
-      return NextResponse.json(
-        { error: "پیش‌بینی هنوز مقداردهی نشده است." },
-        { status: 500 },
-      );
+      error("Image.GET.InvalidState.MissingReplicateGetUrl", { userId, jobId });
+      return jsonError("پیش‌بینی هنوز مقداردهی نشده است.", 500);
     }
 
     const pred = await getReplicatePrediction(job.replicateGetUrl);
@@ -317,11 +548,7 @@ export async function GET(req: NextRequest) {
 
     let imageUrl = job.imageUrl ?? undefined;
     if (!imageUrl && pred.status === "SUCCEEDED") {
-      if (Array.isArray(pred.output) && pred.output.length > 0) {
-        imageUrl = String(pred.output[0]);
-      } else if (typeof pred.output === "string") {
-        imageUrl = pred.output;
-      }
+      imageUrl = extractImageUrl(pred.output) ?? undefined;
     }
 
     // Refund only on transition to FAILED where Replicate raw status is FAILED (not CANCELED)
@@ -333,9 +560,10 @@ export async function GET(req: NextRequest) {
     const updated = await prisma.$transaction(async (tx) => {
       if (shouldRefund && job.cost && job.cost > 0) {
         await tx.user.update({
-          where: { id: userId },
+          where: { id: userId! },
           data: { balance: { increment: job.cost } },
         });
+        info("Image.GET.Refunded", { userId, jobId, amount: job.cost });
       }
       return tx.imageJob.update({
         where: { id: job.id },
@@ -363,47 +591,52 @@ export async function GET(req: NextRequest) {
         ? 0
         : Math.max(1, 20 - elapsedSec);
 
-    return NextResponse.json({
+    return json({
       status: updated.status,
       progress: updated.progress,
       etaSeconds,
-      imageUrl: updated.imageUrl
-        ? new URL(
-            `/api/gen/image/stream?jobId=${encodeURIComponent(String(updated.id))}`,
-            NEXT_PUBLIC_BASE_URL,
-          ).toString()
-        : undefined,
+      imageUrl: updated.imageUrl ? buildStreamUrl(updated.id) : undefined,
       ...(updated.status === "FAILED"
         ? { error: "ساخت تصویر ناموفق بود." }
         : {}),
     });
-  } catch {
-    // unchanged fallback
-    const jobIdRaw = req.nextUrl.searchParams.get("jobId");
-    const jobId = Number(jobIdRaw);
-    const userId = Number(req.headers.get("userId") || "0");
+  } catch (e: any) {
+    // soft fallback with logging
+    error("Image.GET.Unhandled", {
+      userId: userId ?? null,
+      jobId: jobId ?? null,
+      error: e,
+    });
 
-    const safe = Number.isFinite(jobId)
-      ? await prisma.imageJob.findFirst({
-          where: { id: jobId, userId },
-          select: { status: true, progress: true, imageUrl: true, id: true },
-        })
+    const jobIdRaw = req.nextUrl.searchParams.get("jobId");
+    const safeJobId = Number(jobIdRaw);
+    const safeUserId = Number(req.headers.get("userId") || "0");
+
+    const safe = Number.isFinite(safeJobId)
+      ? await prisma.imageJob
+          .findFirst({
+            where: { id: safeJobId, userId: safeUserId },
+            select: { status: true, progress: true, imageUrl: true, id: true },
+          })
+          .catch((err) => {
+            error("Image.GET.Fallback.DB.FindJobFailed", {
+              userId: safeUserId,
+              jobId: safeJobId,
+              error: err,
+            });
+            return null;
+          })
       : null;
 
-    return NextResponse.json(
+    return json(
       {
         status: safe?.status ?? "QUEUED",
         progress: safe?.progress ?? 0,
         etaSeconds: 5,
-        imageUrl: safe?.imageUrl
-          ? new URL(
-              `/api/gen/image/stream?jobId=${encodeURIComponent(String(safe.id))}`,
-              NEXT_PUBLIC_BASE_URL,
-            ).toString()
-          : undefined,
+        imageUrl: safe?.imageUrl ? buildStreamUrl(safe.id) : undefined,
         warning: "در هنگام دریافت وضعیت از سرویس خطایی رخ داد.",
       },
-      { status: 200 },
+      200,
     );
   }
 }
