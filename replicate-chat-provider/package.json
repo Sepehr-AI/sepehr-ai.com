@@ -21,13 +21,13 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "ai": "5.0.56",
+    "@ai-sdk/openai-compatible": "1.0.19",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/provider-utils": "3.0.10",
-    "@ai-sdk/openai-compatible": "1.0.19"
+    "ai": "5.0.56"
   },
   "devDependencies": {
     "tsup": "8.5.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.3"
   }
 }

@@ -53,6 +53,10 @@ const DESC_JSON_FILE = path.resolve(
   __dirname,
   "./seed-data/AiModelDescription.json",
 );
+const SHORT_DESC_JSON_FILE = path.resolve(
+  __dirname,
+  "./seed-data/AiModelShortDescription.json",
+);
 
 async function loadDescriptions(): Promise<Record<string, string>> {
   if (!existsSync(DESC_JSON_FILE)) {
@@ -67,23 +71,49 @@ async function loadDescriptions(): Promise<Record<string, string>> {
     return {};
   }
 }
+async function loadShortDescriptions(): Promise<Record<string, string>> {
+  if (!existsSync(SHORT_DESC_JSON_FILE)) {
+    await fs.writeFile(SHORT_DESC_JSON_FILE, JSON.stringify({}));
+    return {};
+  }
+  try {
+    return JSON.parse(await fs.readFile(SHORT_DESC_JSON_FILE, "utf8"));
+  } catch (e) {
+    console.error("Failed to parse short-descriptions file.", e);
+    return {};
+  }
+}
 
 async function saveDescriptions(
   descriptions: Record<string, string>,
 ): Promise<void> {
   await fs.writeFile(DESC_JSON_FILE, JSON.stringify(descriptions, null, 2));
 }
+async function saveShortDescriptions(
+  shortDescriptions: Record<string, string>,
+): Promise<void> {
+  await fs.writeFile(
+    SHORT_DESC_JSON_FILE,
+    JSON.stringify(shortDescriptions, null, 2),
+  );
+}
 
 async function fetchFarsiDescription(modelName: string): Promise<string> {
-  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 75 words long with no links nor any kind of online resources included in it. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text. Search the web for finding information about the AI model to generate the description. The description should be in simple terms and understandable for the average person. Don't include words like 'API' or 'web service' or similar technical terms. This model is available on the platform of 'سپهر AI'`;
+  const prompt = `Generate a Farsi description for an AI model named "${modelName}". The description should be approximately 75 words long with no links nor any kind of online resources included in it. Return only the Farsi description without any greetings, explanations, or additional characters. Do not include any markdown formatting; output everything as raw text. Search the web for finding information about the AI model to generate the description. The description should be in simple terms and understandable for the average person. Don't include words like 'API' or 'web service' or similar technical terms. Do not mention where and how this model can be utilized.`;
 
   const maxRetries = 10;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const resp = await generateText({
         prompt,
-        model: openrouter("openai/gpt-5-mini:online"),
+        model: openrouter("openai/gpt-5:online", {
+          reasoning: {
+            exclude: true,
+            effort: "low",
+          },
+        }),
       });
+
       const parsRes = await farsiDescriptionSchema.safeParseAsync(resp.text);
       if (!parsRes.success) {
         console.log("Invalid output by AI. Retrying...", { resp });
@@ -104,6 +134,92 @@ async function fetchFarsiDescription(modelName: string): Promise<string> {
 
   console.warn({ prompt });
   throw new Error("Failed to fetch Farsi description after retries.");
+}
+
+function toModelNameFromCode(code: string): string {
+  return [...new Set(code.replace("/", " ").replaceAll("-", " ").split(" "))]
+    .map((n) => capitalizeFirstLetter(n))
+    .join(" ");
+}
+function isValidSevenSimpleWords(s: string): boolean {
+  // Allow commas and the Persian '،' plus the conjunction 'و' as-is.
+  // Keep it simple: exactly 7 whitespace-separated tokens.
+  const words = s.trim().split(/\s+/).filter(Boolean);
+  return words.length === 7;
+}
+
+/**
+ * Ask AI once to produce a 7-word Persian short sentence per model code.
+ * Enforces:
+ * - exactly 7 words
+ * - no word repetition within a sentence
+ * - each sentence unique across models
+ * - simple, non‑technical vocabulary
+ */
+async function generateShortDescriptionsAllAtOnce(
+  descriptionsMap: Record<string, string>,
+): Promise<Record<string, string>> {
+  const codes = Object.keys(descriptionsMap);
+
+  const system =
+    "You write ultra‑concise, friendly Persian (Farsi) taglines for everyday users. Output must be Farsi. Keep vocabulary simple and non‑technical; do not mention APIs, GPUs, infrastructure, tokens, parameters, or model jargon. You may use commas and the Persian conjunction 'و' where they read naturally; otherwise avoid other punctuation.";
+
+  const prompt =
+    "You will receive one JSON object whose keys are model codes and values are their full Farsi descriptions. " +
+    "For each code, produce exactly one 7‑word Farsi sentence that summarizes the model for non‑technical users. " +
+    "Requirements: 1) exactly 7 words; 2) simple everyday language; 3) avoid technical terms; " +
+    "4) keep sentences distinct across models; 5) return ONLY a pure JSON object mapping the same keys to their 7‑word sentences, with no extra text.\n\n" +
+    "INPUT JSON (model_code -> farsi_description):\n" +
+    JSON.stringify(descriptionsMap, null, 2);
+
+  // Retry a few times if validation fails
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const { text } = await generateText({
+      model: openrouter("openai/gpt-5", {
+        reasoning: { exclude: true, effort: "high" },
+      }),
+      system,
+      prompt,
+      temperature: 0.2,
+    });
+
+    let result: Record<string, string>;
+    try {
+      result = JSON.parse(text);
+    } catch {
+      console.warn("Short-description: non-JSON response, retrying...");
+      continue;
+    }
+
+    const missing = codes.filter((c) => typeof result[c] !== "string");
+    if (missing.length) {
+      console.warn("Short-description missing keys:", missing);
+      continue;
+    }
+
+    const sentences = codes.map((c) => result[c].trim());
+
+    // Keep validation simple: just ensure 7 tokens by whitespace.
+    const invalid = sentences.filter((s) => !isValidSevenSimpleWords(s));
+    if (invalid.length) {
+      console.warn("Invalid 7-word sentences found, retrying...", invalid);
+      continue;
+    }
+
+    // Simple duplicate check (exact-string comparison only).
+    const uniqueSentences = new Set(sentences);
+    if (uniqueSentences.size !== sentences.length) {
+      console.warn("Duplicate sentences detected, retrying...");
+      continue;
+    }
+
+    return codes.reduce<Record<string, string>>((acc, c) => {
+      acc[c] = result[c].trim();
+      return acc;
+    }, {});
+  }
+
+  throw new Error("Failed to generate valid short descriptions after retries.");
 }
 
 // Helper to upsert any model with the same data for update & create.
@@ -141,6 +257,7 @@ function buildSeedTasks(
   >,
   prismaModel: { upsert(args: any): Promise<any> },
   descriptionsMap: Record<string, string>,
+  shortDescriptionsMap: Record<string, string>,
 ): Array<Promise<any>> {
   const tasks: Promise<any>[] = [];
 
@@ -194,8 +311,9 @@ function buildSeedTasks(
 
         const newData = {
           ...(m as typeof m & { imageInput: ImageInput }),
-          description: descriptionsMap[m.code],
           name: modelName,
+          description: descriptionsMap[m.code],
+          shortDescription: shortDescriptionsMap[m.code],
         };
         if (typeof (newData as any).ratios !== "undefined") {
           (newData as any).ratios = (newData as any).ratios.map((r: string) =>
@@ -234,7 +352,40 @@ async function main() {
 
   const descriptionsMap = await loadDescriptions();
 
-  // Delete existing entries for both models before inserting.
+  // 1) Ensure all long descriptions exist before any DB work
+  let descriptionsChanged = false;
+  for (const m of [
+    ...(languageModelSeed as any[]),
+    ...(imageModelSeed as any[]),
+    ...(videoModelSeed as any[]),
+  ]) {
+    const code = m.code;
+    if (!descriptionsMap[code] || !descriptionsMap[code].trim().length) {
+      const modelName = toModelNameFromCode(code);
+      const desc = await fetchFarsiDescription(modelName);
+      descriptionsMap[code] = desc;
+      descriptionsChanged = true;
+    }
+  }
+
+  // Persist long descriptions only if we fetched anything new
+  if (descriptionsChanged) {
+    await saveDescriptions(descriptionsMap);
+  }
+
+  // 2) Prepare short descriptions (generate once if AiModelDescription.json changed)
+  let shortDescriptionsMap: Record<string, string>;
+  const shortFileExists = existsSync(SHORT_DESC_JSON_FILE);
+
+  if (descriptionsChanged || !shortFileExists) {
+    shortDescriptionsMap =
+      await generateShortDescriptionsAllAtOnce(descriptionsMap);
+    await saveShortDescriptions(shortDescriptionsMap);
+  } else {
+    shortDescriptionsMap = await loadShortDescriptions();
+  }
+
+  // 3) Now (re)seed DB with both description and shortDescription
   await Promise.all([
     prisma.languageModel.deleteMany({}),
     prisma.imageModel.deleteMany({}),
@@ -245,20 +396,22 @@ async function main() {
     languageModelSeed as any[],
     prisma.languageModel,
     descriptionsMap,
+    shortDescriptionsMap,
   );
   const imageTasks = buildSeedTasks(
     imageModelSeed as any[],
     prisma.imageModel,
     descriptionsMap,
+    shortDescriptionsMap,
   );
   const videoTasks = buildSeedTasks(
     videoModelSeed as any[],
     prisma.videoModel,
     descriptionsMap,
+    shortDescriptionsMap,
   );
 
   await Promise.all([...languageTasks, ...imageTasks, ...videoTasks]);
-  await saveDescriptions(descriptionsMap);
 }
 
 main()

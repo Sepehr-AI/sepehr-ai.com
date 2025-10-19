@@ -99,7 +99,7 @@ export default function UniversalModelsGrid({
 
                 <div className="flex-auto flex flex-col justify-center gap-1">
                   {m.shortDescription && (
-                    <p className="text-xs text-foreground/70 line-clamp-2">
+                    <p className="text-xs text-foreground/70 line-clamp-2 text-center">
                       {m.shortDescription}
                     </p>
                   )}

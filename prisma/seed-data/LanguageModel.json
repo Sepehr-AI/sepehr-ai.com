@@ -6,8 +6,7 @@
     "code": "openai/gpt-5",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" },
-    "shortDescription": "گفتگوهای طبیعی، استدلال ژرف، نتایج سنجیده پایدار."
+    "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" }
   },
   {
     "milOutCost": 150,
@@ -16,8 +15,7 @@
     "code": "openai/gpt-5-pro",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "defaultOptions": { "verbosity": "high" },
-    "shortDescription": "کیفیت حرفه‌ای ویژه پروژه‌های پیچیده سازمانی حساس."
+    "defaultOptions": { "verbosity": "high" }
   },
   {
     "milOutCost": 0.5,
@@ -26,8 +24,7 @@
     "code": "openai/gpt-5-nano",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" },
-    "shortDescription": "کم‌مصرف چابک مناسب دستگاه‌های همراه لبه‌ای محلی."
+    "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" }
   },
   {
     "milOutCost": 2.5,
@@ -36,8 +33,7 @@
     "code": "openai/gpt-5-mini",
     "supportsMessages": true,
     "maxCompletionTokens": 1280000,
-    "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" },
-    "shortDescription": "کم‌هزینه تند پاسخگو امور روزمره پوشش‌دهی فراگیر."
+    "defaultOptions": { "reasoning_effort": "medium", "verbosity": "high" }
   },
   {
     "milOutCost": 19,
@@ -47,103 +43,90 @@
     "maxCompletionTokens": 64000,
     "minCompletionTokens": 1024,
     "defMaxCompletionTokens": 8192,
-    "code": "anthropic/claude-4-sonnet",
-    "shortDescription": "گفتگو امن شفاف؛ درک متن‌های طولانی عمیق."
+    "code": "anthropic/claude-4-sonnet"
   },
   {
     "milOutCost": 12.5,
     "milInCost": 4.7,
     "supportsMessages": false,
     "imageInput": "UNAVAILABLE",
-    "code": "deepseek-ai/deepseek-r1",
-    "shortDescription": "استدلال مرحله‌به‌مرحله، حل مسئله، توضیح روشن تحلیلی."
+    "code": "deepseek-ai/deepseek-r1"
   },
   {
     "milOutCost": 10,
     "milInCost": 2.5,
     "imageInput": "MULTI",
     "code": "openai/gpt-4.1",
-    "supportsMessages": true,
-    "shortDescription": "تعادل سرعت، دقت، امکانات توسعه، یکپارچگی گسترده."
+    "supportsMessages": true
   },
   {
     "milOutCost": 0.5,
     "milInCost": 0.2,
     "imageInput": "MULTI",
     "code": "openai/gpt-4.1-nano",
-    "supportsMessages": true,
-    "shortDescription": "کم‌منبع اقتصادی مناسب مقیاس بالا تعبیه آسان."
+    "supportsMessages": true
   },
   {
     "milOutCost": 2,
     "milInCost": 0.5,
     "imageInput": "MULTI",
     "code": "openai/gpt-4.1-mini",
-    "supportsMessages": true,
-    "shortDescription": "فرز مطمئن پشتیبانی گفتگو محتوا کاربردهای متنوع."
+    "supportsMessages": true
   },
   {
     "milOutCost": 12.5,
     "milInCost": 3.2,
     "imageInput": "MULTI",
     "code": "openai/gpt-4o",
-    "supportsMessages": true,
-    "shortDescription": "چندرسانه‌ای زنده متن تصویر صوت مکالمه طبیعی."
+    "supportsMessages": true
   },
   {
     "milOutCost": 0.75,
     "milInCost": 0.19,
     "imageInput": "MULTI",
     "code": "openai/gpt-4o-mini",
-    "supportsMessages": true,
-    "shortDescription": "کم‌حجم چندحسگر تعامل سریع ارزان تجربه محاوره‌ای."
+    "supportsMessages": true
   },
   {
     "milOutCost": 1.3,
     "milInCost": 3.2,
     "imageInput": "MULTI",
     "code": "openai/gpt-o4-mini",
-    "supportsMessages": true,
-    "shortDescription": "سازگار شفافیت خوب خروجی کوتاه هزینه پایین."
+    "supportsMessages": true
   },
   {
     "milOutCost": 75,
     "milInCost": 19,
     "imageInput": "MULTI",
     "code": "openai/o1",
-    "supportsMessages": true,
-    "shortDescription": "تمرکز بر تفکر ژرفنگر حل مسائل دشوار."
+    "supportsMessages": true
   },
   {
     "milOutCost": 5.5,
     "milInCost": 1.4,
     "code": "openai/o1-mini",
     "supportsMessages": true,
-    "imageInput": "UNAVAILABLE",
-    "shortDescription": "منطقی سریع‌العمل مقرون‌به‌صرفه پاسخ‌های مرحله‌ای کاربردی روزانه."
+    "imageInput": "UNAVAILABLE"
   },
   {
     "milOutCost": 19,
     "milInCost": 4,
     "imageInput": "SINGLE",
     "supportsMessages": false,
-    "code": "anthropic/claude-3.7-sonnet",
-    "shortDescription": "خلاقیت پرمایه، ایمن، خلاصه‌سازی اسناد طولانی موثق."
+    "code": "anthropic/claude-3.7-sonnet"
   },
   {
     "milOutCost": 6.5,
     "milInCost": 1.5,
     "supportsMessages": false,
     "imageInput": "UNAVAILABLE",
-    "code": "anthropic/claude-3.5-haiku",
-    "shortDescription": "تندرو به‌صرفه مکالمات روان تحلیل ملایم تصویری."
+    "code": "anthropic/claude-3.5-haiku"
   },
   {
     "milOutCost": 23.5,
     "milInCost": 4.7,
     "imageInput": "SINGLE",
     "supportsMessages": false,
-    "code": "anthropic/claude-3.5-sonnet",
-    "shortDescription": "هماهنگی امنیت کیفیت نگارش کاربری تیمی قابل‌اعتماد."
+    "code": "anthropic/claude-3.5-sonnet"
   }
 ]
