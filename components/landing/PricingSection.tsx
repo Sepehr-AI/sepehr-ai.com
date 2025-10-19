@@ -139,10 +139,10 @@ export default function PricingSection({
                       </div>
                     </div>
 
-                    {/* Language table */}
-                    <AllowanceLanguage
+                    {/* Video table */}
+                    <AllowanceVideo
                       credits={credits}
-                      models={modelsForComparison}
+                      models={videoModelsForComparison}
                     />
 
                     {/* Image table */}
@@ -151,10 +151,10 @@ export default function PricingSection({
                       models={imageModelsForComparison}
                     />
 
-                    {/* Video table */}
-                    <AllowanceVideo
+                    {/* Language table */}
+                    <AllowanceLanguage
                       credits={credits}
-                      models={videoModelsForComparison}
+                      models={modelsForComparison}
                     />
 
                     <div className="border-t border-border pt-4 mt-4">
@@ -294,7 +294,7 @@ function AllowanceImage({
                 تقریباً چند تصویر
               </th>
               <th className="rtl text-left py-2 font-medium">
-                اگر مدل این باشد
+                مثلاً اگر مدل این باشد
               </th>
             </tr>
           </thead>
@@ -342,7 +342,7 @@ function AllowanceVideo({
                 تقریباً چند ویدیو
               </th>
               <th className="rtl text-left py-2 font-medium">
-                اگر مدل این باشد
+                مثلاً اگر مدل این باشد
               </th>
             </tr>
           </thead>

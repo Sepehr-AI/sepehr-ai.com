@@ -131,8 +131,8 @@ export default async function Home() {
             <PricingSection
               plans={plans}
               modelsForComparison={langModels.slice(0, 6)}
-              imageModelsForComparison={imgModels.slice(0, 6)}
-              videoModelsForComparison={vidModels.slice(0, 6)}
+              imageModelsForComparison={imgModels.slice(0, 10)}
+              videoModelsForComparison={vidModels.slice(0, 10)}
             />
 
             <FaqSection faqs={faqs} />
