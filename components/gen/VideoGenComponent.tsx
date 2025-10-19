@@ -38,6 +38,7 @@ export default function VideoGenComponent({
     companyWebsite: m.companyWebsite,
     ratios: m.ratios,
     durations: m.durations,
+    userNotes: m.userNotes || undefined,
     creditCostLabel: "اعتبار به ازای هر ویدئو",
     creditCostValue: m.creditCostPerVideo,
     defaultOptions:
@@ -71,6 +72,7 @@ export default function VideoGenComponent({
     setLengthSec(
       selectedModel.durations[selectedModel.durations.length - 1] ?? null,
     );
+    setMediaFiles({});
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedModel]);
@@ -160,12 +162,28 @@ export default function VideoGenComponent({
 
     // append dynamic media files with correct keys
     for (const spec of mediaInputs) {
-      const files = mediaFiles[spec.id] || [];
-      if (!files.length) continue;
-      if (spec.maximumNumberOfEntity) {
-        for (const f of files) form.append(spec.id, f);
+      let files: File[] = [];
+
+      if (spec.id === "reference_images") {
+        const max = spec.maximumNumberOfEntity ?? 0;
+        for (let i = 0; i < max; i++) {
+          const k = `${spec.id}__${i}`; // matches GenMessageBox.fieldKey
+          const slot = mediaFiles[k];
+          if (slot?.[0]) files.push(slot[0]); // one file per slot
+        }
       } else {
-        form.append(spec.id, files[0]);
+        files = mediaFiles[spec.id] || [];
+      }
+
+      if (!files.length) continue;
+
+      // If your API expects array syntax, use `${spec.id}[]` instead.
+      const formKey = spec.id;
+
+      if ((spec.maximumNumberOfEntity || 1) > 1) {
+        for (const f of files) form.append(formKey, f);
+      } else {
+        form.append(formKey, files[0]);
       }
     }
 

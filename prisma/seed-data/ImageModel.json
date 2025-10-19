@@ -1,5 +1,26 @@
 [
   {
+    "cost": 0.04,
+    "imageInput": "MULTI",
+    "hasShowCaseImage": true,
+    "code": "google/nano-banana",
+    "defaultOptions": { "output_format": "jpg" },
+    "ratios": [
+      "X:Y",
+      "1:1",
+      "16:9",
+      "9:16",
+      "3:2",
+      "2:3",
+      "4:3",
+      "3:4",
+      "5:4",
+      "4:5",
+      "21:9"
+    ],
+    "shortDescription": "پیش‌نمایش‌های سریع می‌سازد، اقتصادی، مناسب ایده‌ها، ابتدایی."
+  },
+  {
     "cost": 0.002,
     "hasShowCaseImage": true,
     "imageInput": "UNAVAILABLE",

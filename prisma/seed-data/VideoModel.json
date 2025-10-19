@@ -2,10 +2,33 @@
   {
     "cost": 1.2,
     "image": true,
+    "durations": [4, 6, 8],
+    "lastFrameImage": true,
+    "ratios": ["9:16", "16:9"],
+    "code": "google/veo-3.1-fast",
+    "defaultOptions": { "resolution": "1080p", "generate_audio": true },
+    "shortDescription": "ویدیوهای فوری ویژه پیش‌نمایش اولیه ایده‌ها می‌سازد."
+  },
+  {
+    "cost": 3.2,
+    "image": true,
+    "durations": [4, 6, 8],
+    "lastFrameImage": true,
+    "code": "google/veo-3.1",
+    "hasShowCaseVideo": true,
+    "ratios": ["9:16", "16:9"],
+    "allowedReferenceImages": 3,
+    "defaultOptions": { "resolution": "1080p", "generate_audio": true },
+    "shortDescription": "ویدیوهای فوری ویژه پیش‌نمایش اولیه ایده‌ها می‌سازد.",
+    "userNotes": "می‌تونید ۱ تا ۳ تصویر رفرنس اضافه کنید برای تولید ویدیویی که سوژه رو ثابت نگه می‌داره (رفرنس به ویدیو، یا R2V). تصاویر رفرنس فقط با نسبت ابعاد ۱۶:۹ (افقی) و مدت زمان ۸ ثانیه کار می‌کنن. اگر تصویر رفرنس داشته باشید، تصویر فریم آخر در نظر گرفته نمی‌شه."
+  },
+  {
+    "cost": 1.2,
+    "image": true,
     "durations": [8],
     "ratios": ["9:16", "16:9"],
     "code": "google/veo-3-fast",
-    "defaultOptions": { "resolution": "1080p" },
+    "defaultOptions": { "resolution": "1080p", "generate_audio": true },
     "shortDescription": "ویدیوهای فوری ویژه پیش‌نمایش اولیه ایده‌ها می‌سازد."
   },
   {
@@ -15,7 +38,7 @@
     "code": "google/veo-3",
     "hasShowCaseVideo": true,
     "ratios": ["9:16", "16:9"],
-    "defaultOptions": { "resolution": "1080p" },
+    "defaultOptions": { "resolution": "1080p", "generate_audio": true },
     "shortDescription": "کیفیت بالا همراه کنترل دقیق حرکت ویدیو."
   },
   {

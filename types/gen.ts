@@ -6,6 +6,7 @@ export type BaseGenModelDto = {
   description: string;
   companyWebsite?: string;
   ratios: string[];
+  userNotes?: string;
   durations?: number[];
   creditCostLabel: string;
   creditCostValue: number;

@@ -295,7 +295,6 @@ export default function GenMessageBox({
           disabled={disabled}
         />
       </div>
-
       {/* Model picker */}
       <div
         className="border border-border bg-background rounded-lg p-3"
@@ -403,6 +402,34 @@ export default function GenMessageBox({
         )}
       </div>
 
+      {selectedModel && selectedModel.userNotes && (
+        <div
+          role="note"
+          className="mt-4 flex items-start gap-3 border border-blue-300 bg-blue-50/60 rounded-lg p-3"
+        >
+          <span className="flex-shrink-0 mt-0.5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-blue-600"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+              <line x1="11.25" y1="12" x2="12.75" y2="12" />
+              <path d="M12 14v2" />
+            </svg>
+          </span>
+
+          <div className="text-sm leading-tight">{selectedModel.userNotes}</div>
+        </div>
+      )}
+
       {/* Reference Image(s) (only when dynamic media inputs are NOT used) */}
       {(!mediaInputs || !mediaInputs.length) && allowImageRef && (
         <div>
@@ -494,7 +521,6 @@ export default function GenMessageBox({
           )}
         </div>
       )}
-
       {/* Ratio selector (always visible if ratios are provided) */}
       {ratios.length > 0 && (
         <RatioSelector
@@ -504,7 +530,6 @@ export default function GenMessageBox({
           disabled={disabled}
         />
       )}
-
       {/* Dynamic media inputs (video) */}
       {mediaInputs && mediaInputs.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -557,7 +582,6 @@ export default function GenMessageBox({
           })}
         </div>
       )}
-
       {/* Reference images (video) */}
       {referenceImages !== undefined && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -605,7 +629,6 @@ export default function GenMessageBox({
           })}
         </div>
       )}
-
       {/* Length (only if provided) */}
       {lengths !== undefined && lengths !== null && setLengthSec && (
         <div className="border border-border bg-background rounded-lg p-3">
@@ -634,6 +657,24 @@ export default function GenMessageBox({
           </div>
         </div>
       )}
+
+      {/* Page-level submit button (placed at the end of the page) */}
+      <div className="mt-4 flex justify-end">
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={!canSubmit || disabled}
+          aria-label="ارسال"
+          className={`px-3 py-1.5 rounded-md text-sm text-white flex items-center gap-2 ${
+            canSubmit && !disabled
+              ? "bg-accent hover:bg-accent/90"
+              : "bg-accent/60 cursor-not-allowed"
+          }`}
+        >
+          <PaperPlaneIcon className="h-4 w-4" />
+          <span>{labels.submitButton}</span>
+        </button>
+      </div>
     </div>
   );
 }

@@ -12,7 +12,7 @@
     "build": "NODE_OPTIONS=--max_old_space_size=3072 next build",
     "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start",
     "post-pull": "rm -Rf .next && pnpm i && npx prisma generate && npx prisma generate --sql && next build",
-    "fmt": "prettier --config ./prettier.config.cjs --write \"middleware.ts\" \"{types,sepehr-ai-ipg/src,scripts,replicate-chat-provider/src,prisma,lib,hooks,app,components}/**/*.{ts,tsx}\""
+    "fmt": "prettier --config ./prettier.config.cjs --write \"middleware.ts\" \"{types,sepehr-ai-ipg/src,scripts,replicate-chat-provider/src,prisma,prisma/seed-data,lib,hooks,app,components}/**/*.{ts,tsx,json}\""
   },
   "dependencies": {
     "@ai-sdk/provider": "^2.0.0",
