@@ -1,0 +1,3 @@
+[submodule "sepehr-ai-ipg"]
+	path = sepehr-ai-ipg
+	url = git@sepehr-ai-ipg-github:Sepehr-AI/sepehr-ai-ipg
