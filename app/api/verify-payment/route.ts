@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { sendInfoNotice } from "@/lib/emailNotitifer";
 import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
 import { findTransactionForUpdate } from "@/prisma/client/sql";
@@ -100,10 +101,11 @@ export async function POST(
         throw new Error("Nothing to do!");
       }
 
-      await tx.transaction.update({
+      const res = await tx.transaction.update({
         where: { id: invoiceid },
         data: transactionUpdateData,
       });
+      if (res.respCode === 0) sendInfoNotice("New customer", res);
     });
   } catch (e: any) {
     error("UnexpectedPrismaErrorInVerifyPayment", { error: e, dbAmount });
