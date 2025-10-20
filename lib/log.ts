@@ -1,8 +1,8 @@
 import type { ErrorType } from "@/prisma/client";
 import type { JsonObject } from "@/prisma/client/runtime/library";
 
-import prisma from "./prisma";
 import { sendErrorNotice } from "./emailNotitifer";
+import prisma from "./prisma";
 
 /**
  * Log level handling
@@ -80,7 +80,6 @@ export const error = (context: string, msg: unknown): void => {
     console.error(context, msg);
   }
 };
-
 
 /* -- pass-through helpers unchanged but use the above error() which will respect levels -- */
 export const errorOnThrow = async <Type>(
