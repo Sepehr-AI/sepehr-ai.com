@@ -62,12 +62,12 @@ export default function ShowcaseSlideshow({
   return (
     <section id="showcase" className="py-16 bg-muted/30">
       <div className="mx-auto px-4 flex justify-center">
-        <div className="w-full md:max-w-4xl">
+        <div className="w-full md:max-w-7xl">
           <h2 className="text-3xl font-bold text-center mb-10">
             نمونه هایی از مدل های بصری سپهر AI
           </h2>
 
-          <div className="space-y-10">
+          <div className="space-y-10 grid grid-cols-1 md:grid-cols-2 gap-2">
             <Carousel slides={videoSlides} intervalMs={intervalMs} />
             <Carousel slides={imageSlides} intervalMs={intervalMs} />
           </div>
@@ -318,7 +318,7 @@ function AnimatedSlide({
           <img
             src={slide.src}
             alt={slide.title}
-            className="w-full h-full object-cover bg-black select-none pointer-events-none"
+            className="w-full h-auto object-cover bg-black select-none pointer-events-none"
             draggable={false}
             loading="eager"
             // decoding async can improve smoothness
@@ -334,7 +334,7 @@ function AnimatedSlide({
             playsInline
             // no loop; we advance on "ended"
             controls={false}
-            className="w-full h-full object-cover bg-black"
+            className="w-full h-auto object-cover bg-black"
             preload="auto"
           >
             <source src={slide.src} type="video/mp4"></source>
