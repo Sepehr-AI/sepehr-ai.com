@@ -20,6 +20,7 @@ import {
   type ReactNode,
   type SetStateAction,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -102,6 +103,11 @@ function DropZone({
   onClick: () => void;
   disabled: boolean;
 }) {
+  const imageSrc = useMemo(
+    () => (files.length && isImage ? URL.createObjectURL(files[0]) : undefined),
+    [files, isImage],
+  );
+
   return (
     <div
       className="mt-2 hover:cursor-pointer border border-dashed border-border rounded-md p-2 bg-muted/20 flex items-center justify-center min-h-[96px] overflow-hidden"
@@ -113,7 +119,7 @@ function DropZone({
       {files.length > 0 ? (
         isImage ? (
           <img
-            src={URL.createObjectURL(files[0])}
+            src={imageSrc}
             alt={files[0].name}
             className="max-h-32 object-contain rounded"
           />
@@ -168,7 +174,10 @@ export default function GenMessageBox({
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
-  const referenceImages = mediaInputs?.find((i) => i.id === "reference_images");
+  const referenceImages = useMemo(
+    () => mediaInputs?.find((i) => i.id === "reference_images"),
+    [mediaInputs],
+  );
 
   // Auto-resize textarea
   useEffect(() => {
@@ -247,6 +256,11 @@ export default function GenMessageBox({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const imageInputMode = (selectedModel as any)?.imageInput ?? "SINGLE";
+
+  const imageFileUrls = useMemo(
+    () => (imageFiles ? imageFiles.map((f) => URL.createObjectURL(f)) : []),
+    [imageFiles],
+  );
 
   return (
     <div className="space-y-4">
@@ -466,8 +480,8 @@ export default function GenMessageBox({
                         title={f.name}
                       >
                         <img
-                          src={URL.createObjectURL(f)}
                           alt={f.name}
+                          src={imageFileUrls[idx]}
                           className="w-full h-28 object-cover"
                         />
                         <button

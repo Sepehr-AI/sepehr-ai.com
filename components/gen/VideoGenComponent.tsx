@@ -6,16 +6,13 @@ import ResultCard from "@/components/gen/ResultCard";
 import { useGenJob } from "@/hooks/useGenJob";
 import { usePreviewObjectUrl } from "@/hooks/usePreviewObjectUrl";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
-import type {
-  BaseGenModelDto,
-  MediaFilesState,
-  MediaInputSpec,
-} from "@/types/gen";
+import type { MediaFilesState, MediaInputSpec } from "@/types/gen";
 import { useSearchParams } from "next/navigation";
 import {
   type Dispatch,
   type SetStateAction,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -25,25 +22,27 @@ export default function VideoGenComponent({
 }: {
   videoModels: VideoModelPricingDto[];
 }) {
-  // Single source of truth for the selected model
   const [selectedModel, setSelectedModel] = useState<VideoModelPricingDto>(
     videoModels[0],
   );
 
-  // Build UI models on each render (no memoization)
-  const uiModels: BaseGenModelDto[] = videoModels.map((m) => ({
-    code: m.code,
-    name: m.name,
-    description: m.description,
-    companyWebsite: m.companyWebsite,
-    ratios: m.ratios,
-    durations: m.durations,
-    userNotes: m.userNotes || undefined,
-    creditCostLabel: "اعتبار به ازای هر ویدئو",
-    creditCostValue: m.creditCostPerVideo,
-    defaultOptions:
-      (m.defaultOptions as Record<string, unknown> | null) ?? null,
-  }));
+  const uiModels = useMemo(
+    () =>
+      videoModels.map((m) => ({
+        code: m.code,
+        name: m.name,
+        description: m.description,
+        companyWebsite: m.companyWebsite,
+        ratios: m.ratios,
+        durations: m.durations,
+        userNotes: m.userNotes || undefined,
+        creditCostLabel: "اعتبار به ازای هر ویدئو",
+        creditCostValue: m.creditCostPerVideo,
+        defaultOptions:
+          (m.defaultOptions as Record<string, unknown> | null) ?? null,
+      })),
+    [videoModels],
+  );
 
   const [prompt, setPrompt] = useState("");
   const [legacyImageFile, setLegacyImageFile] = useState<File | null>(null); // kept for backward compatibility
@@ -87,8 +86,7 @@ export default function VideoGenComponent({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Build dynamic media inputs for this model (no memoization)
-  const mediaInputs: MediaInputSpec[] = (() => {
+  const mediaInputs = useMemo<MediaInputSpec[]>(() => {
     const list: MediaInputSpec[] = [];
     if (selectedModel.image)
       list.push({ id: "image", label: "تصویر مرجع", accept: "image/*" });
@@ -108,19 +106,21 @@ export default function VideoGenComponent({
         label: "تصویر فریم آخر",
         accept: "image/*",
       });
-    if (selectedModel.allowedReferenceImages)
+    if (selectedModel.allowedReferenceImages) {
       list.push({
         id: "reference_images",
         label: "تصویر های مرجع",
         accept: "image/*",
         maximumNumberOfEntity: selectedModel.allowedReferenceImages,
       });
+    }
     if (selectedModel.audio)
       list.push({ id: "audio", label: "صدای تصویر", accept: "audio/*" });
     return list;
-  })();
+  }, [selectedModel]);
 
   const [mediaFiles, setMediaFiles] = useState<MediaFilesState>({});
+  const mediaFilesMemo = useMemo(() => mediaFiles, [mediaFiles]);
 
   const endRef = useRef<HTMLDivElement | null>(null);
   const { status, progress, eta, resultUrl, submit, cancel, resetAll } =
@@ -213,7 +213,7 @@ export default function VideoGenComponent({
                 setRatio,
                 // dynamic media
                 mediaInputs,
-                mediaFiles,
+                mediaFiles: mediaFilesMemo,
                 setMediaFiles,
                 // lengths
                 lengthSec,

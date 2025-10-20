@@ -1,19 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 export function usePreviewObjectUrl(file: File | null) {
-  const [url, setUrl] = useState<string | null>(null);
+  const url = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
 
   useEffect(() => {
-    if (!file) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setUrl(null);
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    setUrl(objectUrl);
-    return () => URL.revokeObjectURL(objectUrl);
-  }, [file]);
+    return () => {
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [url]);
 
   return url;
 }
