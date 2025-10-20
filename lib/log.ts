@@ -2,6 +2,7 @@ import type { ErrorType } from "@/prisma/client";
 import type { JsonObject } from "@/prisma/client/runtime/library";
 
 import prisma from "./prisma";
+import { sendErrorNotice } from "./emailNotitifer";
 
 /**
  * Log level handling
@@ -67,11 +68,19 @@ export const error = (context: string, msg: unknown): void => {
   if (!shouldLog("ERROR")) return;
 
   if (process.env.NODE_ENV === "production") {
+    // keep DB logging
     storeIntoDB("ERROR", context, msg);
+
+    // call the external email sender (fire-and-forget)
+    // we intentionally don't await here; catch errors and log them.
+    sendErrorNotice(context, msg).catch((err) => {
+      console.error("Failed to send alert email:", err);
+    });
   } else {
     console.error(context, msg);
   }
 };
+
 
 /* -- pass-through helpers unchanged but use the above error() which will respect levels -- */
 export const errorOnThrow = async <Type>(
