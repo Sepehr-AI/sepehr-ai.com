@@ -2,7 +2,6 @@
 import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
 import { modelInputSchema } from "@/lib/modelInput";
 import prisma from "@/lib/prisma";
-import { ratioLabelToEnumKey } from "@/lib/ratio";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { existsSync } from "fs";
@@ -331,11 +330,6 @@ function buildSeedTasks(
           description: descriptionsMap[m.code],
           shortDescription: shortDescriptionsMap[m.code],
         };
-        if (typeof (newData as any).ratios !== "undefined") {
-          (newData as any).ratios = (newData as any).ratios.map((r: string) =>
-            ratioLabelToEnumKey(r),
-          );
-        }
 
         await prismaModel.upsert({
           where: { id: m.id },
