@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
+import { modelInputSchema } from "@/lib/modelInput";
 import prisma from "@/lib/prisma";
 import { ratioLabelToEnumKey } from "@/lib/ratio";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
@@ -271,6 +272,21 @@ function buildSeedTasks(
           throw new Error(
             `Company '${splitCode[0]}' is not defined in the codebase!`,
           );
+        }
+
+        if (m.inputSchema) {
+          const inputSchemaParseRes = modelInputSchema.safeParse(m.inputSchema);
+          if (!inputSchemaParseRes.success) {
+            console.dir(
+              {
+                inputSchema: m.inputSchema,
+                error: z.treeifyError(inputSchemaParseRes.error),
+              },
+              { depth: null },
+            );
+            throw new Error(`Invalid inputSchema for ${m.code} was received!`);
+          }
+          console.dir(inputSchemaParseRes.data, { depth: null });
         }
 
         if (

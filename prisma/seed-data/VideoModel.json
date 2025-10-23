@@ -1,91 +1,600 @@
 [
   {
-    "cost": 1.2,
-    "image": true,
-    "durations": [4, 6, 8],
-    "lastFrameImage": true,
-    "ratios": ["9:16", "16:9"],
-    "code": "google/veo-3.1-fast",
-    "defaultOptions": { "resolution": "1080p", "generate_audio": true }
+    "costPerSecond": 0.1,
+    "code": "openai/sora-2",
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "defaultValue": 12,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "seconds",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "8 ثانیه", "value": 8 },
+          { "label": "12 ثانیه", "value": 12 }
+        ]
+      },
+      {
+        "type": "selection",
+        "valuesAreNumeric": false,
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "defaultValue": "landscape",
+        "options": [
+          { "label": "افقی (16x9)", "value": "landscape" },
+          { "label": "عمودی (9x16)", "value": "portrait" }
+        ]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر شروع",
+        "inputKey": "input_reference",
+        "description": "تصویری که این مدل در ساخت ابتدای ویدئو از آن الگو میگیرد. نسبت تصویر باید مطابق نسبت تصویر ویدئو باشد."
+      }
+    ]
   },
   {
-    "cost": 3.2,
-    "image": true,
-    "durations": [4, 6, 8],
-    "lastFrameImage": true,
+    "costPerSecond": 0.5,
+    "hasShowCaseVideo": true,
+    "code": "openai/sora-2-pro",
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "defaultValue": 12,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "seconds",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "8 ثانیه", "value": 8 },
+          { "label": "12 ثانیه", "value": 12 }
+        ]
+      },
+      {
+        "type": "selection",
+        "valuesAreNumeric": false,
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "defaultValue": "landscape",
+        "options": [
+          { "label": "افقی (16x9)", "value": "landscape" },
+          { "label": "عمودی (9x16)", "value": "portrait" }
+        ]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر شروع",
+        "inputKey": "input_reference",
+        "description": "تصویری که این مدل در ساخت ابتدای ویدئو از آن الگو میگیرد. نسبت تصویر باید مطابق نسبت تصویر ویدئو باشد."
+      },
+      {
+        "type": "selection",
+        "defaultValue": "high",
+        "advancedSetting": true,
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "بالا", "value": "high" },
+          { "label": "استاندارد", "value": "standard" }
+        ]
+      }
+    ]
+  },
+  {
+    "costPerSecond": 0.15,
+    "code": "google/veo-3.1-fast",
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "options": ["16:9", "9:16"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن در ساخت ویدئو الگو میگیرد."
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "last_frame",
+        "label": "تصویر فریم آخر",
+        "description": "تصویری که به مدل فریم آخر را می‌فهماند تا از آن الگو بگیرد."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "defaultValue": 8,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "6 ثانیه", "value": 6 },
+          { "label": "8 ثانیه", "value": 8 }
+        ]
+      },
+      {
+        "label": "صدا",
+        "type": "boolean",
+        "defaultValue": true,
+        "inputKey": "generate_audio",
+        "description": "آیا مدل ویدئو به همراه صدا بسازد."
+      },
+      {
+        "type": "selection",
+        "advancedSetting": true,
+        "defaultValue": "1080p",
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "1080p", "value": "1080p" },
+          { "label": "720p", "value": "720p" }
+        ]
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید ویدئو را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      }
+    ]
+  },
+  {
+    "costPerSecond": 0.4,
     "code": "google/veo-3.1",
     "hasShowCaseVideo": true,
-    "ratios": ["9:16", "16:9"],
-    "allowedReferenceImages": 3,
-    "defaultOptions": { "resolution": "1080p", "generate_audio": true },
-    "userNotes": "می‌تونید ۱ تا ۳ تصویر رفرنس اضافه کنید برای تولید ویدیویی که سوژه رو ثابت نگه می‌داره (رفرنس به ویدیو، یا R2V). تصاویر رفرنس فقط با نسبت ابعاد ۱۶:۹ (افقی) و مدت زمان ۸ ثانیه کار می‌کنن. اگر تصویر رفرنس داشته باشید، تصویر فریم آخر در نظر گرفته نمی‌شه."
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "options": ["16:9", "9:16"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن در ساخت ویدئو الگو می‌گیرد."
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "last_frame",
+        "label": "تصویر فریم آخر",
+        "description": "تصویری که به مدل فریم آخر را می‌فهماند تا از آن الگو بگیرد."
+      },
+      {
+        "maxCount": 3,
+        "type": "images",
+        "optional": true,
+        "inputKey": "reference_images",
+        "label": "تصاویر رفرنس (R2V)",
+        "description": "۱ تا ۳ تصویر مرجع برای حفظ سازگاری سوژه. فقط با نسبت 16:9 و مدت ۸ ثانیه کار می‌کند. در صورت استفاده، «تصویر فریم آخر» نادیده گرفته می‌شود."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "defaultValue": 8,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "6 ثانیه", "value": 6 },
+          { "label": "8 ثانیه", "value": 8 }
+        ]
+      },
+      {
+        "label": "صدا",
+        "type": "boolean",
+        "defaultValue": true,
+        "inputKey": "generate_audio",
+        "description": "ویدئو همراه با صدا تولید شود."
+      },
+      {
+        "type": "selection",
+        "advancedSetting": true,
+        "defaultValue": "1080p",
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "1080p", "value": "1080p" },
+          { "label": "720p", "value": "720p" }
+        ]
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "برای تکرارپذیری نتیجه یک عدد صحیح ثابت وارد کنید."
+      }
+    ]
   },
   {
-    "cost": 1.2,
-    "image": true,
-    "durations": [8],
-    "ratios": ["9:16", "16:9"],
+    "costPerSecond": 0.15,
     "code": "google/veo-3-fast",
-    "defaultOptions": { "resolution": "1080p", "generate_audio": true }
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "options": ["16:9", "9:16"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن در ساخت ویدئو الگو میگیرد."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "defaultValue": 8,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "6 ثانیه", "value": 6 },
+          { "label": "8 ثانیه", "value": 8 }
+        ]
+      },
+      {
+        "label": "صدا",
+        "type": "boolean",
+        "defaultValue": true,
+        "inputKey": "generate_audio",
+        "description": "آیا مدل ویدئو به همراه صدا بسازد."
+      },
+      {
+        "type": "selection",
+        "advancedSetting": true,
+        "defaultValue": "1080p",
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "1080p", "value": "1080p" },
+          { "label": "720p", "value": "720p" }
+        ]
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید ویدئو را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      }
+    ]
   },
   {
-    "cost": 3.2,
-    "image": true,
-    "durations": [8],
+    "costPerSecond": 0.4,
     "code": "google/veo-3",
     "hasShowCaseVideo": true,
-    "ratios": ["9:16", "16:9"],
-    "defaultOptions": { "resolution": "1080p", "generate_audio": true }
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "options": ["16:9", "9:16"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن در ساخت ویدئو الگو میگیرد."
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "last_frame",
+        "label": "تصویر فریم آخر",
+        "description": "تصویری که به مدل فریم آخر را می‌فهماند تا از آن الگو بگیرد."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "defaultValue": 8,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "6 ثانیه", "value": 6 },
+          { "label": "8 ثانیه", "value": 8 }
+        ]
+      },
+      {
+        "label": "صدا",
+        "type": "boolean",
+        "defaultValue": true,
+        "inputKey": "generate_audio",
+        "description": "آیا مدل ویدئو به همراه صدا بسازد."
+      },
+      {
+        "type": "selection",
+        "advancedSetting": true,
+        "defaultValue": "1080p",
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "1080p", "value": "1080p" },
+          { "label": "720p", "value": "720p" }
+        ]
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید ویدئو را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      }
+    ]
   },
   {
-    "cost": 0.85,
-    "image": true,
-    "durations": [5, 10],
+    "costPerSecond": 0.07,
     "hasShowCaseVideo": true,
-    "ratios": ["16:9", "9:16", "1:1"],
-    "code": "kwaivgi/kling-v2.5-turbo-pro"
+    "code": "kwaivgi/kling-v2.5-turbo-pro",
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "options": ["16:9", "9:16", "1:1"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر شروع",
+        "inputKey": "start_image",
+        "description": "تصویری که این مدل در ساخت ابتدای ویدئو از آن الگو میگیرد."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "defaultValue": 10,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "5 ثانیه", "value": 5 },
+          { "label": "10 ثانیه", "value": 10 }
+        ]
+      }
+    ]
   },
   {
-    "cost": 2.8,
-    "startImage": true,
-    "durations": [5, 10],
-    "ratios": ["16:9", "9:16", "1:1"],
-    "code": "kwaivgi/kling-v2.1-master"
-  },
-  {
-    "cost": 1.5,
-    "image": true,
-    "lastFrameImage": true,
+    "costPerSecond": 0.15,
     "hasShowCaseVideo": true,
     "code": "bytedance/seedance-1-pro",
-    "durations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "ratios": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"]
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "inputKey": "aspect_ratio",
+        "label": "نسبت تصویر ویدئو",
+        "options": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن در ساخت ویدئو الگو میگیرد."
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر فریم آخر",
+        "inputKey": "last_frame_image",
+        "description": "تصویری که به مدل فریم آخر را می‌فهماند تا از آن الگو بگیرد."
+      },
+      {
+        "defaultValue": 12,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [
+          { "label": "2 ثانیه", "value": 2 },
+          { "label": "3 ثانیه", "value": 3 },
+          { "label": "4 ثانیه", "value": 4 },
+          { "label": "5 ثانیه", "value": 5 },
+          { "label": "6 ثانیه", "value": 6 },
+          { "label": "7 ثانیه", "value": 7 },
+          { "label": "8 ثانیه", "value": 8 },
+          { "label": "9 ثانیه", "value": 9 },
+          { "label": "10 ثانیه", "value": 10 },
+          { "label": "11 ثانیه", "value": 11 },
+          { "label": "12 ثانیه", "value": 12 }
+        ]
+      },
+      {
+        "type": "boolean",
+        "defaultValue": false,
+        "label": "ثابت‌سازی دوربین",
+        "inputKey": "camera_fixed",
+        "description": "اگر روشن باشد موقعیت و زاویه دوربین ثابت می‌ماند — فریم تغییر نمی‌کند و اگر خاموش باشد دوربین آزاد است — موقعیت/زاویه می‌تواند تغییر کند."
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید ویدئو را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      },
+      {
+        "type": "selection",
+        "advancedSetting": true,
+        "defaultValue": "1080p",
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "1080p", "value": "1080p" },
+          { "label": "720p", "value": "720p" },
+          { "label": "480p", "value": "480p" }
+        ]
+      }
+    ]
   },
   {
-    "cost": 0.75,
-    "image": true,
-    "lastFrameImage": true,
-    "code": "bytedance/seedance-1-lite",
-    "durations": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-    "ratios": ["16:9", "9:16", "1:1", "3:4", "4:3", "21:9", "9:21"]
-  },
-  {
-    "cost": 1.6,
-    "image": true,
-    "durations": [5, 8],
-    "lastFrameImage": true,
-    "code": "pixverse/pixverse-v5",
-    "ratios": ["16:9", "9:16", "1:1"],
-    "defaultOptions": { "quality": "1080p" }
-  },
-  {
-    "cost": 0.48,
-    "ratios": [],
-    "durations": [6],
-    "lastFrameImage": true,
-    "firstFrameImage": true,
+    "costPerSecond": 0.08,
     "hasShowCaseVideo": true,
     "code": "minimax/hailuo-02",
-    "defaultOptions": { "resolution": "1080p" }
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت ویدئو را وارد کنید ..."
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر فریم اول",
+        "inputKey": "first_frame_image",
+        "description": "تصویری که این مدل در ساخت ابتدای ویدئو از آن الگو میگیرد."
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر فریم آخر",
+        "inputKey": "last_frame_image",
+        "description": "تصویری که به مدل فریم آخر را می‌فهماند تا از آن الگو بگیرد."
+      },
+      {
+        "defaultValue": 6,
+        "type": "selection",
+        "label": "طول ویدئو",
+        "inputKey": "duration",
+        "valuesAreNumeric": true,
+        "options": [{ "label": "6 ثانیه", "value": 6 }]
+      },
+      {
+        "type": "boolean",
+        "defaultValue": true,
+        "advancedSetting": true,
+        "inputKey": "prompt_optimizer",
+        "label": "بهینه‌سازی و بهبود پرامپ",
+        "description": "بهینه‌سازی و بهبود اتوماتیک پرامپ جهت خروجی باکیفیت‌تر."
+      },
+      {
+        "type": "selection",
+        "advancedSetting": true,
+        "defaultValue": "1080p",
+        "label": "رزولوشن ویدئو",
+        "inputKey": "resolution",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "1080p", "value": "1080p" },
+          { "label": "768p", "value": "768p" },
+          { "label": "512p", "value": "512p" }
+        ]
+      }
+    ]
   }
 ]

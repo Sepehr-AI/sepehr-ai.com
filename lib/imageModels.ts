@@ -1,26 +1,12 @@
 import { companyToWebsiteMap } from "@/lib/aiCompaniesForBackend";
 import prisma from "@/lib/prisma";
-import type { ImageInput, ImageModel as ImageModelDb } from "@/prisma/client";
-import type { JsonValue } from "@/prisma/client/runtime/library";
+import type { ImageModel as ImageModelDb } from "@/prisma/client";
 import { revalidateTag, unstable_cache } from "next/cache";
 import NodeCache from "node-cache";
 
 import { usdToCredit } from "./cost";
-import { ratioEnumKeyToLabel } from "./ratio";
-
-export interface ImageModelView {
-  id: number;
-  name: string;
-  code: string;
-  ratios: string[];
-  description: string;
-  companyWebsite: string;
-  imageInput: ImageInput;
-  defaultOptions: JsonValue;
-  creditCostPerImage: number;
-  hasShowCaseImage?: string;
-  shortDescription?: string;
-}
+import { error } from "./log";
+import { type ModelInput, modelInputSchema } from "./modelInput";
 
 export type ImageModelDto = Pick<
   ImageModelDb,
@@ -28,12 +14,11 @@ export type ImageModelDto = Pick<
   | "code"
   | "name"
   | "description"
-  | "cost"
+  | "costPerImage"
   | "shortDescription"
-  | "imageInput"
   | "defaultOptions"
   | "hasShowCaseImage"
-> & { companyWebsite: string; ratios: string[] };
+> & { companyWebsite: string; inputSchema: ModelInput };
 
 const getImageModels = async (): Promise<ImageModelDto[]> => {
   const rows =
@@ -44,10 +29,9 @@ const getImageModels = async (): Promise<ImageModelDto[]> => {
         id: true,
         code: true,
         name: true,
-        cost: true,
-        ratios: true,
+        costPerImage: true,
         description: true,
-        imageInput: true,
+        inputSchema: true,
         defaultOptions: true,
         hasShowCaseImage: true,
         shortDescription: true,
@@ -58,10 +42,14 @@ const getImageModels = async (): Promise<ImageModelDto[]> => {
     const vendor = m.code.split("/")[0] || "";
     const companyWebsite =
       (companyToWebsiteMap as Record<string, string>)[vendor] || "";
+    const inputSchemaParseRes = modelInputSchema.safeParse(m.inputSchema);
+    if (!inputSchemaParseRes.success)
+      error("modelInputSchema", inputSchemaParseRes.error);
+
     return {
       ...m,
       companyWebsite,
-      ratios: m.ratios.map((r) => ratioEnumKeyToLabel(r)),
+      inputSchema: inputSchemaParseRes.data!,
     };
   });
 };
@@ -80,19 +68,16 @@ export const getImageModelsMap = async () => {
   return map;
 };
 
-// Web DTO (add hasShowCaseImage)
 export type ImageModelPricingDto = Pick<
   ImageModelDto,
   | "code"
   | "name"
   | "description"
   | "companyWebsite"
-  | "imageInput"
-  | "ratios"
   | "shortDescription"
   | "defaultOptions"
   | "hasShowCaseImage"
-> & { creditCostPerImage: number };
+> & { unitCost: number; inputSchema: ModelInput };
 
 export const getImageModelsForWeb = unstable_cache(
   async () => {
@@ -104,24 +89,22 @@ export const getImageModelsForWeb = unstable_cache(
         code,
         name,
         description,
-        cost,
         companyWebsite,
-        imageInput,
-        ratios,
         defaultOptions,
+        inputSchema,
+        costPerImage,
         hasShowCaseImage,
         shortDescription,
       }) => ({
         code,
         name,
-        ratios,
-        imageInput,
+        inputSchema,
         defaultOptions,
         description,
         companyWebsite,
         hasShowCaseImage,
         shortDescription,
-        creditCostPerImage: usdToCredit(cost, false),
+        unitCost: usdToCredit(costPerImage, false),
       }),
     );
 

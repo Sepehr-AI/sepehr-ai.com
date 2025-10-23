@@ -1,7 +1,10 @@
 "use client";
 
+import { CheckIcon } from "@radix-ui/react-icons";
+import { FaDownload } from "react-icons/fa6";
+
 type Props = {
-  kind: "image" | "video";
+  kind: "IMAGE" | "VIDEO";
   url: string;
   resetLabel: string;
   onReset: () => void;
@@ -18,12 +21,11 @@ export default function ResultCard({
   return (
     <div className="space-y-3">
       <div className="rounded-lg border border-border bg-background p-3">
-        {kind === "video" ? (
-          <video
-            className="w-full rounded-md border border-border bg-black"
-            controls
-            src={url}
-          />
+        {kind === "VIDEO" ? (
+          <p className="flex gap-0.5 items-center justify-center text-center text-green-800">
+            <CheckIcon width="2em" height="2em" />
+            ویدئو با موفقیت ساخته شد. جهت نمایش ویدئو آن را دانلود کنید.
+          </p>
         ) : (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -34,17 +36,18 @@ export default function ResultCard({
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-2">
+      <div className="flex items-center gap-2 w-full justify-center">
         <a
           href={url}
           download
-          className="px-3 py-1.5 rounded-md text-sm bg-muted/60 hover:bg-muted/80"
+          className="flex gap-2 px-3 py-1.5 rounded-md text-md bg-blue-500 text-white hover:bg-blue-500/70"
         >
+          <FaDownload />
           {downloadLabel}
         </a>
         <button
           onClick={onReset}
-          className="px-3 py-1.5 rounded-md text-sm bg-accent text-white hover:bg-accent/90 flex items-center gap-1"
+          className="px-3 py-1.5 rounded-md text-md bg-accent text-white hover:bg-accent/90 flex items-center gap-1"
         >
           {resetLabel}
         </button>

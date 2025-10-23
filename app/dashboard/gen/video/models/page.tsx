@@ -5,6 +5,8 @@ import UniversalModelSelection, {
 } from "@/components/UniversalModelSelection";
 import { getVideoModelsForWeb } from "@/lib/videoModels";
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export default async function VideoModelsPage() {
   const models = await getVideoModelsForWeb();
 
@@ -13,10 +15,16 @@ export default async function VideoModelsPage() {
     name: m.name,
     companyWebsite: m.companyWebsite,
     shortDescription: m.shortDescription,
-    ratios: m.ratios,
-    durationsSec: m.durations,
-    creditPills: [{ label: "اعتبار / ویدئو", value: m.creditCostPerVideo }],
+    ratios: m.inputSchema.find((s) => s.type === "ratio")?.options,
+    creditPills: [{ label: "اعتبار / هر ثانیه ویدئو", value: m.unitCost }],
     href: `/dashboard/gen/video?selectedModel=${encodeURIComponent(m.code)}`,
+    durationsSec: (
+      m.inputSchema.find(
+        (s) =>
+          s.type === "selection" &&
+          (s.inputKey === "duration" || s.inputKey === "seconds"),
+      ) as any
+    )?.options.map(({ value }: { value: string }) => value),
   }));
 
   return (

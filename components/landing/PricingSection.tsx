@@ -9,6 +9,7 @@ import {
 import { extractDiscountInfo } from "@/lib/discount";
 import type { ImageModelPricingDto } from "@/lib/imageModels";
 import type { LanguageModelPricingDto } from "@/lib/languageModels";
+import type { ModelInput } from "@/lib/modelInput";
 import type { WebPlansForUsers } from "@/lib/plans";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
 import {
@@ -300,7 +301,7 @@ function AllowanceImage({
           </thead>
           <tbody>
             {models.map((m, i) => {
-              const count = Math.floor(credits / m.creditCostPerImage);
+              const count = Math.floor(credits / m.unitCost);
               return (
                 <tr key={i}>
                   <td className="rtl text-right py-3">
@@ -348,11 +349,26 @@ function AllowanceVideo({
           </thead>
           <tbody>
             {models.map((m, i) => {
+              const durations = (
+                m.inputSchema.find(
+                  (s) => s.type === "selection" && s.inputKey === "duration",
+                ) as
+                  | ({
+                      type: "selection";
+                      inputKey: "duration";
+                    } & ModelInput[0])
+                  | undefined
+              )?.options
+                .map(({ value }) => value)
+                .sort();
+              const duration = durations
+                ? Number(durations[durations.length - 1])
+                : undefined;
               const count = Math.max(
                 0,
-                Math.floor(credits / m.creditCostPerVideo),
+                Math.floor(credits / m.unitCost / (duration || 10)),
               );
-              const duration = m.durations.sort()[0];
+
               return (
                 <tr key={i}>
                   <td className="rtl text-right py-3">

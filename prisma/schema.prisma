@@ -16,9 +16,8 @@ model User {
   mobile          String        @unique
   referralCode    String?
   otp             Otp?
+  genJobs         GenJob[]
   transactions    Transaction[]
-  imageJobs       ImageJob[]
-  videoJobs       VideoJob[]
   languageJobs    LanguageJob[]
   balance         Float         @default(0)
   referralBalance Float         @default(0)
@@ -116,60 +115,34 @@ model LanguageModel {
   createdAt              DateTime   @default(now()) @db.Timestamptz(3)
 }
 
-enum Ratio {
-  // Match input
-  RATIO_X_Y  @map("X:Y")
-  RATIO_1_1  @map("1:1")
-  RATIO_16_9 @map("16:9")
-  RATIO_9_16 @map("9:16")
-  RATIO_4_3  @map("4:3")
-  RATIO_3_4  @map("3:4")
-  RATIO_2_1  @map("2:1")
-  RATIO_1_2  @map("1:2")
-  RATIO_21_9 @map("21:9")
-  RATIO_9_21 @map("9:21")
-  RATIO_3_2  @map("3:2")
-  RATIO_2_3  @map("2:3")
-  RATIO_5_4  @map("5:4")
-  RATIO_4_5  @map("4:5")
-}
-
 model ImageModel {
-  id               Int        @id @default(autoincrement())
-  code             String     @unique()
+  id               Int      @id @default(autoincrement())
+  code             String   @unique()
   name             String
   description      String
-  defaultOptions   Json?
   shortDescription String
-  cost             Float
-  imageInput       ImageInput
-  ratios           Ratio[]    @default([RATIO_1_1])
-  hasShowCaseImage Boolean    @default(false)
-  disabled         Boolean    @default(false)
-  createdAt        DateTime   @default(now()) @db.Timestamptz(3)
+  costPerImage     Float
+  // Checkout lib/modelInput.ts
+  inputSchema      Json
+  defaultOptions   Json?
+  hasShowCaseImage Boolean  @default(false)
+  disabled         Boolean  @default(false)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model VideoModel {
-  id                     Int      @id @default(autoincrement())
-  code                   String   @unique()
-  name                   String
-  description            String
-  shortDescription       String
-  defaultOptions         Json?
-  cost                   Float
-  durations              Int[]
-  userNotes              String?
-  image                  Boolean  @default(false)
-  startImage             Boolean  @default(false)
-  firstFrameImage        Boolean  @default(false)
-  lastFrameImage         Boolean  @default(false)
-  allowedReferenceImages Int      @default(0)
-  endImage               Boolean  @default(false)
-  audio                  Boolean  @default(false)
-  ratios                 Ratio[]  @default([RATIO_16_9])
-  hasShowCaseVideo       Boolean  @default(false)
-  disabled               Boolean  @default(false)
-  createdAt              DateTime @default(now()) @db.Timestamptz(3)
+  id               Int      @id @default(autoincrement())
+  code             String   @unique()
+  name             String
+  description      String
+  shortDescription String
+  costPerSecond    Float
+  // Checkout lib/modelInput.ts
+  inputSchema      Json
+  defaultOptions   Json?
+  hasShowCaseVideo Boolean  @default(false)
+  disabled         Boolean  @default(false)
+  createdAt        DateTime @default(now()) @db.Timestamptz(3)
 }
 
 enum JobStatus {
@@ -179,46 +152,18 @@ enum JobStatus {
   FAILED
 }
 
-model ImageJob {
-  id     Int  @id @default(autoincrement())
-  userId Int
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // request
-  prompt String
-  model  String
-  ratio  Ratio?
-
-  // progress
-  progress Int       @default(0)
-  status   JobStatus @default(QUEUED)
-
-  // replicate metadata
-  replicateId        String?
-  replicateGetUrl    String?
-  replicateCancelUrl String?
-  replicateWebUrl    String?
-
-  // result
-  imageUrl String?
-  cost     Float
-
-  createdAt DateTime @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime @updatedAt
-
-  @@index([userId, createdAt])
+enum GenKind {
+  IMAGE
+  VIDEO
 }
 
-model VideoJob {
+model GenJob {
   id     Int  @id @default(autoincrement())
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // request
-  prompt    String
-  model     String
-  ratio     Ratio?
-  lengthSec Int?
+  kind  GenKind
+  model String
 
   // progress
   progress Int       @default(0)
@@ -231,8 +176,8 @@ model VideoJob {
   replicateWebUrl    String?
 
   // result
-  videoUrl String?
-  cost     Float
+  resultUrl String?
+  cost      Float
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt

@@ -1,6 +1,6 @@
 "use server";
 
-import ImageGenComponent from "@/components/gen/ImageComponent";
+import GenComponent from "@/components/gen/GenComponent";
 import { getImageModelsForWeb } from "@/lib/imageModels";
 
 export default async function ImageGenPage({
@@ -9,17 +9,16 @@ export default async function ImageGenPage({
   searchParams: Promise<{ selectedModel?: string }>;
 }) {
   const searchParams = await _params;
-  const imageModels = await getImageModelsForWeb();
-  const selected = searchParams?.selectedModel;
-  const initialModelCode =
-    selected && imageModels.some((m) => m.code === selected)
-      ? selected
-      : imageModels[0]?.code;
+  const models = await getImageModelsForWeb();
+  const code = searchParams?.selectedModel || models[0].code;
+  const model = models.find((m) => m.code === code)!;
 
   return (
-    <ImageGenComponent
-      imageModels={imageModels}
-      initialModelCode={initialModelCode}
+    <GenComponent
+      kind="IMAGE"
+      model={model}
+      submitLabel="ساخت تصویر"
+      header="ساخت تصویر با هوش مصنوعی"
     />
   );
 }

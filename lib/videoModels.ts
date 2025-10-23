@@ -5,7 +5,8 @@ import { revalidateTag, unstable_cache } from "next/cache";
 import NodeCache from "node-cache";
 
 import { usdToCredit } from "./cost";
-import { ratioEnumKeyToLabel } from "./ratio";
+import { error } from "./log";
+import { type ModelInput, modelInputSchema } from "./modelInput";
 
 export interface VideoModelDto
   extends Pick<
@@ -14,21 +15,12 @@ export interface VideoModelDto
     | "code"
     | "name"
     | "description"
-    | "cost"
-    | "durations"
+    | "costPerSecond"
     | "defaultOptions"
-    | "image"
-    | "startImage"
-    | "endImage"
-    | "firstFrameImage"
-    | "lastFrameImage"
-    | "audio"
     | "hasShowCaseVideo"
     | "shortDescription"
-    | "userNotes"
-    | "allowedReferenceImages"
   > {
-  ratios: string[];
+  inputSchema: ModelInput;
   companyWebsite: string;
 }
 
@@ -40,21 +32,12 @@ const getVideoModels = async (): Promise<VideoModelDto[]> => {
       id: true,
       code: true,
       name: true,
-      cost: true,
-      ratios: true,
-      durations: true,
+      inputSchema: true,
+      costPerSecond: true,
       description: true,
       defaultOptions: true,
-      image: true,
-      startImage: true,
-      endImage: true,
-      firstFrameImage: true,
-      lastFrameImage: true,
-      userNotes: true,
-      audio: true,
       shortDescription: true,
       hasShowCaseVideo: true,
-      allowedReferenceImages: true,
     },
   });
 
@@ -62,10 +45,14 @@ const getVideoModels = async (): Promise<VideoModelDto[]> => {
     const vendor = m.code.split("/")[0] || "";
     const companyWebsite =
       (companyToWebsiteMap as Record<string, string>)[vendor] || "";
+    const inputSchemaParseRes = modelInputSchema.safeParse(m.inputSchema);
+    if (!inputSchemaParseRes.success)
+      error("modelInputSchema", inputSchemaParseRes.error);
+
     return {
       ...m,
       companyWebsite,
-      ratios: m.ratios.map((r) => ratioEnumKeyToLabel(r)),
+      inputSchema: inputSchemaParseRes.data!,
     };
   });
 };
@@ -84,27 +71,16 @@ export const getVideoModelsMap = async () => {
   return map;
 };
 
-// Web DTO (add showCaseImage/showCaseVideo)
 export type VideoModelPricingDto = Pick<
   VideoModelDto,
   | "code"
   | "name"
   | "description"
   | "companyWebsite"
-  | "ratios"
-  | "durations"
   | "defaultOptions"
-  | "image"
-  | "startImage"
-  | "endImage"
-  | "firstFrameImage"
-  | "lastFrameImage"
-  | "audio"
-  | "userNotes"
   | "shortDescription"
   | "hasShowCaseVideo"
-  | "allowedReferenceImages"
-> & { creditCostPerVideo: number };
+> & { unitCost: number; inputSchema: ModelInput };
 
 export const getVideoModelsForWeb = unstable_cache(
   async (): Promise<VideoModelPricingDto[]> => {
@@ -117,18 +93,9 @@ export const getVideoModelsForWeb = unstable_cache(
         name,
         description,
         companyWebsite,
-        cost,
-        ratios,
-        durations,
+        costPerSecond,
+        inputSchema,
         defaultOptions,
-        image,
-        startImage,
-        endImage,
-        firstFrameImage,
-        lastFrameImage,
-        allowedReferenceImages,
-        audio,
-        userNotes,
         hasShowCaseVideo,
         shortDescription,
       }) => ({
@@ -136,20 +103,11 @@ export const getVideoModelsForWeb = unstable_cache(
         name,
         description,
         companyWebsite,
-        ratios,
-        durations,
+        inputSchema,
         defaultOptions,
-        image,
-        startImage,
-        endImage,
-        firstFrameImage,
-        lastFrameImage,
-        allowedReferenceImages,
-        audio,
-        userNotes,
         hasShowCaseVideo,
         shortDescription,
-        creditCostPerVideo: usdToCredit(cost, false),
+        unitCost: usdToCredit(costPerSecond, false),
       }),
     );
 

@@ -1,125 +1,466 @@
 [
   {
-    "cost": 0.04,
-    "imageInput": "MULTI",
+    "costPerImage": 0.04,
     "hasShowCaseImage": true,
     "code": "google/nano-banana",
-    "defaultOptions": { "output_format": "jpg" },
-    "ratios": [
-      "X:Y",
-      "1:1",
-      "16:9",
-      "9:16",
-      "3:2",
-      "2:3",
-      "4:3",
-      "3:4",
-      "5:4",
-      "4:5",
-      "21:9"
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": [
+          "match_input_image",
+          "1:1",
+          "16:9",
+          "9:16",
+          "3:2",
+          "2:3",
+          "4:3",
+          "3:4",
+          "5:4",
+          "4:5",
+          "21:9"
+        ]
+      },
+      {
+        "maxCount": 10,
+        "type": "images",
+        "optional": true,
+        "label": "تصاویر مرجع",
+        "inputKey": "image_input",
+        "description": "تصاویری که این مدل از آنها الگو میگیرد یا آنهارا ویرایش میکند."
+      },
+      {
+        "type": "selection",
+        "label": "فرمت خروجی",
+        "defaultValue": "jpg",
+        "advancedSetting": true,
+        "valuesAreNumeric": false,
+        "inputKey": "output_format",
+        "options": [
+          { "label": "jpg", "value": "jpg" },
+          { "label": "png", "value": "png" }
+        ]
+      }
     ]
   },
   {
-    "cost": 0.002,
+    "costPerImage": 0.002,
     "hasShowCaseImage": true,
-    "imageInput": "UNAVAILABLE",
     "code": "google/imagen-4-fast",
-    "defaultOptions": { "output_format": "jpg" },
-    "ratios": ["1:1", "9:16", "16:9", "3:4", "4:3"]
+    "defaultOptions": { "safety_filter_level": "block_only_high" },
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": ["1:1", "9:16", "16:9", "3:4", "4:3"]
+      },
+      {
+        "type": "selection",
+        "label": "فرمت خروجی",
+        "defaultValue": "jpg",
+        "advancedSetting": true,
+        "valuesAreNumeric": false,
+        "inputKey": "output_format",
+        "options": [
+          { "label": "jpg", "value": "jpg" },
+          { "label": "png", "value": "png" }
+        ]
+      }
+    ]
   },
   {
-    "cost": 0.12,
+    "costPerImage": 0.12,
     "code": "openai/dall-e-3",
-    "imageInput": "UNAVAILABLE",
-    "ratios": ["1:1", "3:2", "2:3"]
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": ["1:1", "3:2", "2:3"]
+      },
+      {
+        "label": "استایل",
+        "type": "selection",
+        "inputKey": "style",
+        "defaultValue": "vivid",
+        "valuesAreNumeric": false,
+        "description": "استایل زنده برای رنگ‌ها و کنتراست قوی‌تر — تصویر چشم‌گیر است و استایل طبیعی برای ظاهر شبیه عکس — رنگ‌ها و نور طبیعی است.",
+        "options": [
+          { "label": "زنده", "value": "vivid" },
+          { "label": "طبیعی", "value": "natural" }
+        ]
+      }
+    ]
   },
   {
-    "cost": 0.03,
-    "imageInput": "MULTI",
+    "costPerImage": 0.03,
     "hasShowCaseImage": true,
     "code": "bytedance/seedream-4",
-    "defaultOptions": { "size": "4K" },
-    "ratios": ["X:Y", "1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3", "21:9"]
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": [
+          "match_input_image",
+          "1:1",
+          "9:16",
+          "16:9",
+          "3:4",
+          "4:3",
+          "3:2",
+          "2:3",
+          "21:9"
+        ]
+      },
+      {
+        "maxCount": 10,
+        "type": "images",
+        "optional": true,
+        "label": "تصاویر مرجع",
+        "inputKey": "image_input",
+        "description": "تصاویری که این مدل از آنها الگو میگیرد یا آنهارا ویرایش میکند."
+      },
+      {
+        "inputKey": "size",
+        "type": "selection",
+        "defaultValue": "4K",
+        "label": "کیفیت تصویر",
+        "valuesAreNumeric": false,
+        "options": [
+          { "label": "4K (4096 پیکسل)", "value": "4K" },
+          { "label": "2K (2048 پیکسل)", "value": "2K" },
+          { "label": "1K (1024 پیکسل)", "value": "1K" }
+        ]
+      },
+      {
+        "type": "boolean",
+        "defaultValue": true,
+        "advancedSetting": true,
+        "inputKey": "enhance_prompt",
+        "label": "بهینه‌سازی و بهبود پرامپ",
+        "description": "بهینه‌سازی و بهبود اتوماتیک پرامپ جهت خروجی باکیفیت‌تر."
+      }
+    ]
   },
   {
-    "cost": 0.025,
-    "imageInput": "SINGLE",
+    "costPerImage": 0.025,
     "hasShowCaseImage": true,
     "code": "qwen/qwen-image",
-    "ratios": ["1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3"],
     "defaultOptions": {
-      "output_format": "jpg",
-      "image_size": "optimize_for_quality",
-      "output_quality": 100
-    }
+      "image_size": "optimize_for_quality"
+    },
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": ["1:1", "9:16", "16:9", "3:4", "4:3", "3:2", "2:3"]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن الگو میگیرد یا آن‌را ویرایش میکند."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "min": 0,
+        "max": 10,
+        "type": "float",
+        "optional": true,
+        "decimalAccuracy": 2,
+        "inputKey": "guidance",
+        "advancedSetting": true,
+        "label": "مقیاس راهنمایی (guidance)",
+        "description": "میزان پایبندی مدل به پرامپت — مقادیر کمتر گاهی تصاویر واقعی‌تر می‌دهند، مقادیر بیشتر خروجی را دقیق‌تر مطابق پرامپت می‌کند. پیش‌فرض 3."
+      },
+      {
+        "min": 0,
+        "max": 1,
+        "type": "float",
+        "optional": true,
+        "decimalAccuracy": 2,
+        "inputKey": "strength",
+        "advancedSetting": true,
+        "label": "مقیاس شدت (strength)",
+        "description": "عدد بین 0–1. مقادیر نزدیک به 0 خروجی‌ای شبیه تصویر ورودی می‌دهند؛ مقادیر نزدیک به 1 تغییرات بیشتری اعمال می‌کنند (خروجی کمتر شبیه تصویر اولیه خواهد بود). پیش‌فرض: 0.9."
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید تصویر را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      },
+      {
+        "type": "selection",
+        "label": "فرمت خروجی",
+        "defaultValue": "jpg",
+        "advancedSetting": true,
+        "valuesAreNumeric": false,
+        "inputKey": "output_format",
+        "options": [
+          { "label": "jpg", "value": "jpg" },
+          { "label": "png", "value": "png" },
+          { "label": "webp", "value": "webp" }
+        ]
+      }
+    ]
   },
   {
-    "cost": 0.06,
+    "costPerImage": 0.06,
     "hasShowCaseImage": true,
-    "imageInput": "UNAVAILABLE",
+    "defaultOptions": { "safety_tolerance": 6 },
     "code": "black-forest-labs/flux-1.1-pro-ultra",
-    "defaultOptions": { "output_format": "jpg", "raw": false },
-    "ratios": [
-      "1:1",
-      "9:16",
-      "16:9",
-      "3:4",
-      "4:3",
-      "3:2",
-      "2:3",
-      "5:4",
-      "4:5",
-      "21:9",
-      "9:21"
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": [
+          "1:1",
+          "9:16",
+          "16:9",
+          "3:4",
+          "4:3",
+          "3:2",
+          "2:3",
+          "5:4",
+          "4:5",
+          "21:9",
+          "9:21"
+        ]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "label": "تصویر مرجع",
+        "inputKey": "image_prompt",
+        "description": "تصویری که این مدل از آن الگو میگیرد یا آن‌را ویرایش میکند."
+      },
+      {
+        "label": "خام",
+        "type": "boolean",
+        "inputKey": "raw",
+        "defaultValue": false,
+        "description": "اگر خام روشن باشد خروجی کمتر پردازش‌شده و طبیعی‌تر است و اگر خام خاموش باشد خروجی پالایش‌شده و آماده نمایش است."
+      },
+      {
+        "min": 0,
+        "max": 1,
+        "type": "float",
+        "optional": true,
+        "decimalAccuracy": 2,
+        "advancedSetting": true,
+        "inputKey": "image_prompt_strength",
+        "label": "وزن پرامپت تصویر (image prompt strength)",
+        "description": "میزان ترکیب بین پرامپت متنی و پرامپت تصویری — نزدیک به 0 متن را بیشتر اولویت می‌دهد، نزدیک به 1 تصویر مبنا را. پیش‌فرض: 0.1."
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید تصویر را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      },
+      {
+        "type": "selection",
+        "label": "فرمت خروجی",
+        "defaultValue": "jpg",
+        "advancedSetting": true,
+        "valuesAreNumeric": false,
+        "inputKey": "output_format",
+        "options": [
+          { "label": "jpg", "value": "jpg" },
+          { "label": "png", "value": "png" }
+        ]
+      }
     ]
   },
   {
-    "cost": 0.04,
-    "imageInput": "SINGLE",
+    "costPerImage": 0.04,
     "hasShowCaseImage": true,
-    "defaultOptions": { "output_format": "jpg" },
     "code": "stability-ai/stable-diffusion-3.5-large-turbo",
-    "ratios": [
-      "1:1",
-      "9:16",
-      "16:9",
-      "3:2",
-      "2:3",
-      "5:4",
-      "4:5",
-      "21:9",
-      "9:21"
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": [
+          "1:1",
+          "9:16",
+          "16:9",
+          "3:2",
+          "2:3",
+          "5:4",
+          "4:5",
+          "21:9",
+          "9:21"
+        ]
+      },
+      {
+        "type": "image",
+        "optional": true,
+        "inputKey": "image",
+        "label": "تصویر مرجع",
+        "description": "تصویری که این مدل از آن الگو میگیرد یا آن‌را ویرایش میکند."
+      },
+      {
+        "type": "text",
+        "optional": true,
+        "label": "پرامپت منفی",
+        "inputKey": "negative_prompt",
+        "placeholder": "پرامپت منفی را وارد کنید ...",
+        "description": "پرامپت منفی عباراتی هستند که به مدل می‌گویند چه چیزهایی را حذف یا تضعیف کند — مثلاً «متن»، «واترمارک»، «دست‌های اضافه»، یا «تصویر تار»."
+      },
+      {
+        "min": 0,
+        "max": 10,
+        "type": "float",
+        "optional": true,
+        "inputKey": "cfg",
+        "decimalAccuracy": 2,
+        "advancedSetting": true,
+        "label": "میزان هدایت مدل (cfg)",
+        "description": "میزان شباهت خروجی به پرامپت — عدد بالاتر یعنی وفاداری بیشتر به پرامپت، عدد پایین‌تر یعنی آزادی بیشتر در تولید. پیش‌فرض: 1."
+      },
+      {
+        "min": 0,
+        "max": 1,
+        "type": "float",
+        "optional": true,
+        "decimalAccuracy": 2,
+        "advancedSetting": true,
+        "inputKey": "prompt_strength",
+        "label": "قدرت پرامپت (prompt strength)",
+        "description": "میزان تأثیر پرامپت در بازسازی تصویر — نزدیک به 0 یعنی تغییر کم در تصویر، نزدیک به 1 یعنی تغییر کامل و بازتولید بر اساس پرامپت. پیش‌فرض: 0.85."
+      },
+      {
+        "optional": true,
+        "type": "integer",
+        "inputKey": "seed",
+        "label": "بذر (seed)",
+        "advancedSetting": true,
+        "description": "یک عدد صحیح که فرایند تولید تصویر را کنترل می‌کند؛ مقدار ثابت باعث تکرارپذیری می‌شود."
+      },
+      {
+        "type": "selection",
+        "label": "فرمت خروجی",
+        "defaultValue": "jpg",
+        "advancedSetting": true,
+        "valuesAreNumeric": false,
+        "inputKey": "output_format",
+        "options": [
+          { "label": "jpg", "value": "jpg" },
+          { "label": "png", "value": "png" },
+          { "label": "webp", "value": "webp" }
+        ]
+      }
     ]
   },
   {
-    "cost": 0.065,
-    "imageInput": "SINGLE",
-    "defaultOptions": { "output_format": "jpg" },
-    "code": "stability-ai/stable-diffusion-3.5-large",
-    "ratios": [
-      "1:1",
-      "9:16",
-      "16:9",
-      "3:2",
-      "2:3",
-      "5:4",
-      "4:5",
-      "21:9",
-      "9:21"
-    ]
-  },
-  {
-    "cost": 0.06,
-    "imageInput": "UNAVAILABLE",
-    "code": "google/imagen-4-ultra",
-    "defaultOptions": { "output_format": "jpg" },
-    "ratios": ["1:1", "9:16", "16:9", "3:4", "4:3"]
-  },
-  {
-    "ratios": [],
-    "cost": 0.039,
-    "imageInput": "UNAVAILABLE",
+    "costPerImage": 0.039,
     "code": "google/gemini-2.5-flash-image",
-    "defaultOptions": { "output_format": "jpg" }
+    "inputSchema": [
+      {
+        "type": "text",
+        "label": "پرامپت",
+        "inputKey": "prompt",
+        "placeholder": "پرامپت تصویر را وارد کنید ..."
+      },
+      {
+        "type": "ratio",
+        "label": "نسبت تصویر",
+        "inputKey": "aspect_ratio",
+        "options": [
+          "match_input_image",
+          "1:1",
+          "3:2",
+          "2:3",
+          "4:3",
+          "3:4",
+          "5:4",
+          "4:5",
+          "16:9",
+          "9:16",
+          "21:9"
+        ]
+      },
+      {
+        "maxCount": 10,
+        "type": "images",
+        "optional": true,
+        "label": "تصاویر مرجع",
+        "inputKey": "image_input",
+        "description": "تصاویری که این مدل از آنها الگو میگیرد یا آنهارا ویرایش میکند."
+      },
+      {
+        "type": "selection",
+        "label": "فرمت خروجی",
+        "defaultValue": "jpg",
+        "advancedSetting": true,
+        "valuesAreNumeric": false,
+        "inputKey": "output_format",
+        "options": [
+          { "label": "jpg", "value": "jpg" },
+          { "label": "png", "value": "png" }
+        ]
+      }
+    ]
   }
 ]

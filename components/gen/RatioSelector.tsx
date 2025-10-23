@@ -22,7 +22,7 @@ type Props = {
 };
 
 function parseRatio(r: string): { w: number; h: number } | null {
-  if (!r || r === "X:Y") return null;
+  if (!r || r === "match_input_image") return null;
   const parts = r.split(":").map((p) => parseFloat(p));
   if (parts.length !== 2 || parts.some((n) => Number.isNaN(n))) return null;
   return { w: parts[0], h: parts[1] };

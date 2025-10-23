@@ -16,7 +16,7 @@ export type UniversalModelCard = {
   // Card text
   shortDescription?: string | null;
   // Optional badges
-  ratios?: string[]; // e.g. ["16:9", "1:1", "X:Y"]
+  ratios?: string[]; // e.g. ["16:9", "1:1", "match_input_image"]
   durationsSec?: number[]; // e.g. [5, 10, 15]
   // Price pills (show up to 2, rest collapsed)
   creditPills?: { label: string; value: string | number }[];
@@ -112,7 +112,7 @@ export default function UniversalModelsGrid({
                           key={r}
                           className="text-xs px-1.5 py-0.5 bg-muted/70 rounded-md text-foreground/80"
                         >
-                          {r !== "X:Y" ? r : "مطابق مرجع"}
+                          {r !== "match_input_image" ? r : "مطابق مرجع"}
                         </span>
                       ))}
                       {m.ratios.length > 5 && (

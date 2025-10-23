@@ -13,8 +13,8 @@ export default async function ModelsPage() {
     name: m.name,
     companyWebsite: m.companyWebsite,
     shortDescription: m.shortDescription ?? m.description,
-    ratios: m.ratios,
-    creditPills: [{ label: "اعتبار / تصویر", value: m.creditCostPerImage }],
+    creditPills: [{ label: "اعتبار / تصویر", value: m.unitCost }],
+    ratios: m.inputSchema.find((s) => s.type === "ratio")?.options,
     href: `/dashboard/gen/image?selectedModel=${encodeURIComponent(m.code)}`,
   }));
 
