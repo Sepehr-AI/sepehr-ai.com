@@ -8,6 +8,9 @@
 -- CreateEnum
 CREATE TYPE "GenKind" AS ENUM ('IMAGE', 'VIDEO');
 
+-- DropEnum
+DROP TYPE "public"."Ratio";
+
 -- DropForeignKey
 ALTER TABLE "public"."ImageJob" DROP CONSTRAINT "ImageJob_userId_fkey";
 

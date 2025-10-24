@@ -2,9 +2,6 @@
 ALTER TABLE "Transaction" ADD COLUMN     "couponDiscountToman" INTEGER,
 ADD COLUMN     "couponId" INTEGER;
 
--- DropEnum
-DROP TYPE "public"."Ratio";
-
 -- CreateTable
 CREATE TABLE "DiscountCoupon" (
     "id" SERIAL NOT NULL,
