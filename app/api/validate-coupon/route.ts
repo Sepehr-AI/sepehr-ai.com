@@ -1,28 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { roundWebPlan } from "@/lib/cost";
 import { extractDiscountInfo } from "@/lib/discount";
-import { computeCouponDiscountRial } from "@/lib/discount";
+import { computeCouponDiscountRial, normalizeCouponCode } from "@/lib/discount";
 import getExchangeRate from "@/lib/exchange";
-import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-function normalizeCouponCode(input: string | null | undefined): string | null {
-  if (!input) return null;
-  const trimmed = input.trim();
-  if (!trimmed) return null;
-  return trimmed.toUpperCase();
-}
-
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json().catch(() => null)) as {
-      planId?: number;
-      couponCode?: string;
-    } | null;
-
-    const planId = Number(body?.planId);
-    const normalizedCode = normalizeCouponCode(body?.couponCode);
+    const { planId, couponCode } = await req.json();
+    const normalizedCode = normalizeCouponCode(couponCode);
 
     if (!planId || !normalizedCode) {
       return NextResponse.json(
@@ -32,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const plan = await prisma.webPlan.findUnique({
-      where: { id: planId },
+      where: { id: Number(planId) },
       select: {
         usdPrice: true,
         usdCredits: true,
@@ -49,7 +35,7 @@ export async function POST(req: NextRequest) {
 
     const exchangeRate = await getExchangeRate();
 
-    // Base price after seasonal discount (rial)
+    // Base price after seasonal discount (same as your checkout calc)
     const { hasDiscount } = extractDiscountInfo({
       ...plan,
       discountedDisplayPrice: String(plan.usdPrice),
@@ -62,7 +48,7 @@ export async function POST(req: NextRequest) {
         )
       : originalPriceRial;
 
-    // Case-insensitive coupon lookup
+    // Coupon lookup (case-insensitive)
     const coupon = await prisma.discountCoupon.findFirst({
       where: { code: { equals: normalizedCode, mode: "insensitive" } },
     });
@@ -72,8 +58,6 @@ export async function POST(req: NextRequest) {
         { status: 404 },
       );
     }
-
-    // Expiry check
     if (coupon.endsOn && coupon.endsOn.getTime() < Date.now()) {
       return NextResponse.json(
         { ok: false, error: "کد تخفیف منقضی شده است." },
@@ -81,7 +65,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Capacity: count successful + pending to reduce oversubscription
+    // Capacity: conservative check (successful + pending)
     const [successful, pending] = await Promise.all([
       prisma.transaction.count({ where: { couponId: coupon.id, respCode: 0 } }),
       prisma.transaction.count({
@@ -108,9 +92,10 @@ export async function POST(req: NextRequest) {
       basePriceRial,
       discountRial,
       finalPriceRial,
+      couponAmount: coupon.amount,
+      normalizedCode,
     });
-  } catch (e: any) {
-    error("PaymentVerificationError", { error: e });
+  } catch {
     return NextResponse.json(
       { ok: false, error: "بروز خطا در اعتبارسنجی کد تخفیف." },
       { status: 500 },

@@ -2,6 +2,7 @@
 
 import { roundWebPlan } from "@/lib/cost";
 import { extractDiscountInfo } from "@/lib/discount";
+import { computeCouponDiscountRial, normalizeCouponCode } from "@/lib/discount";
 import getExchangeRate from "@/lib/exchange";
 import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
@@ -154,12 +155,51 @@ async function onFetchFailure() {
   }
 }
 
+async function findValidCouponOrThrow(code: string) {
+  const coupon = await prisma.discountCoupon.findFirst({
+    where: { code: { equals: code, mode: "insensitive" } },
+  });
+  if (!coupon) {
+    const err = new Error("CouponNotFound");
+    (err as any).clientMessage = "کد تخفیف نامعتبر است.";
+    throw err;
+  }
+
+  // Expiry
+  if (coupon.endsOn && coupon.endsOn.getTime() < Date.now()) {
+    const err = new Error("CouponExpired");
+    (err as any).clientMessage = "کد تخفیف منقضی شده است.";
+    throw err;
+  }
+
+  // Capacity: conservative check (successful + pending)
+  const [successful, pending] = await Promise.all([
+    prisma.transaction.count({
+      where: { couponId: coupon.id, respCode: 0 },
+    }),
+    prisma.transaction.count({
+      where: { couponId: coupon.id, respCode: null },
+    }),
+  ]);
+
+  const usedLike = successful + pending;
+  if (usedLike >= coupon.usageCapacity) {
+    const err = new Error("CouponCapacityExceeded");
+    (err as any).clientMessage = "ظرفیت استفاده از این کد به پایان رسیده است.";
+    throw err;
+  }
+
+  return coupon;
+}
+
 export async function setupPaymentGate({
   user,
   planId,
+  couponCode,
 }: {
   planId: number;
   user: MiddlewareUserData;
+  couponCode?: string | null;
 }): Promise<void> {
   const exchangeRate = await getExchangeRate();
 
@@ -167,6 +207,9 @@ export async function setupPaymentGate({
   let usdPrice: number;
   let usdCredits: number;
   let discountPercentage: number | null = null;
+  let couponId: number | undefined = undefined;
+  let couponDiscountToman: number | undefined = undefined;
+
   try {
     const webPlan = await prisma.webPlan.findUnique({
       where: { id: planId },
@@ -193,7 +236,29 @@ export async function setupPaymentGate({
           originalPrice - (originalPrice * webPlan.discountPercentage!) / 100,
         );
     if (hasDiscount) discountPercentage = webPlan.discountPercentage;
-  } catch (e) {
+
+    // Apply coupon if provided
+    const normalizedCode = normalizeCouponCode(couponCode);
+    if (normalizedCode) {
+      const coupon = await findValidCouponOrThrow(normalizedCode);
+      const discountRial = computeCouponDiscountRial(coupon.amount, price);
+      const clampedRial = Math.max(0, price - discountRial);
+      price = Math.floor(clampedRial / 1e4) * 1e4;
+
+      couponId = coupon.id;
+      couponDiscountToman = Math.round(discountRial / 10); // store snapshot in toman
+    }
+  } catch (e: any) {
+    // Handle coupon‑related user‑facing redirects
+    if (
+      e?.message === "CouponNotFound" ||
+      e?.message === "CouponExpired" ||
+      e?.message === "CouponCapacityExceeded"
+    ) {
+      const msg = encodeURIComponent(e.clientMessage || "خطا در کد تخفیف.");
+      return redirect(`/dashboard/payment?couponError=${msg}`);
+    }
+
     error("DatabaseOrExchangeErrorForPayment:", {
       user,
       planId,
@@ -203,18 +268,32 @@ export async function setupPaymentGate({
     return redirect("/dashboard/payment");
   }
 
-  if (process.env.NODE_ENV === "development") price = 10_000;
+  // For development, you may want to keep coupon logic effective.
+  // If you prefer the old behavior (always 10_000), move this line before coupon logic.
+  if (process.env.NODE_ENV === "development") {
+    // Keep a low dev price but respect coupon by reducing it as well:
+    // price already includes coupon; ensure it's not zero.
+    price = Math.max(1000, price || 1000);
+  }
 
-  const transaction = await prisma.transaction.create({
-    data: {
-      usdPrice,
-      usdCredits,
-      exchangeRate,
-      amount: price,
-      discountPercentage,
-      user: { connect: { id: user.id } },
-    },
-  });
+  let transaction;
+  try {
+    transaction = await prisma.transaction.create({
+      data: {
+        usdPrice,
+        usdCredits,
+        exchangeRate,
+        amount: price,
+        userId: user.id,
+        discountPercentage,
+        couponId: couponId!,
+        couponDiscountToman,
+      },
+    });
+  } catch (e) {
+    error("UnableToCreateTransactionForPayment", { user, planId, e });
+    return redirect("/dashboard/payment");
+  }
 
   const invoiceId = transaction.id.toString();
   const paymentPayload: z.infer<typeof chargeApiPayloadSchema> = {
@@ -248,6 +327,7 @@ export async function setupPaymentGate({
 export async function chargeAccountAction(formData: FormData): Promise<void> {
   const headersList = await headers();
   const planId = Number(formData.get("planId"));
+  const couponCode = (formData.get("couponCode") as string) || "";
   const user: MiddlewareUserData = {
     id: Number(headersList.get("userId")),
     email: headersList.get("userEmail") as string,
@@ -260,5 +340,5 @@ export async function chargeAccountAction(formData: FormData): Promise<void> {
     return redirect("/dashboard/payment");
   }
 
-  return setupPaymentGate({ planId, user });
+  return setupPaymentGate({ planId, user, couponCode });
 }

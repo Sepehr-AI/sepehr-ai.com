@@ -46,3 +46,30 @@ export function extractDiscountInfo({
     hasDiscount: diffInFarsi !== null,
   };
 }
+
+export function normalizeCouponCode(
+  input: string | null | undefined,
+): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+  return trimmed.toUpperCase();
+}
+
+export function computeCouponDiscountRial(
+  couponAmountStr: string,
+  basePriceRial: number,
+): number {
+  const s = couponAmountStr.trim();
+  if (s.endsWith("%")) {
+    const pct = parseFloat(s.slice(0, -1));
+    if (!isFinite(pct) || pct <= 0) return 0;
+    // percentage of rial price
+    return Math.floor((basePriceRial * pct) / 100);
+  } else {
+    const fixedToman = parseFloat(s);
+    if (!isFinite(fixedToman) || fixedToman <= 0) return 0;
+    // convert toman -> rial
+    return Math.round(fixedToman * 10);
+  }
+}

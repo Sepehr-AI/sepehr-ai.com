@@ -20,12 +20,27 @@ export default async function PaymentPage({
   const plans = await getWebPlans();
   const balanceInsufficient: boolean =
     searchParams["balanceInsufficient"]?.toString().toLowerCase() === "true";
+  const couponError =
+    typeof searchParams["couponError"] === "string"
+      ? (searchParams["couponError"] as string)
+      : Array.isArray(searchParams["couponError"])
+        ? (searchParams["couponError"][0] as string)
+        : undefined;
+  const selectedPlanParam = searchParams["selectedPlan"];
+  const defaultSelectedPlanId =
+    typeof selectedPlanParam === "string"
+      ? Number(selectedPlanParam)
+      : Array.isArray(selectedPlanParam)
+        ? Number(selectedPlanParam[0])
+        : undefined;
 
   return (
     <PaymentLayout
       plans={plans.reverse()}
       webBalance={usdToCredit(userBalance)}
       balanceInsufficient={balanceInsufficient}
+      couponError={couponError}
+      defaultSelectedPlanId={defaultSelectedPlanId}
     />
   );
 }

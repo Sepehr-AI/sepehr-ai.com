@@ -16,7 +16,6 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { randomInt } from "node:crypto";
 
-import { setupPaymentGate } from "../dashboard/payment/actions";
 import {
   checkMobileFormSchema,
   loginFormSchema,
@@ -71,7 +70,7 @@ function redirectWithParams(
 async function redirectToDashboard(user: MiddlewareUserData, planId?: number) {
   if (!planId) return redirect("/dashboard");
 
-  return setupPaymentGate({ planId, user });
+  return redirect("/dashboard/payment");
 }
 
 async function getClientIp() {
