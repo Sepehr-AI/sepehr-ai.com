@@ -2,10 +2,9 @@
 
 import Loading from "@/components/Loading";
 import { numberToReadableFarsi, roundWebPlan, usdToCredit } from "@/lib/cost";
-// CHANGED: import roundWebPlan
 import { computeCouponDiscountRial, extractDiscountInfo } from "@/lib/discount";
-// import computeCouponDiscountRial
 import type { WebPlansForUsers } from "@/lib/plans";
+import { NEXT_PUBLIC_BASE_URL } from "@/lib/url";
 import { useEffect, useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { CiDollar } from "react-icons/ci";
@@ -132,7 +131,7 @@ function Form({
               {/* Coupon field + apply */}
               <div className="flex flex-col gap-2 mb-3">
                 <label
-                  className="text-sm text-foreground/70"
+                  className="text-sm text-foreground/90"
                   htmlFor="couponCode"
                 >
                   کد تخفیف (اختیاری)
@@ -141,8 +140,8 @@ function Form({
                   <input
                     id="couponCode"
                     name="couponCode"
-                    className="flex-1 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/60"
-                    placeholder="مثلاً: OFF10"
+                    className="text-center flex-1 px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-accent/60"
+                    placeholder="کد تخفیف"
                     value={couponCode}
                     onChange={(e) => {
                       setCouponCode(e.target.value);
@@ -157,11 +156,17 @@ function Form({
                       try {
                         setApplying(true);
                         const plan = plans[selectedPlanId];
-                        const res = await fetch("/api/validate-coupon", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ planId: plan.id, couponCode }),
-                        });
+                        const res = await fetch(
+                          `${NEXT_PUBLIC_BASE_URL}/api/validate-coupon`,
+                          {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              planId: plan.id,
+                              couponCode,
+                            }),
+                          },
+                        );
                         const data = await res.json();
                         if (!data?.ok) {
                           throw new Error(
