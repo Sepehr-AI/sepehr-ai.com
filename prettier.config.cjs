@@ -1,5 +1,4 @@
 module.exports = {
-  proseWrap: "always",
   plugins: ["@trivago/prettier-plugin-sort-imports"],
   importOrder: [
     "^components/(.*)$",
