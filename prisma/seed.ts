@@ -6,7 +6,6 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { existsSync } from "fs";
 import fs from "fs/promises";
-import fsp from "fs/promises";
 import path from "node:path";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,15 +19,36 @@ import _userSeed from "./seed-data/User.json";
 import _videoModelSeed from "./seed-data/VideoModel.json";
 import _webPlanSeed from "./seed-data/WebPlan.json";
 
+// Tables mutated in this seed:
+const TABLES_TO_LOCK = [
+  "User",
+  "Faq",
+  "WebPlan",
+  "LanguageModel",
+  "ImageModel",
+  "VideoModel",
+];
+
+async function lockTables(tx: any, tables: string[]) {
+  const list = tables.map((t) => `"${t}"`).join(", ");
+  // ACCESS EXCLUSIVE blocks all concurrent reads/writes. Keep the critical section short.
+  await tx.$executeRawUnsafe(`LOCK TABLE ${list} IN ACCESS EXCLUSIVE MODE;`);
+}
+
+async function resetSequences(tx: any, tables: string[]) {
+  for (const t of tables) {
+    await tx.$executeRawUnsafe(`
+      SELECT setval(
+        pg_get_serial_sequence('"${t}"', 'id'),
+        COALESCE((SELECT MAX(id) FROM "${t}"), 0) + 1,
+        false
+      );
+    `);
+  }
+}
+
 const insertIdFromIndex = <T>(seed: T[]): (T & { id: number })[] =>
   seed.map((e, idx) => ({ ...e, id: idx + 1 }));
-
-const faqSeed = insertIdFromIndex(_faqSeed);
-const userSeed = insertIdFromIndex(_userSeed);
-const webPlanSeed = insertIdFromIndex(_webPlanSeed);
-const imageModelSeed = insertIdFromIndex(_imageModelSeed);
-const videoModelSeed = insertIdFromIndex(_videoModelSeed);
-const languageModelSeed = insertIdFromIndex(_languageModelSeed);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -222,147 +242,115 @@ async function generateShortDescriptionsAllAtOnce(
   throw new Error("Failed to generate valid short descriptions after retries.");
 }
 
-// Helper to upsert any model with the same data for update & create.
-function upsertWithSameData<Model extends { upsert(args: any): Promise<any> }>(
-  model: Model,
-  where: object,
-  data: object,
-) {
-  return model.upsert({
-    where,
-    update: data,
-    create: data,
-  });
-}
-
-async function doesShowCaseFileExist(filename: string, subDir: string | null) {
-  try {
-    return (
-      await fsp.stat(
-        path.resolve(
-          __dirname,
-          `../public/model-showcase/${subDir ? subDir + "/" : ""}${filename}`,
-        ),
-      )
-    ).isFile();
-  } catch {
-    return false;
-  }
-}
-
-// Shared seeding loop for models that need Farsi descriptions
-function buildSeedTasks(
+// Build plain rows for model tables (do all I/O/validation outside DB lock)
+function prepareModelRows(
   seed: Array<
     { id: number; code: string; imageInput: ImageInput } & Record<string, any>
   >,
-  prismaModel: { upsert(args: any): Promise<any> },
   descriptionsMap: Record<string, string>,
   shortDescriptionsMap: Record<string, string>,
-): Array<Promise<any>> {
-  const tasks: Promise<any>[] = [];
+) {
+  const rows: any[] = [];
 
   for (const m of seed) {
-    tasks.push(
-      (async () => {
-        const splitCode = m.code.split("/");
-        const companyWebsite = (companyToWebsiteMap as any)[splitCode[0]];
-        if (!companyWebsite) {
-          console.error(m);
-          throw new Error(
-            `Company '${splitCode[0]}' is not defined in the codebase!`,
-          );
-        }
+    const splitCode = m.code.split("/");
+    const companyWebsite = (companyToWebsiteMap as any)[splitCode[0]];
+    if (!companyWebsite) {
+      console.error(m);
+      throw new Error(
+        `Company '${splitCode[0]}' is not defined in the codebase!`,
+      );
+    }
 
-        if (m.inputSchema) {
-          const inputSchemaParseRes = modelInputSchema.safeParse(m.inputSchema);
-          if (!inputSchemaParseRes.success) {
-            console.dir(
-              {
-                inputSchema: m.inputSchema,
-                error: z.treeifyError(inputSchemaParseRes.error),
-              },
-              { depth: null },
-            );
-            throw new Error(`Invalid inputSchema for ${m.code} was received!`);
-          }
-          console.dir(inputSchemaParseRes.data, { depth: null });
-        }
+    if (m.inputSchema) {
+      const parseRes = modelInputSchema.safeParse(m.inputSchema);
+      if (!parseRes.success) {
+        console.dir(
+          { inputSchema: m.inputSchema, error: z.treeifyError(parseRes.error) },
+          { depth: null },
+        );
+        throw new Error(`Invalid inputSchema for ${m.code} was received!`);
+      }
+    }
 
-        if (
-          !(await doesShowCaseFileExist(`${splitCode[1]}.jpg`, "cards")) &&
-          !(await doesShowCaseFileExist(
-            `${splitCode[1]}.png`,
-            "videos/posters",
-          ))
-        ) {
-          throw new Error(`No card nor poster image for ${m.code} was found!`);
-        }
-        if (
-          m.hasShowCaseImage &&
-          !(await doesShowCaseFileExist(`${splitCode[1]}.jpg`, "images"))
-        ) {
-          throw new Error(`Image showcase for ${m.code} not found!`);
-        }
-        if (
-          m.hasShowCaseVideo &&
-          !(await doesShowCaseFileExist(`${splitCode[1]}.mp4`, "videos"))
-        ) {
-          throw new Error(`Video showcase for ${m.code} not found!`);
-        }
+    // Ensure showcase assets exist (fail fast before DB work)
+    if (
+      !existsSync(
+        path.resolve(
+          __dirname,
+          `../public/model-showcase/cards/${splitCode[1]}.jpg`,
+        ),
+      ) &&
+      !existsSync(
+        path.resolve(
+          __dirname,
+          `../public/model-showcase/videos/posters/${splitCode[1]}.png`,
+        ),
+      )
+    ) {
+      throw new Error(`No card nor poster image for ${m.code} was found!`);
+    }
+    if (
+      m.hasShowCaseImage &&
+      !existsSync(
+        path.resolve(
+          __dirname,
+          `../public/model-showcase/images/${splitCode[1]}.jpg`,
+        ),
+      )
+    ) {
+      throw new Error(`Image showcase for ${m.code} not found!`);
+    }
+    if (
+      m.hasShowCaseVideo &&
+      !existsSync(
+        path.resolve(
+          __dirname,
+          `../public/model-showcase/videos/${splitCode[1]}.mp4`,
+        ),
+      )
+    ) {
+      throw new Error(`Video showcase for ${m.code} not found!`);
+    }
 
-        const modelName = [
-          ...new Set(m.code.replace("/", " ").replaceAll("-", " ").split(" ")),
-        ]
-          .map((n) => capitalizeFirstLetter(n))
-          .join(" ");
+    const modelName = toModelNameFromCode(m.code);
 
-        if (
-          !descriptionsMap[m.code] ||
-          !descriptionsMap[m.code].trim().length
-        ) {
-          const desc = await fetchFarsiDescription(modelName);
-          descriptionsMap[m.code] = desc;
-        }
+    if (!descriptionsMap[m.code] || !descriptionsMap[m.code].trim().length) {
+      throw new Error(`Missing long description for ${m.code}.`);
+    }
+    if (
+      !shortDescriptionsMap[m.code] ||
+      !shortDescriptionsMap[m.code].trim().length
+    ) {
+      throw new Error(`Missing short description for ${m.code}.`);
+    }
 
-        const newData = {
-          ...(m as typeof m & { imageInput: ImageInput }),
-          name: modelName,
-          description: descriptionsMap[m.code],
-          shortDescription: shortDescriptionsMap[m.code],
-        };
+    const newData = {
+      ...(m as typeof m & { imageInput: ImageInput }),
+      name: modelName,
+      description: descriptionsMap[m.code],
+      shortDescription: shortDescriptionsMap[m.code],
+    };
 
-        await prismaModel.upsert({
-          where: { id: m.id },
-          create: newData,
-          update: { ...newData, id: undefined },
-        });
-      })(),
-    );
+    rows.push(newData);
   }
 
-  return tasks;
+  return rows;
 }
 
 async function main() {
-  await Promise.all([
-    ...userSeed.map((user) =>
-      upsertWithSameData(
-        prisma.user,
-        { email: user.email, mobile: user.mobile },
-        user,
-      ),
-    ),
-    ...faqSeed.map((faq) =>
-      upsertWithSameData(prisma.faq, { id: faq.id }, faq),
-    ),
-    ...webPlanSeed.map((plan) =>
-      upsertWithSameData(prisma.webPlan, { id: plan.id }, plan),
-    ),
-  ]);
+  // 1) Seed users/faq/plans arrays as you already do
+  const faqSeed = insertIdFromIndex(_faqSeed);
+  const userSeed = insertIdFromIndex(_userSeed);
+  const webPlanSeed = insertIdFromIndex(_webPlanSeed);
+  const imageModelSeed = insertIdFromIndex(_imageModelSeed);
+  const videoModelSeed = insertIdFromIndex(_videoModelSeed);
+  const languageModelSeed = insertIdFromIndex(_languageModelSeed);
 
+  // 2) Prepare/generate descriptions fully BEFORE any DB lock
   const descriptionsMap = await loadDescriptions();
 
-  // 1) Ensure all long descriptions exist before any DB work
+  // Ensure all long descriptions exist (fetch if missing)
   let descriptionsChanged = false;
   for (const m of [
     ...(languageModelSeed as any[]),
@@ -377,16 +365,13 @@ async function main() {
       descriptionsChanged = true;
     }
   }
-
-  // Persist long descriptions only if we fetched anything new
   if (descriptionsChanged) {
     await saveDescriptions(descriptionsMap);
   }
 
-  // 2) Prepare short descriptions (generate once if AiModelDescription.json changed)
+  // Short descriptions (generate if needed)
   let shortDescriptionsMap: Record<string, string>;
   const shortFileExists = existsSync(SHORT_DESC_JSON_FILE);
-
   if (descriptionsChanged || !shortFileExists) {
     shortDescriptionsMap =
       await generateShortDescriptionsAllAtOnce(descriptionsMap);
@@ -395,33 +380,77 @@ async function main() {
     shortDescriptionsMap = await loadShortDescriptions();
   }
 
-  // 3) Now (re)seed DB with both description and shortDescription
-  await Promise.all([
-    prisma.languageModel.deleteMany({}),
-    prisma.imageModel.deleteMany({}),
-    prisma.videoModel.deleteMany({}),
-  ]);
-
-  const languageTasks = buildSeedTasks(
+  // 3) Build plain rows for model tables (all validation done here)
+  const languageRows = prepareModelRows(
     languageModelSeed as any[],
-    prisma.languageModel,
     descriptionsMap,
     shortDescriptionsMap,
   );
-  const imageTasks = buildSeedTasks(
+  const imageRows = prepareModelRows(
     imageModelSeed as any[],
-    prisma.imageModel,
     descriptionsMap,
     shortDescriptionsMap,
   );
-  const videoTasks = buildSeedTasks(
+  const videoRows = prepareModelRows(
     videoModelSeed as any[],
-    prisma.videoModel,
     descriptionsMap,
     shortDescriptionsMap,
   );
 
-  await Promise.all([...languageTasks, ...imageTasks, ...videoTasks]);
+  // 4) Critical section: one interactive transaction, lock tables, write, fix sequences, commit
+  await prisma.$transaction(
+    async (tx) => {
+      // a) Lock everything we’ll touch
+      await lockTables(tx, TABLES_TO_LOCK);
+
+      // b) Upsert “static” tables (users, faq, plans)
+      // Use a single unique selector. Here we pick mobile for User.
+      for (const user of userSeed) {
+        await tx.user.upsert({
+          where: { mobile: user.mobile },
+          create: user, // may include explicit id from seed
+          update: { ...user, id: undefined }, // never try to update the id
+        });
+      }
+
+      for (const faq of faqSeed) {
+        await tx.faq.upsert({
+          where: { id: faq.id },
+          create: faq,
+          update: { ...faq, id: undefined },
+        });
+      }
+
+      for (const plan of webPlanSeed) {
+        await tx.webPlan.upsert({
+          where: { id: plan.id },
+          create: plan,
+          update: { ...plan, id: undefined },
+        });
+      }
+
+      // c) Replace model tables atomically
+      await tx.languageModel.deleteMany({});
+      await tx.imageModel.deleteMany({});
+      await tx.videoModel.deleteMany({});
+
+      for (const row of languageRows) {
+        await tx.languageModel.create({ data: row });
+      }
+      for (const row of imageRows) {
+        await tx.imageModel.create({ data: row });
+      }
+      for (const row of videoRows) {
+        await tx.videoModel.create({ data: row });
+      }
+
+      // d) Fix sequences for all mutated tables
+      await resetSequences(tx, TABLES_TO_LOCK);
+      // Locks automatically release on COMMIT (end of this function).
+    },
+    // Optional: tune wait/timeout to avoid holding the lock too long
+    { maxWait: 60_000, timeout: 180_000 },
+  );
 }
 
 main()
