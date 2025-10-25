@@ -91,12 +91,13 @@ const buildTransporter = () => {
   }
 
   const smtpPort = Number(SMTP_PORT);
-  const useSecure = smtpPort === 465;
+  const secure = smtpPort === 465;
 
   return nodemailer.createTransport({
     host: SMTP_HOST,
     port: smtpPort,
-    secure: useSecure,
+    secure, // false for 587
+    requireTLS: !secure, // true for 587 (STARTTLS)
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
