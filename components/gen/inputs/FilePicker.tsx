@@ -130,7 +130,7 @@ export default function FilePicker({
                   <img
                     src={url}
                     alt={file.name}
-                    className="w-full h-[auto] object-cover"
+                    className="w-full h-auto object-cover"
                   />
                 ) : file.type.startsWith("video/") ? (
                   <video src={url} className="w-full h-auto object-cover" />

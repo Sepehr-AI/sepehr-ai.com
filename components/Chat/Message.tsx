@@ -106,7 +106,7 @@ const Message = ({
                 key={`file-${index}`}
                 className="max-w-50 flex items-center gap-2 my-2 rounded-md border border-border bg-muted/30 p-2"
               >
-                <FilePlusIcon className="h-4 w-4 flex-shrink-0" />
+                <FilePlusIcon className="h-4 w-4 shrink-0" />
                 <a
                   href={part.url}
                   target="_blank"
@@ -225,11 +225,11 @@ const Message = ({
             className={`w-9 h-9 shrink-0 grow-0 rounded-full flex items-center justify-center border ${isUser ? "border-border bg-muted/50" : "border-accent/50 bg-accent/40"}`}
           >
             {isUser ? (
-              <PersonIcon className="h-[70%] w-[auto]" />
+              <PersonIcon className="h-[70%] w-auto" />
             ) : (
               <CompanyLogo
                 companyWebsite={aiCompanyWebsite}
-                className="h-[70%] w-[auto]"
+                className="h-[70%] w-auto"
               />
             )}
           </div>

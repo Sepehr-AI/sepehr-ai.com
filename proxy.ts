@@ -38,7 +38,7 @@ async function authenticate(req: NextRequest): Promise<MiddlewareUserData> {
   return { id: userId, ...user };
 }
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   let user: MiddlewareUserData | undefined = undefined;
   if (pathname.startsWith("/dashboard")) {
@@ -72,8 +72,3 @@ export async function middleware(req: NextRequest) {
     },
   });
 }
-
-export const config = {
-  runtime: "nodejs",
-  // matcher: ["/dashboard", "/dashboard/:path"],
-};

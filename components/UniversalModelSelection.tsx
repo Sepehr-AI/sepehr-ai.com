@@ -2,12 +2,11 @@
 
 import { useTheme } from "@/components/ThemeProvider";
 import CompanyLogo from "@/components/companyLogos/CompanyLogo";
-import { modelCodeToShowCaseUrl } from "@/lib/url";
+import { modelCodeToShowCaseUri } from "@/lib/url";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-
-/* eslint-disable @next/next/no-img-element */
 
 export type UniversalModelCard = {
   code: string;
@@ -35,9 +34,9 @@ export default function UniversalModelsGrid({
   const [q, setQ] = useState("");
 
   const showCaseSubDir = type === "video" ? "videos/posters" : "cards";
-  const toUrl = useCallback(
+  const toUri = useCallback(
     (code?: string) =>
-      code ? modelCodeToShowCaseUrl(code, showCaseSubDir) : "",
+      code ? modelCodeToShowCaseUri(code, showCaseSubDir) : "",
     [showCaseSubDir],
   );
 
@@ -80,10 +79,13 @@ export default function UniversalModelsGrid({
                   : "shadow-lg/50 shadow-foreground ")
               }
             >
-              <div className="relative aspect-[16/10] bg-muted/30">
-                <img
-                  src={toUrl(m.code)}
+              <div
+                className={`relative bg-muted/30 ${type === "video" ? "aspect-video" : "aspect-square"}`}
+              >
+                <Image
+                  fill={true}
                   alt={m.name}
+                  src={toUri(m.code)}
                   className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                 />
               </div>

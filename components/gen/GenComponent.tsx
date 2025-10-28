@@ -59,7 +59,10 @@ export default function GenComponent({
 
   const { status, progress, eta, resultUrl, submit, cancel, resetAll } =
     useGenJob<"resultUrl">({
-      fetchInterval: 30_000,
+      fetchInterval:
+        kind === "VIDEO" && process.env.NODE_ENV === "production"
+          ? 60_000
+          : 10_000,
       endpoint: "/api/gen",
       resultKey: "resultUrl",
       scrollRef: endRef,
@@ -71,10 +74,10 @@ export default function GenComponent({
       },
     });
 
-  const canSubmit =
-    values?.["prompt"] &&
-    String(values["prompt"]).trim().length > 0 &&
-    (status === "IDLE" || status === "FAILED" || status === "SUCCEEDED");
+  const canSubmit = values?.["prompt"]
+    ? String(values["prompt"]).trim().length > 0 &&
+      (status === "IDLE" || status === "FAILED" || status === "SUCCEEDED")
+    : true;
 
   const onSubmit = async () => {
     if (!canSubmit) return;

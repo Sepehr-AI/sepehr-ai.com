@@ -194,6 +194,9 @@ model GenJob {
   replicateCancelUrl String?
   replicateWebUrl    String?
 
+  // Uploaded files to the provider
+  uploadedFileIds String[]
+
   // result
   resultUrl String?
   cost      Float

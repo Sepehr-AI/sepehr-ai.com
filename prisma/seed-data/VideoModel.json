@@ -336,6 +336,29 @@
     ]
   },
   {
+    "costPerSecond": 0.014,
+    "code": "kwaivgi/kling-lip-sync",
+    "inputSchema": [
+      {
+        "type": "video",
+        "maxFileSize": 90,
+        "label": "ویدئوی مرجع",
+        "inputKey": "video_url",
+        "acceptedFormats": ["mp4", "mov"],
+        "shouldBeUploadedOnProvider": true,
+        "description": "ویدئو برای هماهنگ‌سازی حرکت لب‌ها. می‌تواند یک فایل mp4 یا mov باشد، حجم آن باید کمتر از 90 مگابایت باشد، مدت‌زمان بین 2 تا 10 ثانیه و رزولوشن بین 720p تا 1080p (ابعاد 720–1920 پیکسل)."
+      },
+      {
+        "type": "audio",
+        "maxFileSize": 5,
+        "label": "صوت مرجع",
+        "inputKey": "audio_file",
+        "acceptedFormats": ["mp3", "wav", "m4a", "aac"],
+        "description": "فایل صوتی برای هماهنگ‌سازی حرکت لب‌ها. باید فرمت آن یکی از mp3، wav، m4a یا aac باشد و حجم آن کمتر از ۵ مگابایت باشد."
+      }
+    ]
+  },
+  {
     "costPerSecond": 0.4,
     "code": "google/veo-3",
     "hasShowCaseVideo": true,

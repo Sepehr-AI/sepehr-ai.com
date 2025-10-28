@@ -58,7 +58,7 @@ export const getLanguageModelsMap = async () => {
   (await getLanguageModels()).forEach((m) => map.set(m.code, m));
   cache.set("languageModelsMap", map);
   try {
-    revalidateTag("languageModelsForWeb");
+    revalidateTag("languageModelsForWeb", "max");
   } catch {}
   return map;
 };

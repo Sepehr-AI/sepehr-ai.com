@@ -15,6 +15,8 @@ import {
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
+export const maxDuration = 500;
+
 // 408
 class TimeoutError extends Error {}
 // 416
@@ -303,10 +305,3 @@ export async function POST(
     return NextResponse.json({ status }, { status });
   }
 }
-
-export const config = {
-  api: {
-    responseLimit: "20mb",
-  },
-  maxDuration: 300,
-};

@@ -66,7 +66,7 @@ export const getVideoModelsMap = async () => {
   (await getVideoModels()).forEach((m) => map.set(m.code, m));
   cache.set("videoModelsMap", map);
   try {
-    revalidateTag("videoModelsForWeb");
+    revalidateTag("videoModelsForWeb", "max");
   } catch {}
   return map;
 };

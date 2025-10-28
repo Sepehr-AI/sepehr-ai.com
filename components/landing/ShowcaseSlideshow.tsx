@@ -1,11 +1,10 @@
 "use client";
 
 import type { ImageModelPricingDto } from "@/lib/imageModels";
-import { modelCodeToShowCaseUrl } from "@/lib/url";
+import { modelCodeToShowCaseUri } from "@/lib/url";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
+import NextImage from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-/* eslint-disable @next/next/no-img-element */
 
 type Slide = {
   key: string;
@@ -25,8 +24,8 @@ export default function ShowcaseSlideshow({
   imageModels: ImageModelPricingDto[];
   videoModels: VideoModelPricingDto[];
 }) {
-  const toUrl = useCallback(
-    (c: string, s: string) => modelCodeToShowCaseUrl(c, s),
+  const toUri = useCallback(
+    (c: string, s: string) => modelCodeToShowCaseUri(c, s),
     [],
   );
 
@@ -39,9 +38,9 @@ export default function ShowcaseSlideshow({
           title: m.name,
           type: "image",
           ratio: "square",
-          src: toUrl(m.code, "images"),
+          src: toUri(m.code, "images"),
         })),
-    [imageModels, toUrl],
+    [imageModels, toUri],
   );
 
   const videoSlides: Slide[] = useMemo(
@@ -53,10 +52,10 @@ export default function ShowcaseSlideshow({
           title: m.name,
           type: "video",
           ratio: "video",
-          src: toUrl(m.code, "videos"),
-          poster: toUrl(m.code, "videos/posters"),
+          src: toUri(m.code, "videos"),
+          poster: toUri(m.code, "videos/posters"),
         })),
-    [videoModels, toUrl],
+    [videoModels, toUri],
   );
 
   return (
@@ -315,7 +314,8 @@ function AnimatedSlide({
     <div className={`${base} ${dur} ${translateClass} ${z}`}>
       <div className="w-full">
         {slide.type === "image" ? (
-          <img
+          <NextImage
+            fill={true}
             src={slide.src}
             alt={slide.title}
             className="w-full h-auto object-cover bg-black select-none pointer-events-none"
@@ -343,8 +343,8 @@ function AnimatedSlide({
       </div>
 
       {/* Subtle gradient edges to hide any tearing during transitions */}
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-2 bg-gradient-to-l from-background/50 to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-2 bg-gradient-to-r from-background/30 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-2 bg-linear-to-l from-background/50 to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-2 bg-linear-to-r from-background/30 to-transparent" />
       {/* Caption (optional) */}
       <div className="absolute top-3 left-3 text-xs px-2 py-1 rounded-md bg-background/60 backdrop-blur border border-border">
         {slide.title}

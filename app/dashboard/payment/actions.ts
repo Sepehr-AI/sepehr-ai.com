@@ -6,7 +6,7 @@ import { computeCouponDiscountRial, normalizeCouponCode } from "@/lib/discount";
 import getExchangeRate from "@/lib/exchange";
 import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
-import type { MiddlewareUserData } from "@/middleware";
+import type { MiddlewareUserData } from "@/proxy";
 import {
   chargeApiPayloadSchema,
   chargeApiResSchema,

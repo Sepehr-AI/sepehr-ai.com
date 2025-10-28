@@ -8,7 +8,10 @@ const DEFAULT_VIDEO_MAX_FILE_SIZE: number = 50;
 const fileFormatSchema = z.union([
   z.literal("mkv"),
   z.literal("mp4"),
+  z.literal("mov"),
   z.literal("mp3"),
+  z.literal("m4a"),
+  z.literal("aac"),
   z.literal("wav"),
   z.literal("jpg"),
   z.literal("png"),
@@ -103,6 +106,7 @@ export const modelInputSchema = z.array(
       type: z.literal("video"),
       ...modelInputCommonSchema.shape,
       acceptedFormats: z.array(fileFormatSchema),
+      shouldBeUploadedOnProvider: z.boolean().default(false),
       maxFileSize: z.number().default(DEFAULT_VIDEO_MAX_FILE_SIZE),
     }),
     z.object({
@@ -110,6 +114,7 @@ export const modelInputSchema = z.array(
       maxCount: z.number(),
       ...modelInputCommonSchema.shape,
       acceptedFormats: z.array(fileFormatSchema),
+      shouldBeUploadedOnProvider: z.boolean().default(false),
       maxFileSize: z.number().default(DEFAULT_VIDEO_MAX_FILE_SIZE),
     }),
     z.object({

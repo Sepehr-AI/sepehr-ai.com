@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { v7 as uuidv7 } from "uuid";
 
-export const runtime = "nodejs";
+export const maxDuration = 3600;
 
 const ACCEPT_BY_KIND: Record<"IMAGE" | "VIDEO", string> = {
   IMAGE: "image/*",

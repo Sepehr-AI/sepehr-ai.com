@@ -5,9 +5,6 @@ CREATE TYPE "ErrorType" AS ENUM ('INFO', 'WARN', 'ERROR');
 CREATE TYPE "ImageInput" AS ENUM ('UNAVAILABLE', 'SINGLE', 'MULTI');
 
 -- CreateEnum
-CREATE TYPE "Ratio" AS ENUM ('X:Y', '1:1', '16:9', '9:16', '4:3', '3:4', '2:1', '1:2', '21:9', '9:21', '3:2', '2:3', '5:4', '4:5');
-
--- CreateEnum
 CREATE TYPE "JobStatus" AS ENUM ('QUEUED', 'PROCESSING', 'SUCCEEDED', 'FAILED');
 
 -- CreateTable
@@ -126,7 +123,6 @@ CREATE TABLE "ImageModel" (
     "cardImage" TEXT NOT NULL,
     "cost" DOUBLE PRECISION NOT NULL,
     "imageInput" "ImageInput" NOT NULL,
-    "ratios" "Ratio"[] DEFAULT ARRAY['1:1']::"Ratio"[],
     "showCaseImage" TEXT,
     "disabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -151,7 +147,6 @@ CREATE TABLE "VideoModel" (
     "referenceImages" BOOLEAN NOT NULL DEFAULT false,
     "endImage" BOOLEAN NOT NULL DEFAULT false,
     "audio" BOOLEAN NOT NULL DEFAULT false,
-    "ratios" "Ratio"[] DEFAULT ARRAY['16:9']::"Ratio"[],
     "showCaseVideo" TEXT,
     "showCaseVideoPoster" TEXT NOT NULL,
     "disabled" BOOLEAN NOT NULL DEFAULT false,
@@ -166,7 +161,6 @@ CREATE TABLE "ImageJob" (
     "userId" INTEGER NOT NULL,
     "prompt" TEXT NOT NULL,
     "model" TEXT NOT NULL,
-    "ratio" "Ratio",
     "progress" INTEGER NOT NULL DEFAULT 0,
     "status" "JobStatus" NOT NULL DEFAULT 'QUEUED',
     "replicateId" TEXT,
@@ -187,7 +181,6 @@ CREATE TABLE "VideoJob" (
     "userId" INTEGER NOT NULL,
     "prompt" TEXT NOT NULL,
     "model" TEXT NOT NULL,
-    "ratio" "Ratio",
     "lengthSec" INTEGER,
     "progress" INTEGER NOT NULL DEFAULT 0,
     "status" "JobStatus" NOT NULL DEFAULT 'QUEUED',

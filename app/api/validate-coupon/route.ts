@@ -5,6 +5,8 @@ import getExchangeRate from "@/lib/exchange";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 20;
+
 export async function POST(req: NextRequest) {
   try {
     const { planId, couponCode } = await req.json();

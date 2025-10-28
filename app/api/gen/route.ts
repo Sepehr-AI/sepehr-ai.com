@@ -7,10 +7,244 @@ import prisma from "@/lib/prisma";
 import { resolveReplicateEndpoint } from "@/lib/replicateModels";
 import { NEXT_PUBLIC_BASE_URL } from "@/lib/url";
 import { JobStatus } from "@/prisma/client";
+import ffprobe from "ffprobe-static";
 import { NextRequest, NextResponse } from "next/server";
+import { execFile } from "node:child_process";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { promisify } from "node:util";
 
-export const runtime = "nodejs";
+const execFileAsync = promisify(execFile);
+
+export const maxDuration = 200;
+
+const PROJECT_ROOT = process.cwd();
 const REPLICATE_API_TOKEN = process.env.REPLICATE_API_TOKEN;
+
+type FileFieldKind = "audio" | "video" | "image" | "videos" | "images";
+
+function isFileField(
+  def: any,
+): def is { type: FileFieldKind; inputKey: string } {
+  return (
+    def &&
+    typeof def === "object" &&
+    ["audio", "video", "image", "videos", "images"].includes(def.type) &&
+    typeof def.inputKey === "string"
+  );
+}
+
+// Extract file field descriptors from schema
+function getSchemaFileFields(inputSchema: any[]) {
+  return (Array.isArray(inputSchema) ? inputSchema : []).filter(
+    isFileField,
+  ) as Array<{
+    type: FileFieldKind;
+    inputKey: string;
+    shouldBeUploadedOnProvider?: boolean;
+  }>;
+}
+
+async function uploadFileToReplicate(
+  file: File,
+  meta?: Record<string, unknown>,
+): Promise<{ id: string; getUrl: string }> {
+  if (!REPLICATE_API_TOKEN)
+    throw new Error("Missing REPLICATE_API_TOKEN env var");
+
+  const fd = new FormData();
+  // Always include filename; use file.name if present
+  const filename = (file as any).name
+    ? String((file as any).name)
+    : "upload.bin";
+  // Append content; letting undici set boundary and content-type
+  fd.append("content", file, filename);
+  if (meta) {
+    // Replicate expects JSON for metadata
+    fd.append(
+      "metadata",
+      new Blob([JSON.stringify(meta)], { type: "application/json" }),
+    );
+  }
+
+  const resp = await fetch("https://api.replicate.com/v1/files", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${REPLICATE_API_TOKEN}` },
+    body: fd,
+  });
+
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => "");
+    throw new Error(
+      `Replicate Files upload failed (${resp.status}): ${text || resp.statusText}`,
+    );
+  }
+
+  const json = (await resp.json()) as {
+    id: string;
+    urls?: { get?: string };
+    // other fields omitted
+  };
+
+  const id = json?.id;
+  const getUrl = json?.urls?.get;
+  if (!id || !getUrl) {
+    throw new Error(
+      "Replicate Files upload: missing id or urls.get in response",
+    );
+  }
+  return { id, getUrl };
+}
+
+async function deleteReplicateFiles(fileIds: string[]) {
+  if (!fileIds.length) return;
+  await Promise.allSettled(
+    fileIds.map(async (fid) => {
+      try {
+        await fetch(
+          `https://api.replicate.com/v1/files/${encodeURIComponent(fid)}`,
+          {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${REPLICATE_API_TOKEN}` },
+          },
+        );
+      } catch (e) {
+        warn("Gen.Files.DeleteFailed", { fileId: fid, error: String(e) });
+      }
+    }),
+  );
+}
+
+// Build an input patch by uploading files for schema fields that request provider upload.
+// Returns: inputPatch to merge into replicate input, plus uploaded file IDs we must later delete.
+async function uploadFilesFromFormAccordingToSchema(
+  form: FormData,
+  inputSchema: any[],
+  jobIdForMeta?: number,
+): Promise<{ inputPatch: Record<string, unknown>; uploadedFileIds: string[] }> {
+  const fileDefs = getSchemaFileFields(inputSchema).filter(
+    (d) => d.shouldBeUploadedOnProvider === true,
+  );
+  const inputPatch: Record<string, unknown> = {};
+  const uploadedIds: string[] = [];
+
+  for (const def of fileDefs) {
+    const key = def.inputKey;
+    const isMulti = def.type === "images" || def.type === "videos";
+
+    // Gather files from the incoming FormData under this inputKey
+    const values = isMulti ? form.getAll(key) : [form.get(key)];
+    const files = values.filter(
+      (v): v is File =>
+        typeof v === "object" && v != null && "arrayBuffer" in (v as any),
+    );
+
+    if (!files.length) continue;
+
+    // Upload sequentially to preserve order for multi inputs
+    const urls: string[] = [];
+    for (const file of files) {
+      const { id, getUrl } = await uploadFileToReplicate(file, {
+        jobId: jobIdForMeta ?? null,
+        inputKey: key,
+      });
+      uploadedIds.push(id);
+      urls.push(getUrl);
+    }
+
+    // Assign back into input: single string for single field, array for multi
+    inputPatch[key] = isMulti ? urls : urls[0];
+  }
+
+  return { inputPatch, uploadedFileIds: uploadedIds };
+}
+
+// Heuristic: find a binary video file based on inputSchema (types: video | videos)
+async function probeVideoDurationFromForm(
+  form: FormData,
+  inputSchema: any[],
+): Promise<{ seconds: number; key: string; filename?: string } | null> {
+  // Guard: ffprobe path must exist
+  let ffprobePath = (ffprobe as any)?.path as string | undefined;
+  if (!ffprobePath) return null;
+
+  ffprobePath = ffprobePath.replace(
+    "/ROOT/node_modules/",
+    `${PROJECT_ROOT}/node_modules/`,
+  );
+
+  // Find first video field defined in schema that is present in form
+  const videoDefs = getSchemaFileFields(inputSchema).filter(
+    (d) => d.type === "video" || d.type === "videos",
+  );
+  let pickedKey: string | undefined;
+  let pickedFile: File | undefined;
+
+  for (const def of videoDefs) {
+    const key = def.inputKey;
+    const values = def.type === "videos" ? form.getAll(key) : [form.get(key)];
+    const files = values.filter(
+      (v): v is File =>
+        typeof v === "object" && v != null && "arrayBuffer" in (v as any),
+    );
+    if (files.length) {
+      pickedKey = key;
+      pickedFile = files[0];
+      break;
+    }
+  }
+
+  if (!pickedKey || !pickedFile) return null;
+
+  const buf = Buffer.from(await pickedFile.arrayBuffer());
+  const safeName = (pickedFile as any).name
+    ? String((pickedFile as any).name)
+    : "video";
+  const tmpPath = path.join(
+    os.tmpdir(),
+    `gen-${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`,
+  );
+
+  try {
+    await fs.writeFile(tmpPath, buf);
+
+    const { stdout } = await execFileAsync(ffprobePath, [
+      "-v",
+      "error",
+      "-show_entries",
+      "format=duration",
+      "-of",
+      "json",
+      tmpPath,
+    ]);
+
+    let seconds = 0;
+    try {
+      const parsed = JSON.parse(stdout);
+      const dur = parsed?.format?.duration
+        ? Number(parsed.format.duration)
+        : NaN;
+      if (Number.isFinite(dur) && dur > 0) {
+        seconds = Math.ceil(dur);
+      }
+    } catch {
+      /* ignore */
+    }
+
+    if (seconds > 0) {
+      info("Gen.POST.VideoDuration.Probed", {
+        key: pickedKey,
+        filename: safeName,
+        seconds,
+      });
+      return { seconds, key: pickedKey, filename: safeName };
+    }
+    return null;
+  } finally {
+    fs.unlink(tmpPath).catch(() => {});
+  }
+}
 
 function json<T extends Record<string, unknown>>(data: T, status = 200) {
   return NextResponse.json(data, { status });
@@ -244,14 +478,32 @@ export async function POST(req: NextRequest) {
     // duration x costPerSecond for videos; per-image for images
     let totalCostUSD = unitCostUSD;
     if (kind === "VIDEO") {
-      const durationSec = extractDurationSeconds(
+      let durationSec = extractDurationSeconds(
         replicateInput,
         form,
         found.model.inputSchema as any,
       );
-      if (typeof durationSec !== "number" || durationSec <= 0) {
+
+      if (!(typeof durationSec === "number" && durationSec > 0)) {
+        const probed = await probeVideoDurationFromForm(
+          form,
+          found.model.inputSchema as any,
+        );
+        if (probed?.seconds && probed.seconds > 0) {
+          durationSec = probed.seconds;
+        }
+      }
+
+      if (!(typeof durationSec === "number" && durationSec > 0)) {
         return jsonError("لطفاً طول ویدئو را به‌درستی وارد کنید.", 400);
       }
+
+      // Ensure integer seconds (ceil already applied for probed values; apply for provided as well)
+      durationSec = Math.ceil(durationSec);
+
+      // Optional: log provided duration too (not required, but helpful)
+      info("Gen.POST.VideoDuration.Final", { userId, seconds: durationSec });
+
       totalCostUSD = unitCostUSD * durationSec;
     }
     totalCostUSD = roundToDecimals(totalCostUSD, 5);
@@ -266,7 +518,37 @@ export async function POST(req: NextRequest) {
       return jsonError("اعتبار حساب شما کافی نیست!", 402);
     }
 
-    // Create replicate prediction
+    // Upload provider-hosted files if requested by the schema and patch input accordingly
+    let uploadedFileIds: string[] = [];
+    try {
+      const { inputPatch, uploadedFileIds: ids } =
+        await uploadFilesFromFormAccordingToSchema(
+          form,
+          found.model.inputSchema as any,
+          /* jobIdForMeta */ undefined, // jobId unknown until we create the DB row; we still tag metadata with null
+        );
+      if (Object.keys(inputPatch).length) {
+        Object.assign(input, inputPatch);
+      }
+      uploadedFileIds = ids;
+    } catch (e) {
+      // Refund if upload itself fails
+      try {
+        await prisma.user.update({
+          where: { id: userId },
+          data: { balance: { increment: totalCostUSD } },
+        });
+      } catch (refundErr) {
+        error("Gen.POST.DB.RefundFailedAfterUploadError", {
+          userId,
+          totalCostUSD,
+          error: refundErr,
+        });
+      }
+      throw e;
+    }
+
+    // Create replicate prediction (if this fails, refund and delete uploaded files)
     let prediction:
       | {
           id: string;
@@ -283,19 +565,23 @@ export async function POST(req: NextRequest) {
       try {
         await prisma.user.update({
           where: { id: userId },
-          data: { balance: { increment: unitCostUSD } },
+          data: { balance: { increment: totalCostUSD } },
         });
       } catch (refundErr) {
         error("Gen.POST.DB.RefundFailedAfterCreateError", {
           userId,
-          unitCostUSD,
+          totalCostUSD,
           error: refundErr,
         });
+      }
+      // attempt to delete any uploaded files to avoid leaks
+      if (uploadedFileIds.length) {
+        await deleteReplicateFiles(uploadedFileIds);
       }
       throw e;
     }
 
-    // Initial job record
+    // Initial job record (now include uploadedFileIds)
     const initialStatus = mapReplicateStatus(prediction.status);
     const initialUrl = extractMediaUrl(prediction.output);
 
@@ -316,7 +602,8 @@ export async function POST(req: NextRequest) {
         replicateWebUrl:
           prediction.urls?.web ?? `https://replicate.com/p/${prediction.id}`,
         resultUrl: initialUrl ?? undefined,
-        cost: totalCostUSD, // store the charged amount
+        cost: totalCostUSD,
+        uploadedFileIds, // NEW: track files to clean up later
       },
       select: { id: true },
     });
@@ -357,6 +644,7 @@ export async function GET(req: NextRequest) {
         resultUrl: true,
         replicateGetUrl: true,
         cost: true,
+        uploadedFileIds: true,
       },
     });
     if (!job) return jsonError("کار مورد نظر یافت نشد.", 404);
@@ -416,6 +704,30 @@ export async function GET(req: NextRequest) {
         },
       });
     });
+
+    if (
+      updated.status === "SUCCEEDED" &&
+      job.uploadedFileIds &&
+      job.uploadedFileIds.length > 0
+    ) {
+      try {
+        await deleteReplicateFiles(job.uploadedFileIds);
+        await prisma.genJob.update({
+          where: { id: updated.id },
+          data: { uploadedFileIds: [] },
+          select: { id: true },
+        });
+        info("Gen.GET.ProviderFilesDeleted", {
+          jobId: updated.id,
+          count: job.uploadedFileIds.length,
+        });
+      } catch (delErr) {
+        warn("Gen.GET.ProviderFilesDeleteError", {
+          jobId: updated.id,
+          error: String(delErr),
+        });
+      }
+    }
 
     const elapsedSec = Math.max(
       0,

@@ -7,6 +7,8 @@ import { error } from "@/lib/log";
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 20;
+
 function normalizeCouponCode(input: string | null | undefined): string | null {
   if (!input) return null;
   const trimmed = input.trim();

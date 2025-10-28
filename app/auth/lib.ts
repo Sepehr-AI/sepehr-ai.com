@@ -3,9 +3,9 @@
 import MultiStepLimiter from "@/lib/MultiStepLimiter";
 import { error, errorOnThrow } from "@/lib/log";
 import prisma from "@/lib/prisma";
-import type { MiddlewareUserData } from "@/middleware";
 import { PrismaClientKnownRequestError } from "@/prisma/client/runtime/library";
 import { findOrCreateOtp } from "@/prisma/client/sql";
+import type { MiddlewareUserData } from "@/proxy";
 import { hash, verify } from "@node-rs/argon2";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";

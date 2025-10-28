@@ -63,7 +63,7 @@ export const getImageModelsMap = async () => {
   (await getImageModels()).forEach((m) => map.set(m.code, m));
   cache.set("imageModelsMap", map);
   try {
-    revalidateTag("imageModelsForWeb");
+    revalidateTag("imageModelsForWeb", "max");
   } catch {}
   return map;
 };

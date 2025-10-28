@@ -6,7 +6,7 @@ export const NEXT_PUBLIC_BASE_URL =
 export const showCaseUriToUrl = (filename: string, subfolder?: string) =>
   `${NEXT_PUBLIC_BASE_URL}/model-showcase/${!subfolder ? "" : subfolder + "/"}${filename}`;
 
-export const modelCodeToShowCaseUrl = (code: string, subfolder: string) => {
+export const modelCodeToShowCaseUri = (code: string, subfolder: string) => {
   // cards & images -> jpg
   // videos/posters -> png
   // videos -> mp4
@@ -18,5 +18,5 @@ export const modelCodeToShowCaseUrl = (code: string, subfolder: string) => {
         : "mp4";
   const name = code.split("/")[1] as string;
 
-  return showCaseUriToUrl(`${name}.${format}`, subfolder);
+  return `/model-showcase/${subfolder}/${name}.${format}`;
 };

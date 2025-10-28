@@ -64,7 +64,7 @@ export default function VideoCostTable({
 
   return (
     <div className="flex justify-center">
-      {table && (
+      {table ? (
         <div className="w-4xs border-2 border-accent/70 rounded-xl overflow-hidden">
           <div className="text-center px-3 py-2 text-sm bg-muted/60 border-b-2 border-accent/70">
             هزینه بر اساس طول ویدئو
@@ -84,6 +84,13 @@ export default function VideoCostTable({
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-auto flex items-center justify-center gap-1 pt-1 flex-wrap">
+          <div className="text-sm border border-accent/90 text-accent rounded-2xl px-2 py-0.5">
+            <span className="font-bold underline">{creditCostPerSecond}</span>{" "}
+            <span>اعتبار / هر ثانیه از ویدئو</span>
           </div>
         </div>
       )}
