@@ -6,8 +6,10 @@ import ModelHeader from "@/components/gen/ModelHeader";
 import ResultCard from "@/components/gen/ResultCard";
 import { useGenJob } from "@/hooks/useGenJob";
 import type { ImageModelPricingDto } from "@/lib/imageModels";
+import { buildInputFromFormData } from "@/lib/modelInputHelpers";
 import type { VideoModelPricingDto } from "@/lib/videoModels";
 import { useRef, useState } from "react";
+import { toast } from "react-toastify";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -74,13 +76,12 @@ export default function GenComponent({
       },
     });
 
-  const canSubmit = values?.["prompt"]
-    ? String(values["prompt"]).trim().length > 0 &&
-      (status === "IDLE" || status === "FAILED" || status === "SUCCEEDED")
-    : true;
+  const canSubmit =
+    status === "IDLE" || status === "FAILED" || status === "SUCCEEDED";
 
   const onSubmit = async () => {
     if (!canSubmit) return;
+
     const fd = new FormData();
     fd.append("model", model.code);
     fd.append("kind", kind); // IMAGE | VIDEO
@@ -101,6 +102,23 @@ export default function GenComponent({
       } else {
         fd.append(k, String(v));
       }
+    }
+
+    // Frontend validation using shared logic (skip file base64 encoding)
+    try {
+      await buildInputFromFormData(fd, model.inputSchema, {
+        skipFileEncoding: true,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "خطای نامشخص در اعتبارسنجی ورودی‌ها.";
+      toast.error(message, {
+        toastId: message,
+        position: "top-center",
+      });
+      return; // Stop submit on validation error
     }
 
     await submit(fd);

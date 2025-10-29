@@ -14,7 +14,6 @@ export function isAcceptedExt(name: string, accepted: string[]) {
   return accepted.includes(ext);
 }
 
-// Lift a model's ModelInput[] into a per-input validator that can read FormData
 export type ParsedField =
   | { key: string; value: string | number | boolean }
   | { key: string; value: string[] }
@@ -27,18 +26,44 @@ export type BuiltInput = {
   raw: Record<string, unknown>;
 };
 
-// File -> dataURL
+// File -> dataURL (works in Node and Browser)
 export async function fileToDataUrl(f: File) {
-  const buf = Buffer.from(await f.arrayBuffer());
+  const arrayBuf = await f.arrayBuffer();
+  let base64: string;
+
+  // Use Node's Buffer if available; otherwise fall back to browser btoa
+  const B = (globalThis as any).Buffer;
+  if (B && typeof B.from === "function") {
+    base64 = B.from(arrayBuf).toString("base64");
+  } else {
+    let binary = "";
+    const bytes = new Uint8Array(arrayBuf);
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+    }
+    base64 = btoa(binary);
+  }
+
   const mime = f.type || "application/octet-stream";
-  return `data:${mime};base64,${buf.toString("base64")}`;
+  return `data:${mime};base64,${base64}`;
 }
 
+export type BuildInputOptions = {
+  // When true, run all validations but skip turning files into base64 data URLs.
+  // Useful for frontend validation to avoid heavy work.
+  skipFileEncoding?: boolean;
+};
+
 // Transform FormData into payload using the model's inputSchema
+// Now supports { skipFileEncoding } to reuse validation logic on the client.
 export async function buildInputFromFormData(
   fd: FormData,
   inputDef: z.infer<typeof modelInputSchema>,
+  options?: BuildInputOptions,
 ) {
+  const skipFileEncoding = options?.skipFileEncoding ?? false;
+
   const input: Record<string, unknown> = {};
   const raw: Record<string, unknown> = {};
 
@@ -92,8 +117,9 @@ export async function buildInputFromFormData(
             throw new Error(`گزینه "${v}" برای "${def.label}" معتبر نیست.`);
 
           if (def.valuesAreNumeric) {
-            input[key] = Number(v);
-            raw[key] = Number(v);
+            const num = Number(v);
+            input[key] = num;
+            raw[key] = num;
           } else {
             input[key] = v;
             raw[key] = v;
@@ -157,8 +183,11 @@ export async function buildInputFromFormData(
           throw new Error(
             `"${def.label}" باید یکی از فرمت‌های ${formats.join(", ")} باشد.`,
           );
-        const dataUrl = await fileToDataUrl(file);
-        input[key] = dataUrl;
+
+        if (!skipFileEncoding) {
+          const dataUrl = await fileToDataUrl(file);
+          input[key] = dataUrl;
+        }
         raw[key] = { name: file.name, size: file.size };
         break;
       }
@@ -189,8 +218,11 @@ export async function buildInputFromFormData(
               `"${def.label}" فقط فرمت‌های ${formats.join(", ")} را می‌پذیرد.`,
             );
         }
-        const urls = await Promise.all(parts.map(fileToDataUrl));
-        input[key] = urls;
+
+        if (!skipFileEncoding) {
+          const urls = await Promise.all(parts.map(fileToDataUrl));
+          input[key] = urls;
+        }
         raw[key] = parts.map((f) => ({ name: f.name, size: f.size }));
         break;
       }
