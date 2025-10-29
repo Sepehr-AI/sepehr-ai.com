@@ -185,7 +185,7 @@ export default function ChatBody({
       {/* Scroll to bottom button */}
       {!isAtBottom && (
         <button
-          className="absolute bottom-26 left-1/2 border-accent border-1 -translate-x-1/2 bg-secondary text-secondary-foreground rounded-full p-2 hover:bg-secondary/60 transition-all z-10"
+          className="absolute bottom-26 left-1/2 border-accent border -translate-x-1/2 bg-secondary text-secondary-foreground rounded-full p-2 hover:bg-secondary/60 transition-all z-10"
           onClick={scrollToMessageInput}
           aria-label="Scroll to bottom"
         >

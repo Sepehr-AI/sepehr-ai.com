@@ -199,7 +199,7 @@ const MemoizedMarkdownBlock = memo(
               };
 
               return match ? (
-                <div className="my-4 ltr rounded p-1 border-1 border-gray-875">
+                <div className="my-4 ltr rounded p-1 border border-gray-875">
                   <div className="flex px-[1em] py-[0.75em]">
                     <p className="flex-none text-sm">{match[1]}</p>
                     <div className="flex-auto"></div>

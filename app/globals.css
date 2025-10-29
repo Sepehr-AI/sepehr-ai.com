@@ -107,7 +107,7 @@
 
   /* Gradient only on the span + GPU acceleration */
   .hero-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-violet-600;
+    @apply bg-clip-text text-transparent bg-linear-to-r from-indigo-500 to-violet-600;
     transform: translateZ(0);
     backface-visibility: hidden;
     will-change: transform, opacity;

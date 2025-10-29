@@ -67,7 +67,7 @@ export default function PricingSection({
                   (theme === "light" ? " shadow-lg" : " shadow-sm ") +
                   // Center the 3rd grid element when 2 are shown in each row, also fully takes up the width
                   (index === plans.length - 1
-                    ? "[grid-column:auto] md:[grid-column:1/-1] xl:[grid-column:auto]"
+                    ? "col-auto md:col-span-full xl:col-auto"
                     : "")
                 }
               >
@@ -91,7 +91,7 @@ export default function PricingSection({
                     {/* Price & Discount UI */}
                     <div className="flex-none mb-6 text-center relative flex flex-col items-center">
                       {hasDiscount && diffInFarsi && (
-                        <span className="inline-block mb-2 px-3 py-1 bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900 rounded-full text-xs font-semibold">
+                        <span className="inline-block mb-2 px-3 py-1 bg-linear-to-r from-yellow-300 to-yellow-400 text-yellow-900 rounded-full text-xs font-semibold">
                           تخفیف تا {diffInFarsi} دیگر معتبر است
                         </span>
                       )}
@@ -175,11 +175,11 @@ export default function PricingSection({
                     <div className="w-full flex justify-center border-t border-border pt-4 mt-4">
                       <ul className="space-y-2 text-sm rtl">
                         <li className="flex items-start gap-2">
-                          <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
+                          <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 shrink-0" />
                           <span>دسترسی به همه مدل‌های زبان، تصویر و ویدیو</span>
                         </li>
                         <li className="flex items-start gap-2">
-                          <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 flex-shrink-0" />
+                          <CheckIcon className="w-4 h-4 mt-0.5 text-green-500 shrink-0" />
                           <span>
                             ذخیره و مدیریت چت‌ها و پروژه‌ها فقط در مرورگر شما
                           </span>

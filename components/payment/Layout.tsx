@@ -111,7 +111,7 @@ function Form({
               {hasDiscount && (
                 <div className="space-y-1.5 text-sm flex flex-col md:flex-row items-center mb-4">
                   <div className="flex items-center justify-between gap-4">
-                    <span className="px-3 py-2 bg-gradient-to-r from-yellow-300 to-yellow-400 text-yellow-900 rounded-full font-semibold">
+                    <span className="px-3 py-2 bg-linear-to-r from-yellow-300 to-yellow-400 text-yellow-900 rounded-full font-semibold">
                       <span className="px-2 py-1 ml-2 bg-green-800 text-white rounded-full">
                         %{discountPercent}
                       </span>

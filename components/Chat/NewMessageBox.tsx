@@ -156,7 +156,7 @@ export default function NewMessageBox({
                 key={index}
                 className="flex items-center gap-2 text-xs mb-1 last:mb-0"
               >
-                <FilePlusIcon className="h-3 w-3 flex-shrink-0" />
+                <FilePlusIcon className="h-3 w-3 shrink-0" />
                 <span className="truncate">{name}</span>
               </div>
             ))}

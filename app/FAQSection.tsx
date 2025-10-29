@@ -23,7 +23,7 @@ export default function FAQSection({
             className="flex w-full justify-between items-center text-left"
           >
             <h4 className="text-lg font-medium">{item.title}</h4>
-            <span className="ml-4 flex-shrink-0 text-emerald-500">
+            <span className="ml-4 shrink-0 text-emerald-500">
               {activeIndex === index ? <IoIosArrowUp /> : <IoIosArrowDown />}
             </span>
           </button>

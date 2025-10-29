@@ -10,7 +10,7 @@ export default function CallToAction() {
 
   return (
     <section
-      className="py-20 bg-gradient-to-br from-indigo-500/10 to-violet-500/10"
+      className="py-20 bg-linear-to-br from-indigo-500/10 to-violet-500/10"
       ref={ref}
     >
       <div className="container mx-auto px-4">

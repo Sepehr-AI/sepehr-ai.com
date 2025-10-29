@@ -41,7 +41,7 @@ export default function DynamicInputs({ schema, values, onChange }: Props) {
               {labelWithOptionalMark(def)}
             </label>
             <textarea
-              className="min-h-[96px] w-full rounded-lg border border-border bg-background px-3 py-2 leading-6"
+              className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 leading-6"
               placeholder={def.placeholder}
               value={String(values[k] ?? "")}
               onChange={(e) => onChange(k, e.target.value)}

@@ -13,7 +13,7 @@ export function GeneratingAnswer() {
   const dotBg = isDark ? "bg-accent/60" : "bg-accent/90";
 
   return (
-    <div className="px-1 py-5 max-w-screen-md">
+    <div className="px-1 py-5 max-w-3xl">
       <div className="flex justify-center items-center space-x-2">
         <span
           className={`w-2 h-2 rounded-full ${dotBg}`}
@@ -68,7 +68,7 @@ export default function LoadingMessage({
   const isDark = theme === "dark";
 
   return (
-    <div className="px-1 py-10 max-w-screen-md">
+    <div className="px-1 py-10 max-w-3xl">
       <div className="flex gap-4">
         {/* Avatar */}
         <div className="flex-none">
@@ -101,7 +101,7 @@ export default function LoadingMessage({
 
             <CompanyLogo
               companyWebsite={aiCompanyWebsite}
-              className="h-[70%] w-[auto] z-10"
+              className="h-[70%] w-auto z-10"
             />
           </div>
         </div>
