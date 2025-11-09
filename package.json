@@ -7,6 +7,7 @@
     "lint": "next lint",
     "start": "next start",
     "dev": "next dev",
+    "db": "tsx scripts/db.ts",
     "transfer-credits": "tsx scripts/transfer-credits.ts",
     "build": "NODE_OPTIONS=--max_old_space_size=3072 next build",
     "prod-run": "pm2 stop sepehr-ai.com; pm2 start --name=sepehr-ai.com pnpm -- start",
