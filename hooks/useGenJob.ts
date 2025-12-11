@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 type UseGenJobOptions<ResultKey extends string> = {
   endpoint: string;
   resultKey: ResultKey;
+  fetchTimeout?: number;
   fetchInterval?: number;
   scrollRef?: React.RefObject<HTMLElement | null>;
   messages?: {
@@ -34,6 +35,7 @@ export function useGenJob<ResultKey extends string>({
   scrollRef,
   messages,
   fetchInterval = 5000,
+  fetchTimeout = 300_000,
 }: UseGenJobOptions<ResultKey>) {
   const {
     canceledInfo = "عملیات لغو شد",
@@ -79,13 +81,14 @@ export function useGenJob<ResultKey extends string>({
     setResultUrl(null);
 
     const controller = new AbortController();
+    const timeoutSignal = AbortSignal.timeout(fetchTimeout);
     abortRef.current = controller;
 
     try {
       const res = await fetch(endpoint, {
         method: "POST",
         body: form,
-        signal: controller.signal,
+        signal: AbortSignal.any([controller.signal, timeoutSignal]),
       });
 
       if (!res.ok) {

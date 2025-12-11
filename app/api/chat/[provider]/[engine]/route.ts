@@ -166,7 +166,7 @@ export async function POST(
 
     const messages: ModelMessage[] = [
       defaultAiSystemPrompt,
-      ...convertToModelMessages(json.messages as UIMessage[]),
+      ...(await convertToModelMessages(json.messages as UIMessage[])),
     ];
 
     const modelCode: string = `${provider}/${engine}`;
